@@ -8,6 +8,7 @@ import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -42,7 +43,10 @@ public class AlphaTeleOp extends CommandOpMode {
     public GamepadEx driver2;
 
     private boolean manualControl = true;
+    public VoltageSensor voltageSensor;
+    double currentVoltage = 14;
 
+    public ElapsedTime lastVoltageCheck = new ElapsedTime();
     private ElapsedTime timer = new ElapsedTime();
 
     private void setSavedPose(Pose pose) {
@@ -68,11 +72,11 @@ public class AlphaTeleOp extends CommandOpMode {
         spindexer = new SpindexerSubsystem(hardwareMap);
         colorSensor = new ColorSubSystem(hardwareMap);
         led = new LEDSubSystem(hardwareMap);
+        voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
         super.reset();
+        lastVoltageCheck.reset();
         register(intake, shooter, spindexer);
-
-
 
         //pedro and gamepad wrapper
         follower.startTeleopDrive();
@@ -105,7 +109,7 @@ public class AlphaTeleOp extends CommandOpMode {
                 new InstantCommand(() -> setSavedPose(follower.getPose()))
         );
         driver1.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
-                new InstantCommand(() -> shooter.setTargetVelocity(1300))
+                new InstantCommand(() -> shooter.setTargetVelocity(1150))
         );
         driver1.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
                 new InstantCommand(() -> shooter.setTargetVelocity(-300))
@@ -160,6 +164,14 @@ public class AlphaTeleOp extends CommandOpMode {
             }
         }
 
+        if (lastVoltageCheck.milliseconds() > 500) { //check every 500ms
+            currentVoltage = voltageSensor.getVoltage();
+            spindexer.updatePIDVoltage(currentVoltage);
+            lastVoltageCheck.reset();
+        }
+
+        telemetry.addData("current pos", follower.getPose().toString());
+        telemetry.addData("saved pos", savedPose.toString());
         telemetry.addData("Loop Time", timer.milliseconds());
         timer.reset();
 
