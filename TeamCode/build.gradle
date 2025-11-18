@@ -25,7 +25,7 @@ buildscript {
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 // there should be 2 or 3 more lines that start with 'apply plugin:' here
-apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+//apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -81,10 +81,10 @@ dependencies {
 
     implementation "com.bylazar:fullpanels:1.0.5"
 
-    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
+    /*implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
 
     implementation("com.acmerobotics.slothboard:dashboard:0.2.4+0.4.17") {
         exclude group: "com.acmerobotics.dashboard" // ✅ Remove duplicate classes
-    }
+    }*/
 }
 
