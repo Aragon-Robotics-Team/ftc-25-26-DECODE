@@ -38,8 +38,8 @@ import java.util.ArrayList;
 
 
 @Config
-@Autonomous(name = "Red 12ball real🦅", group = "angryBirds", preselectTeleOp = "Alpha Teleop")
-public class RedAuto extends CommandOpMode {
+@Autonomous(name = "Red Close 12ball real🦅", group = "angryBirds", preselectTeleOp = "Alpha Teleop")
+public class RedCloseAuto extends CommandOpMode {
     //paths
     private final ArrayList<PathChain> paths = new ArrayList<>();
 
