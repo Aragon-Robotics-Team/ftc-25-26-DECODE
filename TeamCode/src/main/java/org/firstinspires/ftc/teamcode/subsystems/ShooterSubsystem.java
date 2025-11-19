@@ -7,6 +7,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.ServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
+import com.seattlesolvers.solverslib.util.InterpLUT;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -25,6 +26,7 @@ public class ShooterSubsystem extends SubsystemBase {
     double kP = kPOriginal;
     double kF = kFOriginal;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
+    InterpLUT lut = new InterpLUT();
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.RPM_312);
         shooter2 = new Motor(hMap, "shooter2", Motor.GoBILDA.RPM_312);
@@ -39,7 +41,16 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.setRunMode(Motor.RunMode.RawPower);
         shooter.set(0);
         shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+
+        //lut.add(51,1000);
+        //lut.add(51,1000);
+        //lut.createLUT();
     }
+
+    //double distance = odometry.getPose().getTranslation().getDistance(//get april tag position of goal));
+//    public void setVelocityFromDistance(double distance) {
+//        shooter.set(lut.get(distance));
+//    }
 
     public void setTargetVelocity(double vel) {
         flywheelController.setSetPoint(vel);
