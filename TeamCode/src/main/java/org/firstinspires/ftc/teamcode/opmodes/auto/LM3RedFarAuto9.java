@@ -36,7 +36,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
 @Autonomous(name = "Red 12 Ball Far", group = "angryBirds", preselectTeleOp = "Teleop")
-public class LM3RedFarAuto12 extends CommandOpMode {
+public class LM3RedFarAuto9 extends CommandOpMode {
     //paths
     public static class Paths {
         //label path field variables and also replace redundant build path coords with a preset variable like shooting pos
@@ -345,34 +345,7 @@ public class LM3RedFarAuto12 extends CommandOpMode {
                         }),
                         new WaitCommand(1000), //buffer time when testing but removeable for later
 
-                        //cycle 3
-                        new FollowPathCommand(follower, paths.toC3)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
-                        //this parallelrace group can also be replaced with .raceWith I think but it's more clear to write it like this
-                        new ParallelRaceGroup( //Do both, end when a or b finishes first:
-                                new FollowPathCommand(follower, paths.intakeC3, 0.5)
-                                        .withTimeout(3000), //a. intake path finishes
-                                new SequentialCommandGroup( //b. the ball intaking sequence finishes
-                                        new WaitForColorCommand(colorsensor),
-                                        new MoveSpindexerCommand(spindexer, gate, 1, true),
-                                        new WaitForColorCommand(colorsensor),
-                                        new MoveSpindexerCommand(spindexer, gate, 1, true),
-                                        new WaitForColorCommand(colorsensor)
-                                )
-                        ),
-                        new FollowPathCommand(follower, paths.adjustForWallC3)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.STILL))),
-                        new FollowPathCommand(follower, paths.returnToSZC3),
-                        new FollowPathCommand(follower, paths.toShootingAngle3, true),
-                        new WaitCommand(1000), //buffer time when testing but removeable for later
-                        new InstantCommand(() -> { //launch all 3 balls
-                            spindexer.moveSpindexerBy(120);
-                            spindexer.moveSpindexerBy(120);
-                            spindexer.moveSpindexerBy(120);
-                        }),
-                        new WaitCommand(1000), //buffer time when testing but removeable for later
-
-                        new FollowPathCommand(follower, paths.moveOffLine)
+                        new FollowPathCommand(follower, paths.moveOffLine) // should go to the end point regardless of positions
 
                 )
 
