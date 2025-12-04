@@ -290,13 +290,15 @@ public class LM3RedFarAuto12 extends CommandOpMode {
                         //FOR REFERENCE: SZ is Shooting Zone, C# is Cycle #
                         //toC# is moving to line up to intake balls in that cycle
                         //toShootingAngle is in place of a turn command, which can definitely be updated later
+                        //THERE IS NO SORTING ON THE SHOOTING
 
                         //cycle 1
                         new FollowPathCommand(follower, paths.toC1)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
                         //this parallelrace group can also be replaced with .raceWith I think but it's more clear to write it like this
                         new ParallelRaceGroup( //Do both, end when a or b finishes first:
-                                new FollowPathCommand(follower, paths.intakeC1, 0.5), //a. intake path finishes
+                                new FollowPathCommand(follower, paths.intakeC1, 0.5)
+                                        .withTimeout(3000), //a. intake path finishes
                                 new SequentialCommandGroup( //b. the ball intaking sequence finishes
                                         new WaitForColorCommand(colorsensor),
                                         new MoveSpindexerCommand(spindexer, gate, 1, true),
@@ -321,7 +323,8 @@ public class LM3RedFarAuto12 extends CommandOpMode {
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
                         //this parallelrace group can also be replaced with .raceWith I think but it's more clear to write it like this
                         new ParallelRaceGroup( //Do both, end when a or b finishes first:
-                                new FollowPathCommand(follower, paths.intakeC2, 0.5), //a. intake path finishes
+                                new FollowPathCommand(follower, paths.intakeC2, 0.5)
+                                        .withTimeout(3000), //a. intake path finishes
                                 new SequentialCommandGroup( //b. the ball intaking sequence finishes
                                         new WaitForColorCommand(colorsensor),
                                         new MoveSpindexerCommand(spindexer, gate, 1, true),
@@ -347,7 +350,8 @@ public class LM3RedFarAuto12 extends CommandOpMode {
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
                         //this parallelrace group can also be replaced with .raceWith I think but it's more clear to write it like this
                         new ParallelRaceGroup( //Do both, end when a or b finishes first:
-                                new FollowPathCommand(follower, paths.intakeC3, 0.5), //a. intake path finishes
+                                new FollowPathCommand(follower, paths.intakeC3, 0.5)
+                                        .withTimeout(3000), //a. intake path finishes
                                 new SequentialCommandGroup( //b. the ball intaking sequence finishes
                                         new WaitForColorCommand(colorsensor),
                                         new MoveSpindexerCommand(spindexer, gate, 1, true),
