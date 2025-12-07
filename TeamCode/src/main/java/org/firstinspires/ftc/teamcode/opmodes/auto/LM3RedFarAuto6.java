@@ -30,7 +30,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 
 @Config
-@Autonomous(name = "Red 12 Ball Far", group = "angryBirds", preselectTeleOp = "Teleop")
+@Autonomous(name = "Red 6 Ball Far", group = "angryBirds", preselectTeleOp = "Teleop")
 public class LM3RedFarAuto6 extends CommandOpMode {
     //paths has moved to RedFarAutoPaths
     RedFarAutoPaths paths;
