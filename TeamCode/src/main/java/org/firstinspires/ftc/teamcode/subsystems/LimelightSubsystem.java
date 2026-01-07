@@ -3,17 +3,17 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.Arrays;
 import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class LimelightSubsystem extends SubsystemBase {
     Limelight3A limelight;
@@ -146,6 +146,65 @@ public class LimelightSubsystem extends SubsystemBase {
             return distance;
         }
         return null;
+    }
+
+    /**
+     * @param currentHeading current pinpoint heading
+     * @param currentX current pinpoint x
+     * @param currentY current pinpoint y
+     * @return returns Pose2D (the correction) so the main code can reset the pinpoint; this will fuse pinpoint odo results with limelight results for higher localization accuracy on megatag1 (can't do megatag2 because of complications with helper library made for frc)
+     */
+    public Object fuseLocalization(double currentX, double currentY, double currentHeading) {
+        LLResult result = limelight.getLatestResult();
+
+        // 1. Check if we have a valid tag detection
+        if (result != null && result.isValid()) {
+
+            Pose3D botpose = result.getBotpose();
+            if (botpose != null) {
+                // 2. Extract Vision Position
+                double visionX = botpose.getPosition().x;
+                double visionY = botpose.getPosition().y;
+
+                // 3. Calculate Drift (Distance between Odo and Vision)
+                double drift = Math.hypot(currentX - visionX, currentY - visionY);
+
+                // 4. Thresholding Logic
+                // Only suggest a fix if drift is > 5cm but < 1 meter (sanity check)
+                if (drift > 0.05 && drift < 1.0) {
+                    // 5. Create the Corrected Pose
+                    // We use Vision X/Y, but KEEP the Pinpoint Heading
+                    Pose2D correctedPose = new Pose2D(
+                            DistanceUnit.METER,
+                            visionX,
+                            visionY,
+                            AngleUnit.DEGREES,
+                            currentHeading
+                    );
+                    return correctedPose;
+                }
+            }
+        }
+        // No correction needed
+        return null;
+        /*
+        // In OpMode loop:
+
+        // 1. Read current Pinpoint data
+        Pose2D currentPose = pinpoint.getPosition();
+        double x = currentPose.getX(DistanceUnit.METER);
+        double y = currentPose.getY(DistanceUnit.METER);
+        double h = currentPose.getHeading(AngleUnit.DEGREES);
+
+        // 2. Ask Subsystem for a correction
+        Pose2D correction = limelightSubsystem.getFusionCorrection(x, y, h);
+
+        // 3. Apply correction if one exists
+        if (correction != null) {
+            pinpoint.setPosition(correction);
+            telemetry.addLine("LOCALIZATION RESET TRIGGERED");
+        }
+         */
     }
 }
 
