@@ -12,6 +12,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -26,6 +27,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.RobotConstants.Motifs;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.CameraSubsystem;
@@ -39,6 +41,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -393,6 +396,17 @@ public class TeleOpFieldCent extends CommandOpMode {
             // Oscillate servo position smoothly with sine wave
             double position = midpoint + amplitude * Math.sin(2 * Math.PI * speed * t);
             led.setPosition(position);
+        }
+
+        int ledBallCount = Math.toIntExact(Arrays.stream(spindexer.getBalls()).filter(ball -> !ball.equals(RobotConstants.BallColors.NONE)).count());
+        if (ledBallCount == 1) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RED);
+        } else if (ledBallCount == 2) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+        } else if (ledBallCount == 3) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        } else {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
         }
 
         //Voltage compensation code
