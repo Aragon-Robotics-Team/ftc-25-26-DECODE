@@ -1,206 +1,185 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-
-import java.util.Arrays;
-import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Comparator;
 
 public class LimelightSubsystem extends SubsystemBase {
-    Limelight3A limelight;
-    private static final List<Integer> MOTIF_TAG_IDS = Arrays.asList(21, 22, 23); // Tags we should detect for motif
-    private static final List<Integer> GOAL_TAG_IDS = Arrays.asList(20, 24); // Tags we should detect for goal
-    public enum LIMELIGHT_PIPELINES {
-        APRILTAG,
-        ARTIFACT_AND_RAMP,
-        ARTIFACT_ONLY
-    }
+
+    private final Limelight3A limelight;
+
+    // Tag Configurations
+    private static final List<Integer> MOTIF_TAG_IDS = Arrays.asList(21, 22, 23); // Obelisk Tags
+    private static final List<Integer> GOAL_TAG_IDS = Arrays.asList(20, 24);      // Red/Blue Goals
+
+    // Physics Constants
+    private static final double MOUNTING_HEIGHT_IN = 8.45;
+    private static final double MOUNTING_ANGLE_DEG = 0.0;
+    private static final double ARTIFACT_HEIGHT_IN = 2.5; // Approx height of sample on floor
+
     public LimelightSubsystem(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(90); // This sets how often we ask Limelight for data (90 times per second)
-        //Probably our pipelines will look something like this:
-        //  0: Apriltag/megatag2
-        //  1: Color blob detection
-        limelight.pipelineSwitch(0); // Switch to pipeline number 0
-        limelight.start(); // This tells Limelight to start looking!
+
+        // Configure for high-speed tracking
+        limelight.setPollRateHz(90);
+
+        // We use a SINGLE pipeline (0) configured as a "Detector"
+        // in Limelight OS. This allows it to detect Neural Network Artifacts
+        // AND AprilTags simultaneously.
+        limelight.pipelineSwitch(0);
+        limelight.start();
     }
 
     /**
-     * change the limelight pipeline. May have a short delay ???
-     * @param pipeline what pipeline to switch to.
+     * Gets the raw result object from Limelight.
+     * Useful if other commands need to extract specific data types.
      */
-    public void setPipeline(LIMELIGHT_PIPELINES pipeline) {
-        switch (pipeline) {
-            case APRILTAG:
-                limelight.pipelineSwitch(0);
-                break;
-            case ARTIFACT_AND_RAMP:
-                limelight.pipelineSwitch(1);
-                break;
-            case ARTIFACT_ONLY:
-                limelight.pipelineSwitch(2);
-                break;
-        }
-    }
-    /**
-     * @return performs hardware call on limelight to return a detection
-     * */
     public LLResult getResult() {
         return limelight.getLatestResult();
     }
+
     /**
-     * @return pass in list of detections to detect motif id num (21, 22, or 23)
-     * */
-    public Object detectMotif(LLResult result) {
-        //TODO for Claire: Make this method return the biggest motif fiducial! rn it returns the first tag with a motif it can find.
-        //fiducial.getTargetArea() might work?? i havent looked into it 
-        //https://docs.steelbootrobotics.org/docs/Documents/limelight%20stuff.pdf
-        // Obelisk GPP ID = 21
-        // Obelisk PGP ID = 22
-        // Obelisk PPG ID = 23
+     * Identifies the primary "Motif" AprilTag visible.
+     * Logic: Returns the ID of the motif tag with the LARGEST area (closest to robot).
+     * * @param result The latest Limelight result.
+     * @return The Integer ID of the closest motif tag, or null if none found.
+     */
+    public Integer detectMotif(LLResult result) {
+        if (result == null || !result.isValid()) return null;
+
+        // Filter for Motif tags and find the one with the max Area (ta)
+        return result.getFiducialResults().stream()
+                .filter(fid -> MOTIF_TAG_IDS.contains(fid.getFiducialId()))
+                .max(Comparator.comparingDouble(LLResultTypes.FiducialResult::getTargetArea))
+                .map(LLResultTypes.FiducialResult::getFiducialId)
+                .orElse(null);
+    }
+
+    /**
+     * Gets the robot's current field position based on AprilTag MegaTag1.
+     * Converts Limelight Meters to Pedro Pathing Inches.
+     * * @param result The latest Limelight result.
+     * @return A Pedro Pose (x, y) in inches, or null if localization failed.
+     */
+    public Pose detectRobotPosition(LLResult result) {
         if (result != null && result.isValid()) {
-            for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
-                int id = fiducial.getFiducialId();
-                if (MOTIF_TAG_IDS.contains(id)) {
-                    return id;
+            Pose3D botpose = result.getBotpose(); // MT1 is often more stable for pure FTC localization if MT2 isn't set up
+            if (botpose != null) {
+                double xInches = DistanceUnit.INCH.fromMeters(botpose.getPosition().x);
+                double yInches = DistanceUnit.INCH.fromMeters(botpose.getPosition().y);
+                // We typically ignore Vision Heading for localization as Pinpoint is more accurate
+                return new Pose(xInches, yInches, 0);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Fusion Logic: Checks vision data against Pinpoint data.
+     * If the vision data is high quality and within a reasonable "drift" window,
+     * it returns a correction Pose to reset the Pinpoint.
+     *
+     * @param currentX Current Pinpoint X in Inches.
+     * @param currentY Current Pinpoint Y in Inches.
+     * @param currentHeading Current Pinpoint Heading (Radians).
+     * @return A Pose to reset the Pinpoint to, or null if no correction is needed.
+     */
+    public Pose getFusionCorrection(double currentX, double currentY, double currentHeading) {
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null && result.isValid()) {
+            Pose3D botpose = result.getBotpose();
+
+            // Ensure we have a valid solve
+            if (botpose != null) {
+                double visionX = DistanceUnit.INCH.fromMeters(botpose.getPosition().x);
+                double visionY = DistanceUnit.INCH.fromMeters(botpose.getPosition().y);
+
+                // Calculate Euclidean drift distance
+                double drift = Math.hypot(currentX - visionX, currentY - visionY);
+
+                // Thresholding:
+                // 1. Minimum 2 inch drift (don't jitter the odo for tiny noise)
+                // 2. Maximum 48 inch drift (sanity check - if it says we are 4 feet away, vision is likely glitching/jumping)
+                if (drift > 2.0 && drift < 48.0) {
+                    // Return the Vision X/Y but KEEP the Pinpoint Heading (IMU is superior to Vision for rotation)
+                    return new Pose(visionX, visionY, currentHeading);
                 }
             }
         }
         return null;
     }
 
-
+    // -----------------------------------------------------------------------------------
+    // Artifact / Game Piece Detection
+    // -----------------------------------------------------------------------------------
 
     /**
-     * @param result a detection from the limelight
-     * Returns the horizontal distance of the center crosshair to the goal apriltags. Used for camera-only autoaim (not preferrable).
-     * @return camera's horizontal distance from each specific tag's center as a double or null if nothing is found
-     * */
-    public Object detectGoalXDistance(LLResult result) {
-        // Red ID = 24
-        // Blue ID = 20
+     * Returns the heading (tx) to the primary detector result (Artifact/Sample).
+     * Used for aligning the intake to a sample.
+     */
+    public Double getArtifactHeading(LLResult result) {
+        if (result != null && result.isValid()) {
+            // Priority: Check Neural Detector Results first (Model), then Color Results
+            if (!result.getDetectorResults().isEmpty()) {
+                return result.getDetectorResults().get(0).getTargetXDegrees();
+            } else if (!result.getColorResults().isEmpty()) {
+                return result.getColorResults().get(0).getTargetXDegrees();
+            }
+            // If main pipeline result (tx) is valid
+            return result.getTx();
+        }
+        return null;
+    }
+
+    /**
+     * Calculates horizontal distance to the artifact using trigonometry.
+     * @return Distance in inches.
+     */
+    public Double getArtifactDistance(LLResult result) {
+        if (result != null && result.isValid()) {
+            double targetY = result.getTy(); // Vertical offset in degrees
+
+            // Trig: d = (h_target - h_camera) / tan(mount_angle + y_angle)
+            double heightDiff = ARTIFACT_HEIGHT_IN - MOUNTING_HEIGHT_IN;
+            double angleRad = Math.toRadians(MOUNTING_ANGLE_DEG + targetY);
+
+            return heightDiff / Math.tan(angleRad);
+        }
+        return null;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // Legacy / specific helper methods
+    // -----------------------------------------------------------------------------------
+
+    /**
+     * Find the horizontal distance to a goal apriltag (for auto-aim).
+     */
+    public Double detectGoalXDistance(LLResult result) {
         if (result != null && result.isValid()) {
             for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
-                int id = fiducial.getFiducialId();
-                if (GOAL_TAG_IDS.contains(id)) {
-                    Pose3D botpose_mt2 = result.getBotpose_MT2();
-                    if (botpose_mt2 != null) {
-                        double x = botpose_mt2.getPosition().x;
-                        double y = botpose_mt2.getPosition().y;
-                        double z = botpose_mt2.getPosition().z;
-
-                        x = DistanceUnit.INCH.fromMeters(x);
-                        y = DistanceUnit.INCH.fromMeters(y);
-                        z = DistanceUnit.INCH.fromMeters(z);
-                        return x;
+                if (GOAL_TAG_IDS.contains(fiducial.getFiducialId())) {
+                    Pose3D botpose = result.getBotpose();
+                    if (botpose != null) {
+                        // Return X distance in Inches
+                        return DistanceUnit.INCH.fromMeters(botpose.getPosition().x);
                     }
                 }
             }
         }
         return null;
     }
-
-    //TODO claire: we might need these in pedro's coordinate system.
-    /**
-     * @param result limelight detection
-     * @return robot's position in FTC coordinate system as a set of coordinate points or null if nothing is found
-     * */
-    public Object detectRobotPosition(LLResult result) {
-        if (result != null && result.isValid()) {
-            Pose3D botpose_mt2 = result.getBotpose_MT2();
-            if (botpose_mt2 != null) {
-                double x = botpose_mt2.getPosition().x;
-                double y = botpose_mt2.getPosition().y;
-                return new double[]{x,y};
-            }
-        }
-        return null;
-    }
-
-    //also claire remember u can use @param to annotate what you need to pass in
-    /**
-     * @return pass in list of detections to get the detected goal apriltag id or null if none is found
-     * */
-    public Object findAprilTag(LLResult result) {
-        if (result != null && result.isValid()) {
-            for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
-                int id = fiducial.getFiducialId();
-                if (GOAL_TAG_IDS.contains(id)) {
-                    return id;
-                }
-            }
-        }
-        return null;
-    }
-    /**
-     * @param result ll result
-     * @return The angle that the closest (?) ball is from the camera, in degrees.
-     */
-    public Object findColorBlobHeading(LLResult result) {
-        if (result != null && result.isValid()) {
-            return result.getTx(); //Apparently, tx is in degrees already.
-        }
-        return null;
-    }
-
-    /**
-     * @param result ll result
-     * @return The distance that the closest (?) ball is from the camera, in inches.
-     */
-    public Object findColorblobDistance(LLResult result) {
-        if (result != null && result.isValid()) {
-            double ty = result.getTy();
-            double mountingHeight = 8.45; //The height of the camera lens from the floor (in)
-            double mountingAngle = 0.0; //The mounting angle of the camera relative to the horizon (deg).
-            double ballHeight = 5.0 / 2.0; //The height of the center of the ball (in)
-            double distance = (ballHeight - mountingHeight) / Math.tan(Math.toRadians(ty + mountingAngle));
-            return distance;
-        }
-        return null;
-    }
-
-    /**
-     * @param currentHeading current pinpoint heading
-     * @param currentX current pinpoint x
-     * @param currentY current pinpoint y
-     * @return returns Pose (the correction) so the logic in teleop can reset the pinpoint; this will fuse pinpoint odo results with limelight results for higher localization accuracy on megatag1 (can't do megatag2 because of complications with helper library made for frc)
-     */
-    public Pose getFusionCorrection(double currentX, double currentY, double currentHeading) {
-        LLResult result = limelight.getLatestResult();
-
-        // 1. Check if we have a valid tag detection
-        if (result != null && result.isValid()) {
-
-            Pose3D botpose = result.getBotpose();
-            if (botpose != null) {
-                // 2. Extract Vision Position
-                double visionX = botpose.getPosition().x;
-                double visionY = botpose.getPosition().y;
-
-                // 3. Calculate Drift (Distance between Odo and Vision)
-                double drift = Math.hypot(currentX - visionX, currentY - visionY);
-
-                // 4. Thresholding Logic
-                // Only suggest a fix if drift is > 5cm but < 1 inch (sanity check)
-                if (drift > 2.0 && drift < 72.0) {
-                    // 5. Create the Corrected Pose
-                    // We use Vision X/Y, but KEEP the Pinpoint Heading
-                    return (new Pose(visionX, visionY, currentHeading));
-                }
-            }
-        }
-        // No correction needed
-        return null;
-    }
 }
-

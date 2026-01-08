@@ -119,6 +119,11 @@ public class TeleOp extends CommandOpMode {
         }
     }
 
+    public static void sensorFusion(Follower follower, Pose correction) {
+        Pose currentPose = follower.getPose();
+        follower.setPose(correction);
+    }
+
 
     //point to april tag
     public static double headingkP = -1.0; //Coefficients copied from pedro pathing.
@@ -381,22 +386,6 @@ public class TeleOp extends CommandOpMode {
             lastVoltageCheck.reset();
         }
 
-        //Sensor fusion to fix pinpoint drift
-        // 1. Read current Pinpoint data
-        Pose currentPose = follower.getPose();
-
-        // 2. Ask Subsystem for a correction
-        double x = follower.getPose().getX();
-        double y = follower.getPose().getY();
-        double heading = follower.getPose().getHeading();
-        Pose correction = limelight.getFusionCorrection(x, y, heading);
-
-        // 3. Apply correction if one exists
-        if (correction != null) {
-            follower.setPose(correction);
-            limelightFixCt++;
-        }
-        telemetry.addData("Limelight pinpoint fix count: ", limelightFixCt);
 
 //        telemetry.addData("BALLS", Arrays.toString(spindexer.getBalls()));
 
