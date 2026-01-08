@@ -74,6 +74,7 @@ public class TeleOp extends CommandOpMode {
 
     //vision
     boolean cameraInitialized = false;
+    int limelightFixCt = 0;
 
     //autodrive
     private boolean manualControl = true;
@@ -393,8 +394,9 @@ public class TeleOp extends CommandOpMode {
         // 3. Apply correction if one exists
         if (correction != null) {
             follower.setPose(correction);
-            telemetry.addLine("LOCALIZATION RESET TRIGGERED");
+            limelightFixCt++;
         }
+        telemetry.addData("Limelight pinpoint fix count: ", limelightFixCt);
 
 //        telemetry.addData("BALLS", Arrays.toString(spindexer.getBalls()));
 

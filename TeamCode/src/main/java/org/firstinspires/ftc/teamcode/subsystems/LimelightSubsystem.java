@@ -171,8 +171,8 @@ public class LimelightSubsystem extends SubsystemBase {
                 double drift = Math.hypot(currentX - visionX, currentY - visionY);
 
                 // 4. Thresholding Logic
-                // Only suggest a fix if drift is > 5cm but < 1 meter (sanity check)
-                if (drift > 0.05 && drift < 1.0) {
+                // Only suggest a fix if drift is > 5cm but < 1 inch (sanity check)
+                if (drift > 2.0 && drift < 72.0) {
                     // 5. Create the Corrected Pose
                     // We use Vision X/Y, but KEEP the Pinpoint Heading
                     return (new Pose(visionX, visionY, currentHeading));
