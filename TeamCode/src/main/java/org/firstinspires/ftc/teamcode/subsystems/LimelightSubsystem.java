@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
@@ -152,9 +153,9 @@ public class LimelightSubsystem extends SubsystemBase {
      * @param currentHeading current pinpoint heading
      * @param currentX current pinpoint x
      * @param currentY current pinpoint y
-     * @return returns Pose2D (the correction) so the main code can reset the pinpoint; this will fuse pinpoint odo results with limelight results for higher localization accuracy on megatag1 (can't do megatag2 because of complications with helper library made for frc)
+     * @return returns Pose (the correction) so the logic in teleop can reset the pinpoint; this will fuse pinpoint odo results with limelight results for higher localization accuracy on megatag1 (can't do megatag2 because of complications with helper library made for frc)
      */
-    public Object fuseLocalization(double currentX, double currentY, double currentHeading) {
+    public Pose getFusionCorrection(double currentX, double currentY, double currentHeading) {
         LLResult result = limelight.getLatestResult();
 
         // 1. Check if we have a valid tag detection
@@ -174,37 +175,12 @@ public class LimelightSubsystem extends SubsystemBase {
                 if (drift > 0.05 && drift < 1.0) {
                     // 5. Create the Corrected Pose
                     // We use Vision X/Y, but KEEP the Pinpoint Heading
-                    Pose2D correctedPose = new Pose2D(
-                            DistanceUnit.METER,
-                            visionX,
-                            visionY,
-                            AngleUnit.DEGREES,
-                            currentHeading
-                    );
-                    return correctedPose;
+                    return (new Pose(visionX, visionY, currentHeading));
                 }
             }
         }
         // No correction needed
         return null;
-        /*
-        // In OpMode loop:
-
-        // 1. Read current Pinpoint data
-        Pose2D currentPose = pinpoint.getPosition();
-        double x = currentPose.getX(DistanceUnit.METER);
-        double y = currentPose.getY(DistanceUnit.METER);
-        double h = currentPose.getHeading(AngleUnit.DEGREES);
-
-        // 2. Ask Subsystem for a correction
-        Pose2D correction = limelightSubsystem.getFusionCorrection(x, y, h);
-
-        // 3. Apply correction if one exists
-        if (correction != null) {
-            pinpoint.setPosition(correction);
-            telemetry.addLine("LOCALIZATION RESET TRIGGERED");
-        }
-         */
     }
 }
 

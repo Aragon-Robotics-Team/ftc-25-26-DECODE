@@ -380,6 +380,22 @@ public class TeleOp extends CommandOpMode {
             lastVoltageCheck.reset();
         }
 
+        //Sensor fusion to fix pinpoint drift
+        // 1. Read current Pinpoint data
+        Pose currentPose = follower.getPose();
+
+        // 2. Ask Subsystem for a correction
+        double x = follower.getPose().getX();
+        double y = follower.getPose().getY();
+        double heading = follower.getPose().getHeading();
+        Pose correction = limelight.getFusionCorrection(x, y, heading);
+
+        // 3. Apply correction if one exists
+        if (correction != null) {
+            follower.setPose(correction);
+            telemetry.addLine("LOCALIZATION RESET TRIGGERED");
+        }
+
 //        telemetry.addData("BALLS", Arrays.toString(spindexer.getBalls()));
 
         telemetry.addData("Loop Time", timer.milliseconds());
