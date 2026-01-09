@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -9,6 +11,8 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -101,7 +105,7 @@ public class LimelightSubsystem extends SubsystemBase {
         return null;
     }
 
-    public Pose getFusionCorrection(double currentX, double currentY, double currentHeading) {
+    public Pose2D getFusionCorrection(double currentX, double currentY, double currentHeading) {
         // If we are in Intake mode (Pipeline 0), we cannot localize. Return null immediately.
         if (currentPipeline != 1) return null;
 
@@ -117,7 +121,8 @@ public class LimelightSubsystem extends SubsystemBase {
                 double drift = Math.hypot(currentX - visionX, currentY - visionY);
 
                 if (drift > 2.0 && drift < 48.0) {
-                    return new Pose(visionX, visionY, currentHeading);
+                    Pose2D correction =  new Pose2D(DistanceUnit.INCH, visionX, visionY, AngleUnit.RADIANS, currentHeading);
+                    Pose correctionPedro = PoseConverter.pose2DToPose(correction, InvertedFTCCoordinates.INSTANCE);
                 }
             }
         }
