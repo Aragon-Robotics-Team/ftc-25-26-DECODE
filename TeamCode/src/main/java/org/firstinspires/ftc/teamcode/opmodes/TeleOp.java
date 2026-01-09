@@ -25,7 +25,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.RobotConstants.Motifs;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -35,8 +35,6 @@ import org.firstinspires.ftc.teamcode.subsystems.LEDSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.function.Supplier;
 
@@ -85,9 +83,6 @@ public class TeleOp extends CommandOpMode {
     private boolean slowMode = false;
     public ElapsedTime lastVoltageCheck = new ElapsedTime();
 
-    //variable shooter target
-    double closeShooterTarget = 1200;
-    double farShooterTarget = 1500;
     //true = controlling far
     boolean isAdjustingFar;
 
@@ -133,6 +128,10 @@ public class TeleOp extends CommandOpMode {
     double lastSeenX;
     double headingVector;
 
+    //color array and spindexer moving
+    boolean spindexerBusy;
+    boolean ball = false;
+
     @Override
     public void initialize () {
         //systems and pedro
@@ -154,7 +153,6 @@ public class TeleOp extends CommandOpMode {
         register(intake, shooter, spindexer, gate, colorSensors, led, limelight);
 
         spindexer.set(75);
-        shooter.setHood(0.45);
         gate.down();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -170,6 +168,8 @@ public class TeleOp extends CommandOpMode {
         //command binding
         SelectCommand intakeSelectCommand = new SelectCommand(this::intakeCommand);
 
+        //Overview of controls:
+        //D1 controls drivetrain, intake and shooter/snap to angle. Spindexer shuold automatically advance when color sensor reads something
         //Driver 1
         driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
@@ -191,12 +191,6 @@ public class TeleOp extends CommandOpMode {
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {spindexer.moveSpindexerBy(-120);})
         );
-        driver1.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new InstantCommand(() -> {
-                    gamepad1.rumbleBlips(3);
-                    manualControl = false;
-                })
-        );
 
 
         new Trigger(() -> driver1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5)
@@ -207,22 +201,8 @@ public class TeleOp extends CommandOpMode {
                 .whenInactive(new InstantCommand(() -> slowMode = false));
 
         //Driver 2
-        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
-                gate::up
-        );
-        driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
-                gate::down
-        );
-        driver2.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(
-                new InstantCommand(() -> {
-                    shooter.setHood(clamp(shooter.getHoodPos() + 0.01, 0.0, 1.0));
-                })
-        );
-        driver2.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
-                new InstantCommand(() -> {
-                    shooter.setHood(clamp(shooter.getHoodPos() - 0.01, 0.0, 1.0));
-                })
-        );
+        //TODO: add ability to switch between shooting in motif order and shooting in any order (motif XXX)
+
         driver2.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new InstantCommand(() -> {
                     if (motifs == PPG) {
@@ -249,15 +229,10 @@ public class TeleOp extends CommandOpMode {
                     }
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenActive( //close distance
-                new InstantCommand(() -> {
-                    shooter.setTargetLinearSpeed(closeShooterTarget);
-                })
-        );
         new Trigger(
-                () -> driver2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5) //far distance
+                () -> driver1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5) //far distance
                     .whileActiveContinuous(new InstantCommand(() -> {
-                        shooter.setTargetLinearSpeed(farShooterTarget);
+                        manualControl = false;
                     })
                 );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenActive(  //turn off shooter
@@ -266,48 +241,9 @@ public class TeleOp extends CommandOpMode {
                     gamepad2.rumbleBlips(1);
                 })
         );
-        // Driver 2: rotate field-centric frame by ±90 degrees
-        driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
-                .whenPressed(new InstantCommand(() -> fieldOffset += Math.toRadians(45)));
+        //TODO: driver 2 reset heading to 0
 
-        driver2.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)
-                .whenPressed(new InstantCommand(() -> fieldOffset -= Math.toRadians(45)));
-
-        new Trigger(
-                () -> driver2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) //intake
-                .whenActive(new InstantCommand(() -> {
-                    isAdjustingFar = true;
-                        })
-                )
-                .whenInactive(new InstantCommand(() -> {
-                    isAdjustingFar = false;
-                        })
-                );
-
-        driver2.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new InstantCommand(() -> {
-                    if (isAdjustingFar) {
-                        farShooterTarget += 20;
-                        gamepad2.rumbleBlips(1);
-                    } else{
-                        closeShooterTarget += 20;
-                        gamepad2.rumbleBlips(1);
-                    }
-                })
-        );
-        driver2.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
-                new InstantCommand(() -> {
-                    if (isAdjustingFar) {
-                        farShooterTarget -= 20;
-                        gamepad2.rumbleBlips(1);
-                    } else{
-                        closeShooterTarget -= 20;
-                        gamepad2.rumbleBlips(1);
-                    }
-                })
-        );
     }
-    int cameraReads = 0;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -386,6 +322,13 @@ public class TeleOp extends CommandOpMode {
             lastVoltageCheck.reset();
         }
 
+        //spindexer and array logic
+        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
+            spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
+            if (colorSensors.doesLastResultHaveBall() && spindexer.getBalls()[2].equals(RobotConstants.BallColors.NONE)) {
+                spindexer.moveSpindexerBy(120);
+            }
+        }
 
 //        telemetry.addData("BALLS", Arrays.toString(spindexer.getBalls()));
 
@@ -403,14 +346,9 @@ public class TeleOp extends CommandOpMode {
         telemetry.addData("last pid power to heading", headingVector);
 
         telemetry.addData("------------------","");
-
-        telemetry.addData("shooter close amount ", closeShooterTarget);
-        telemetry.addData("shooter far amount ", farShooterTarget);
         telemetry.addData("shooter target velocity ", shooter.getTargetVelocity());
         telemetry.addData("shooter actual velocity ", shooter.getActualVelocity());
         telemetry.addData("shooter linear speed ", shooter.getFlywheelLinearSpeed());
-        telemetry.addData("shooter hood pos ", shooter.getHoodPos());
-
 
         telemetry.addData("------------------","");
 
@@ -448,7 +386,6 @@ public class TeleOp extends CommandOpMode {
 //        // ONE telemetry block, no ifs
 //        telemetry.addData("Sensor 1 Left", color1 + " | raw: " + Arrays.toString(hsv1));
 //        telemetry.addData("Sensor 2 Right", color2 + " | raw: " + Arrays.toString(hsv2));
-        telemetry.addData("isAdjustingFar?", isAdjustingFar);
 
 
         timer.reset();

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
@@ -90,42 +91,74 @@ public class SpindexerSubsystem extends SubsystemBase {
         return (absoluteEncoder.getVoltage() / 3.2 * 360) % 360;
     }
 
+    /**
+     * @return the spindexer's position in unwrapped form (can be negative or positive; not limited to 0 and 360 degrees)
+     */
     public double getCurrentPosition() {
         return continuousPosition;
     }
 
+    /**
+     * @return the spindexer's position in wrapped form (limited between 0 and 360 degrees)
+     */
     public double getWrappedPosition() {
         return getAbsolutePosition360();
     }
 
+    /**
+     * @return the spindexer's target position
+     */
     public double getPIDSetpoint() {
         return pid.getSetPoint();
     }
+    /**
+     * @return gets the power output for telemetry
+     */
     public double getOutput() {
         return output;
     }
 
+    /**
+     * @return checks how far the spindexer is from target position, returns if it is close enough
+     */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
         return error < 5;
     }
 
+    /**
+     * @return if the spindexer is moving slowly
+     */
     public boolean isLowVelocity() {
         return spindexer.getVelocity() < 20;
     }
 
+    /**
+     * @return if the spindexer is near its target position and not moving quickly
+     */
     public boolean availableToSenseColor() {
         return isNearTargetPosition() && isLowVelocity();
     }
 
+    /**
+     * @param balls the ball array
+     * @return used to clear the third ball after shooting it out the robot
+     */
     public void setBalls(BallColors[] balls) {
         this.balls = balls;
     }
 
+    /**
+     * @return the array of enums for ball sorting
+     */
     public BallColors[] getBalls() {
         return balls;
     }
 
+    /**
+     * @param n number of balls
+     * @return shifts the array of balls (colors) based on when/if the balls enter/leave the robot
+     */
     public void shiftBallsArrayBy(int n) {
         n = ((n % 3) + 3) % 3;
         if (n == 0) return;
@@ -135,6 +168,31 @@ public class SpindexerSubsystem extends SubsystemBase {
         else if (n == 2) { balls[0] = c; balls[1] = a; balls[2] = b; }
     }
 
+    /**
+     * @param sensor1 color sensor1 result
+     * @param sensor2 color sensor2 result
+     * @param backSensor back color sensor result
+     * @return updates the ball array with specific color if the color sensors detect a ball in that section (index 0 for intake, index 1 for middle, index 2 for shooter)
+     */
+    public void handleUpdateArray(NormalizedRGBA sensor1, NormalizedRGBA sensor2, NormalizedRGBA backSensor) {
+            if (ColorSensorsSubsystem.colorIsGreenIntake(sensor1) || ColorSensorsSubsystem.colorIsGreenIntake(sensor2)) {
+                balls[0] = GREEN;
+            } else if (ColorSensorsSubsystem.colorIsPurpleIntake(sensor1) || ColorSensorsSubsystem.colorIsPurpleIntake(sensor2)) {
+                balls[0] = PURPLE;
+            }
+
+            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
+                balls[1] = GREEN;
+            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
+                balls[1] = PURPLE;
+            }
+    }
+
+    /**
+     * @param index
+     * @param color
+     * @return sets the ball color at a specific index, for intervention
+     */
     public void setBallAt(int index, BallColors color) {
         balls[index] = color;
     }
