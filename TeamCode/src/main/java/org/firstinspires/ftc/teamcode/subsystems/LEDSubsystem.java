@@ -18,7 +18,7 @@ public class LEDSubsystem extends SubsystemBase {
     public LEDState ledstate = LEDState.OFF;
     public LEDSubsystem(final HardwareMap hMap) {
         led = hMap.get(Servo.class, "led");
-        blinkinLights = hMap.get(RevBlinkinLedDriver.class, "blinkinLights");
+        blinkinLights = hMap.get(RevBlinkinLedDriver.class, "blinkin");
     }
 
     public void setPosition(double pos) {
