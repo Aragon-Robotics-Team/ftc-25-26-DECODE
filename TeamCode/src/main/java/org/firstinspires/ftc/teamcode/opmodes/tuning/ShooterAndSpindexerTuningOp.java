@@ -6,14 +6,17 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Shooter PID Tuning", group = "Tuning")
-public class ShooterPIDTuningOp extends OpMode {
+@TeleOp(name = "Shooter And Spindexer TEst and intake aswell", group = "Tuning")
+public class ShooterAndSpindexerTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
-
+    private SpindexerSubsystem spindexerSubsystem;
+    private IntakeSubsystem intake;
     // --- DASHBOARD VARIABLES ---
     public static double p = -0.008;
     public static double i = 0.0;
@@ -36,6 +39,9 @@ public class ShooterPIDTuningOp extends OpMode {
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         shooterSubsystem = new ShooterSubsystem(hardwareMap);
+        spindexerSubsystem = new SpindexerSubsystem(hardwareMap);
+        intake = new IntakeSubsystem(hardwareMap);
+        spindexerSubsystem.set(75);
 
         telemetry.addLine("Initialized.");
         telemetry.addLine("1. Open Dashboard.");
@@ -45,6 +51,9 @@ public class ShooterPIDTuningOp extends OpMode {
 
     @Override
     public void loop() {
+        if (gamepad1.aWasPressed()) {
+            spindexerSubsystem.moveSpindexerBy(120);
+        }
         // 1. Update PIDF from Dashboard
         shooterSubsystem.setPIDF(p, i, d, f);
 
@@ -57,9 +66,18 @@ public class ShooterPIDTuningOp extends OpMode {
                 shooterSubsystem.setTargetLinearSpeed(targetSpeedInches);
                 break;
         }
+        if (gamepad1.right_bumper) {
+            intake.set(IntakeSubsystem.IntakeState.INTAKING);
+        } else if (gamepad1.left_bumper) {
+            intake.set(IntakeSubsystem.IntakeState.REVERSE);
+        } else {
+            intake.set(IntakeSubsystem.IntakeState.STILL);
+        }
 
         // 3. Run Subsystem Loop (Calculates PID)
         shooterSubsystem.periodic();
+        spindexerSubsystem.periodic();
+        intake.periodic();
 
         // 4. Telemetry for Graphing
         double target = shooterSubsystem.getTargetTicks();

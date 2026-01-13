@@ -1,4 +1,4 @@
-//package org.firstinspires.ftc.teamcode.opmodes.auto;
+//package org.firstinspires.ftc.teamcode.opmodes.auto.lm2archive;
 //
 //import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.*;
 //
@@ -6,7 +6,6 @@
 //
 //import com.acmerobotics.dashboard.config.Config;
 //import com.pedropathing.follower.Follower;
-//import com.pedropathing.geometry.BezierCurve;
 //import com.pedropathing.geometry.BezierLine;
 //import com.pedropathing.geometry.Pose;
 //import com.pedropathing.paths.PathChain;
@@ -25,7 +24,7 @@
 //
 //import org.firstinspires.ftc.teamcode.RobotConstants;
 //import org.firstinspires.ftc.teamcode.commands.MoveSpindexerCommand;
-//import org.firstinspires.ftc.teamcode.commands.ShootBallSequenceCommandSequence;
+//import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 //import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 //import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 //import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -38,12 +37,14 @@
 //import java.util.ArrayList;
 //
 //
+//@Disabled
 //@Config
-//@Autonomous(name = "Red 12ball + gate🦅", group = "angryBirds", preselectTeleOp = "Alpha Teleop")
-//public class Red12AutoGate extends CommandOpMode {
+//@Autonomous(name = "Red 12ball no gate🦅", group = "angryBirds", preselectTeleOp = "Teleop")
+//public class Red12Auto extends CommandOpMode {
 //    //paths
 //    private final ArrayList<PathChain> paths = new ArrayList<>();
 //    public Pose currentPose;
+//
 //    //voltage compensation
 //    public VoltageSensor voltageSensor;
 //    double currentVoltage = 14;
@@ -53,7 +54,7 @@
 //    private Follower follower;
 //
 //    //update starting pose
-//    public static Pose startingPose = new Pose(123.36079077429983,122.17462932454696,Math.toRadians(45)); //find actual statring pos
+//    public static Pose startingPose = new Pose(122.361,121.175,Math.toRadians(49));
 //    private IntakeSubsystem intake;
 //    private ShooterSubsystem shooter;
 //    private SpindexerSubsystem spindexer;
@@ -61,23 +62,16 @@
 //    private GateSubsystem gate;
 //    private LEDSubsystem led;
 //    private RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{UNKNOWN,UNKNOWN,UNKNOWN};
-//    PathChain shimmy;
 //    public void buildPaths(Follower follower) {
 //        follower.setStartingPose(startingPose);
-//        shimmy = follower.pathBuilder()
-//                .addPath(
-//                        new BezierCurve(new Pose(120.000, 82.000), new Pose(80.000, 77.000), new Pose(123.000, 70))
-//                )
-//                .setConstantHeadingInterpolation(Math.toRadians(0))
-//                .build();
 //        //shoot first
 //        //0
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(122.361, 121.175), new Pose(90, 84))
+//                        new BezierLine(new Pose(122.361, 121.175), new Pose(91, 84))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(45))
+//                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
 //                .build()
 //        );
 //
@@ -86,9 +80,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(90, 84), new Pose(96, 82.000))
+//                        new BezierLine(new Pose(91, 84), new Pose(96, 82.000))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(0))
+//                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
 //                .build()
 //        );
 //
@@ -106,9 +100,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(123, 70), new Pose(90, 84))
+//                        new BezierLine(new Pose(120, 82), new Pose(91, 84))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
+//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
 //                .build()
 //        );
 //
@@ -116,9 +110,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(90,  84), new Pose(96, 55))
+//                        new BezierLine(new Pose(91,  84), new Pose(91, 55))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(0))
+//                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
 //                .build()
 //        );
 //
@@ -127,7 +121,7 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(96, 55), new Pose(130.000, 55))
+//                        new BezierLine(new Pose(91, 55), new Pose(130.000, 55))
 //                )
 //                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
 //                .build()
@@ -147,9 +141,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(115.000, 55), new Pose(88, 84))
+//                        new BezierLine(new Pose(115.000, 55), new Pose(91, 84))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
+//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(51))
 //                .build()
 //        );
 //
@@ -157,9 +151,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(88, 84), new Pose(96, 31))
+//                        new BezierLine(new Pose(91, 84), new Pose(91, 31))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(0))
+//                .setLinearHeadingInterpolation(Math.toRadians(51), Math.toRadians(0))
 //                .build()
 //        );
 //
@@ -168,7 +162,7 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(96, 31), new Pose(130, 31))
+//                        new BezierLine(new Pose(91, 31), new Pose(130, 31))
 //                )
 //                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
 //                .build()
@@ -188,9 +182,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(125, 31), new Pose(88, 84))
+//                        new BezierLine(new Pose(125, 31), new Pose(91, 84))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
+//                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
 //                .build()
 //        );
 //
@@ -199,9 +193,9 @@
 //        paths.add(follower
 //                .pathBuilder()
 //                .addPath(
-//                        new BezierLine(new Pose(88, 84), new Pose(97, 80))
+//                        new BezierLine(new Pose(91, 84), new Pose(99, 78))
 //                )
-//                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(45))
+//                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
 //                .build()
 //        );
 //
@@ -209,7 +203,7 @@
 //
 //    private SequentialCommandGroup intakeArtifacts() {
 //        return new SequentialCommandGroup(
-//                new InstantCommand(() -> intake.setSpeed(IntakeSubsystem.IntakeState.INTAKING)),
+//                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
 //                new ParallelRaceGroup(
 //                        new WaitForColorCommand(colorsensor),
 //                        new WaitCommand(1500)
@@ -268,18 +262,19 @@
 //                new RunCommand(() -> follower.update()),
 //                new SequentialCommandGroup(
 //                        new InstantCommand(() -> {
-//                            shooter.setTargetVelocity(1250);
-//                            shooter.setHood(0.45); //Placeholder
+//                            shooter.setTargetLinearSpeed(1200);
 //                            gate.down();
 //                            follower.setMaxPower(0.8);
 //                            spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, PURPLE});
 //                        }), //start shoot
 //                        new FollowPathCommand(follower, paths.get(0), true), //drive to shooting pos
-//                        new ShootBallSequenceCommandSequence(shooter, spindexer, gate, motif), //shoot motif
-//                        new InstantCommand(() -> {follower.setMaxPower(1);}),
+//                        new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif), //shoot motif
+//                        new InstantCommand(() -> {
+//                            follower.setMaxPower(1);
+//                            shooter.setTargetLinearSpeed(1200);}),
 //                        //cycle one
 //                        new ParallelCommandGroup(
-//                                new InstantCommand(() -> {intake.setSpeed(IntakeSubsystem.IntakeState.INTAKING);}),
+//                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
 //                                new FollowPathCommand(follower, paths.get(1), true) //drives to balls and lines itself up to intake
 //                        ),
 //                        new ParallelCommandGroup(
@@ -299,17 +294,17 @@
 //                        new InstantCommand(() -> {
 //                            follower.setMaxPower(0.6);
 //                        }),
-//                        new FollowPathCommand(follower, shimmy, true),
+////                        new FollowPathCommand(follower, shimmy, true),
 //                        new InstantCommand(() -> {
 //                            follower.setMaxPower(1);
 //                        }),
 //                        new FollowPathCommand(follower, paths.get(3), true), // returning to shooting pos
-//                        new ShootBallSequenceCommandSequence(shooter, spindexer, gate, motif), //shoot motif
+//                        new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif), //shoot motif
 //
 //                        //cycle two
 //                        new ParallelCommandGroup(
 //                                new InstantCommand(() -> follower.setMaxPower(0.7)),
-//                                new InstantCommand(() -> {intake.setSpeed(IntakeSubsystem.IntakeState.INTAKING);}),
+//                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
 //                                new FollowPathCommand(follower, paths.get(4), true) //drives to balls and lines itself up to intake
 //                        ),
 //                        new ParallelCommandGroup(
@@ -328,18 +323,18 @@
 //                        new FollowPathCommand(follower, paths.get(6), true),
 //
 //                        new FollowPathCommand(follower, paths.get(7), true), //return to shooting pos
-//                        new ShootBallSequenceCommandSequence(shooter, spindexer, gate, motif), //shoot motif
+//                        new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif), //shoot motif
 //
 //                        //cycle three
 //                        new ParallelCommandGroup(
 //                                new InstantCommand(() -> follower.setMaxPower(0.7)),
-//                                new InstantCommand(() -> {intake.setSpeed(IntakeSubsystem.IntakeState.INTAKING);}),
+//                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
 //                                new FollowPathCommand(follower, paths.get(8), true) //drives to balls and lines itself up to intake
 //                        ),
 //                        new ParallelCommandGroup(
 //                                intakeArtifacts(),
 //                                new ParallelRaceGroup(
-//                                        new FollowPathCommand(follower, paths.get(9), true), //drive and pick up balls
+//                                        new FollowPathCommand(follower, paths.get(9), true, 0.5), //drive and pick up balls
 ////                                        new WaitForRobotStuckCommand(follower),
 //                                        new WaitCommand(2000)
 //                                )
@@ -352,12 +347,12 @@
 //                        new FollowPathCommand(follower, paths.get(10), true),
 //
 //                        new FollowPathCommand(follower, paths.get(11), true), //return to shooting pos
-//                        new ShootBallSequenceCommandSequence(shooter, spindexer, gate, motif), //shoot motif
+//                        new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif), //shoot motif
 //
 //                        //move off shooting line so that you get extra points theoretically
 //                        new FollowPathCommand(follower, paths.get(12), true),
 //
-//                        new InstantCommand(() -> {shooter.setTargetVelocity(0);})
+//                        new InstantCommand(() -> {shooter.setTargetLinearSpeed(0);})
 //                )
 //        );
 //
@@ -389,7 +384,6 @@
 //        telemetry.addData("spindexer output", spindexer.getOutput());
 //        telemetry.addData("spindexer setpoint", spindexer.getPIDSetpoint());
 //        telemetry.addData("spindexer pos", spindexer.getCurrentPosition());
-//        telemetry.addData("is spindexer ready to read color ", spindexer.availableToSenseColor());
 //        telemetry.addData("spindexer's balls", spindexer.getBalls());
 //
 //        telemetry.addData("------------------",null);
@@ -409,8 +403,10 @@
 //        super.run();
 //
 //    }
+//
 //    @Override
 //    public void end() {
 //        blackboard.put("endpose", currentPose);
+//        super.end();
 //    }
 //}

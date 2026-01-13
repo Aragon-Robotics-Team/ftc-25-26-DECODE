@@ -1,29 +1,42 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.hardware.ServoEx;
 
 public class GateSubsystem extends SubsystemBase {
-//    ServoEx gateLeft;
-    ServoEx gateRight;
-    public double UP = 0.55;
-    public double DOWN = 0.40;
+    ServoEx gate;
+    AnalogInput gateEncoder;
+    public final double UP = 0.60;
+    public final double DOWN = 0.45;
+    public final double UP_VOLTAGE = 1.953; //Volts
+    public final double DOWN_VOLTAGE = 1.514; //Volts
+
     public GateSubsystem(final HardwareMap hMap) {
-//        gateLeft = new ServoEx(hMap, "gateLeft");
-        gateRight = new ServoEx(hMap, "gateRight");
-//        gateLeft.setInverted(false);
-        gateRight.setInverted(true);
+        gate = new ServoEx(hMap, "gate");
+        gateEncoder = hMap.get(AnalogInput.class, "gateEncoder");
+        gate.setInverted(true);
     }
+    public enum GateState {
+        UP, DOWN;
+    }
+    public GateState gateState;
     public void up() {
-//        gateLeft.set(UP);
-        gateRight.set(UP);
+        gate.set(UP);
+        gateState = GateState.UP;
     }
     public void down() {
-//        gateLeft.set(DOWN);
-        gateRight.set(DOWN);
+        gate.set(DOWN);
+        gateState = GateState.DOWN;
     }
-    public double getPosition() {
-        return gateRight.getRawPosition();
+    public double getEncoderVoltage() {
+        return gateEncoder.getVoltage();
     }
+    public boolean isAtTarget() {
+        //is gate at position
+        //add wait for gate finish command
+        return Math.abs(gateEncoder.getVoltage() - UP_VOLTAGE) < 0.1 || Math.abs(gateEncoder.getVoltage() - DOWN_VOLTAGE) < 0.1;
+    }
+
 }

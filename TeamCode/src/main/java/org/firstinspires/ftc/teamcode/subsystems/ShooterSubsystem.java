@@ -12,12 +12,10 @@ import com.seattlesolvers.solverslib.util.InterpLUT;
 public class ShooterSubsystem extends SubsystemBase {
     //Note: I changed the motor type from 312 rpm to bare (6k i think).
     // We might have to redo PID and find new velocities.
-    //Delete this once done :)
+    // TODO: Delete this once done :)
     private Motor shooter1;
     private Motor shooter2;
-    private ServoEx hood;
     private MotorGroup shooter;
-    private double hoodPos = 0.6;
     public double getTargetVelocity() {
         return flywheelController.getSetPoint();
     }
@@ -36,11 +34,9 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.BARE);
         shooter2 = new Motor(hMap, "shooter2", Motor.GoBILDA.BARE);
-        hood = new ServoEx(hMap, "pivot");
 
         shooter1.setInverted(true); //one has to be backwards
         shooter2.setInverted(false);
-        hood.setInverted(false);
         shooter1.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         shooter2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         
@@ -51,8 +47,32 @@ public class ShooterSubsystem extends SubsystemBase {
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
         lut.add(10, 50); //placeholder
-        lut.add(10, 50); //placeholder
+        lut.add(12, 55); //placeholder
         lut.createLUT();
+    }
+    public void setPIDF(double p, double i, double d, double f) {
+        this.kPOriginal = p;
+        this.kFOriginal = f;
+        this.flywheelController.setPIDF(p, i, d, f);
+
+        // Temporarily apply directly to current kP/kF in case voltage comp isn't running
+        this.kP = p;
+        this.kF = f;
+    }
+
+    /**
+     * Sets a raw target in Ticks Per Second (bypasses linear math).
+     * Useful for initial feedforward tuning.
+     */
+    public void setTargetTicks(double ticksPerSec) {
+        flywheelController.setSetPoint(ticksPerSec);
+    }
+
+    /**
+     * @return The target velocity in Ticks Per Second
+     */
+    public double getTargetTicks() {
+        return flywheelController.getSetPoint();
     }
     public void setTargetLinearSpeed(double vel) {
         double ticksPerRev = 28.0;
@@ -65,7 +85,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     *
+     * hardware call on encoder
      * @return Linear speed of flywheel in in/s
      */
     public double getFlywheelLinearSpeed() {
@@ -82,22 +102,10 @@ public class ShooterSubsystem extends SubsystemBase {
         kP = compensation * kPOriginal;
         kF = compensation * kFOriginal;
     }
-    public void setHood(double ticks) {
-        hoodPos = ticks;
-    }
-
-    /**
-     *
-     * @return last commanded hood pos
-     */
-    public double getHoodPos() {
-        return hoodPos;
-    }
     @Override
     public void periodic() {
         flywheelController.setF(kF);
         flywheelController.setP(kP);
-        hood.set(hoodPos);
         shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? shooter1.getCorrectedVelocity() : 0));
     }
 
