@@ -5,6 +5,9 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
 
@@ -15,10 +18,13 @@ import java.util.Locale;
 public class ColorSensorTuning extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
+    public GamepadEx driver1;
+    float value = 27.0f;
 
     @Override
     public void init() {
         colorSubsystem = new ColorSensorsSubsystem(hardwareMap);
+        driver1 = new GamepadEx(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Ready to tune color sensors.");
         telemetry.update();
@@ -35,6 +41,22 @@ public class ColorSensorTuning extends OpMode {
         float[] hsv1 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor1Result());
         float[] hsv2 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor2Result());
         float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
+
+        // get and set gain
+        driver1.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
+                new InstantCommand(() -> {
+                    value++;
+                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+                })
+        );
+        driver1.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
+                new InstantCommand(() -> {
+                    value--;
+                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+                })
+        );
 
         // 3. DISPLAY DATA
 

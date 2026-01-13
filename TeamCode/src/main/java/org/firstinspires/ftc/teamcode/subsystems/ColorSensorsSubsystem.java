@@ -17,11 +17,11 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     private NormalizedRGBA backResult = null;
 
 
-    public final static float[] intakeGreenHigherHSV = {174f, 0.86f, 0.31f};
-    public final static float[] intakeGreenLowerHSV  = {134f, 0.46f, 0.0f};
+    public final static float[] intakeGreenHigherHSV = {171f, 0.715f, 0.285f};
+    public final static float[] intakeGreenLowerHSV  = {131f, 0.315f, 0.0f};
 
-    public final static float[] intakePurpleHigherHSV = {238.11765f, 0.5617021f, 0.29681849f};
-    public final static float[] intakePurpleLowerHSV  = {198.11765f, 0.1617021f, 0.0f};
+    public final static float[] intakePurpleHigherHSV = {204f, 0.57f, 0.279f};
+    public final static float[] intakePurpleLowerHSV  = {164f, 0.17f, 0.0f};
 
     public final static float[] backGreenHigherHSV = {174f, 0.86f, 0.31f};
     public final static float[] backGreenLowerHSV  = {134f, 0.46f, 0.0f};
@@ -43,6 +43,12 @@ public class ColorSensorsSubsystem extends SubsystemBase {
         backSensor = hMap.get(NormalizedColorSensor.class, "colorb");
         backSensor.setGain(27.0f);
     }
+    public void setGain(NormalizedColorSensor sensor, float gain) {
+        sensor.setGain(gain);
+    }
+    public NormalizedColorSensor getIntakeSensor1() {return intakeSensor1;}
+    public NormalizedColorSensor getIntakeSensor2() {return intakeSensor2;}
+    public NormalizedColorSensor getBackSensor() {return backSensor;}
     public NormalizedRGBA getIntakeSensor1Result() {
         return intakeSensor1Result;
     }
