@@ -16,7 +16,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(16.96435);
+            .mass(16.96435)
+            .forwardZeroPowerAcceleration(-30.05253434844919)
+            .lateralZeroPowerAcceleration(-58.4651541912949)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0, 0))
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.04,0.0,0,0.6,0.01))
+            .secondaryDrivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.0, 0.6, 0.01))
+            .centripetalScaling(0.001);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .leftFrontMotorName("leftFront")
@@ -28,15 +35,17 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .useBrakeModeInTeleOp(true)
+            .xVelocity(67.66047920767717)
+            .yVelocity(52.36909592996432)
             .maxPower(1.0);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(5.625) //we measured using ruler and taking length and width and dividing by two
-            .strafePodX(-1.125)
+            .forwardPodY(4.25) //we measured using ruler and taking length and width and dividing by two
+            .strafePodX(-3.25)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     /**
