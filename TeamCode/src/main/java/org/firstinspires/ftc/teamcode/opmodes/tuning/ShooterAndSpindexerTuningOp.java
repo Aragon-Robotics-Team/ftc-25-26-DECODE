@@ -11,14 +11,14 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Shooter And Spindexer TEst and intake aswell", group = "Tuning")
+@TeleOp(name = "Lucas Berliner Test Mode OK", group = "Tuning")
 public class ShooterAndSpindexerTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
     private SpindexerSubsystem spindexerSubsystem;
     private IntakeSubsystem intake;
     // --- DASHBOARD VARIABLES ---
-    public static double p = -0.008;
+    public static double p = -0.014;
     public static double i = 0.0;
     public static double d = 0.0;
     public static double f = -0.00052;
@@ -53,6 +53,15 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
     public void loop() {
         if (gamepad1.aWasPressed()) {
             spindexerSubsystem.moveSpindexerBy(120);
+        }
+        if (gamepad1.bWasPressed()) {
+            spindexerSubsystem.moveSpindexerBy(-120);
+        }
+        if (gamepad1.dpad_up) {
+            targetTicks = 1500;
+        }
+        else if (gamepad1.dpad_down) {
+            targetTicks = 0;
         }
         // 1. Update PIDF from Dashboard
         shooterSubsystem.setPIDF(p, i, d, f);
@@ -90,6 +99,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         // Helpful helper to see if math works
         if(tuningMode == Mode.LINEAR_SPEED) {
             telemetry.addData("Target Linear (in/s)", targetSpeedInches);
+            telemetry.addData("Actual Linear (in/s)", shooterSubsystem.getFlywheelLinearSpeed());
         }
 
         telemetry.update();

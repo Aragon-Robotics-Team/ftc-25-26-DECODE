@@ -25,7 +25,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.008;
+    double kPOriginal = -0.014;
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
@@ -46,8 +46,9 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.set(0);
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
-        lut.add(10, 50); //placeholder
-        lut.add(12, 55); //placeholder
+        lut.add(94, 510);
+        lut.add(132, 600);
+        lut.add(144, 640);
         lut.createLUT();
     }
     public void setPIDF(double p, double i, double d, double f) {

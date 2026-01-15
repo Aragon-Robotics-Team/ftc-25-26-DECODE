@@ -21,7 +21,7 @@ public class SpindexerSubsystem extends SubsystemBase {
 
     // PID (tune these)
     private final double kPOriginal = 0.0159;
-    private double kP = 0.0159;
+    private double kP = 0.018;//0.0159 (01/14/26)
     public void updatePIDVoltage(double voltage) {
         double compensation = 13.5 / voltage;
         kP = compensation * kPOriginal;

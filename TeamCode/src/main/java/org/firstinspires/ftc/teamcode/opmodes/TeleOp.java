@@ -138,10 +138,10 @@ public class TeleOp extends CommandOpMode {
 
     }
     void initializeSystems() {
+        startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(0,0,0));
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose);
         follower.setMaxPower(1.0);
-        startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(0,0,0));
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
         spindexer = new SpindexerSubsystem(hardwareMap);
