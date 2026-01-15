@@ -119,7 +119,9 @@ public class Red18SortOverflowAuto extends CommandOpMode {
 
             intakeFirstRow = follower
                     .pathBuilder()
-
+                    .addPath(
+                            new BezierLine(new Pose(88.400, 81.800), new Pose(125.000, 83.000))
+                    )
                     .build();
 
             shootFirstRow = follower
@@ -232,7 +234,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                 //Preload
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.shootPreload, true),
-                        new InstantCommand(() -> {
+                        new RunCommand(() -> {
                             if (follower.getPathCompletion() > 0.4) {
                                 Object motifid = limelight.detectMotif(limelight.getResult());
                                 if (motifid != null) {
@@ -271,13 +273,13 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                 new FollowPathCommand(follower, paths.shootFirstRow),
                 new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
 
-                //Third row
-                new ParallelRaceGroup(
-                        new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000),
-                        intakeArtifacts()
-                ),
-                new FollowPathCommand(follower, paths.shootThirdRow),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
+//                //Third row
+//                new ParallelRaceGroup(
+//                        new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000),
+//                        intakeArtifacts()
+//                ),
+//                new FollowPathCommand(follower, paths.shootThirdRow),
+//                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
 
                 //Ramp cycle
                 new FollowPathCommand(follower, paths.intakeRamp, true),
