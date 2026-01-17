@@ -8,7 +8,7 @@ import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
 
 public class IntakeSubsystem extends SubsystemBase {
     public enum IntakeState {
-        STILL, INTAKING, REVERSE;
+        STILL, INTAKING, REVERSE, INTAKEREVERSE;
     }
     public IntakeState intakeState = IntakeState.STILL;
     private DcMotor intakeWheels;
@@ -25,18 +25,23 @@ public class IntakeSubsystem extends SubsystemBase {
         switch(state) {
             case STILL:
                 intakeWheels.setPower(0.0);
-                sideWheel.setPower(0.0);
-                sideWheel2.setPower(0.0);
+                sideWheel.setPower(-1.0);
+                sideWheel2.setPower(1.0);
                 break;
             case INTAKING:
                 intakeWheels.setPower(1.0);
-                sideWheel.setPower(1.0);
-                sideWheel2.setPower(-1.0);
+                sideWheel.setPower(-1.0);
+                sideWheel2.setPower(1.0);
                 break;
             case REVERSE:
                 intakeWheels.setPower(-1.0);
                 sideWheel.setPower(-1.0);
                 sideWheel2.setPower(1.0);
+                break;
+            case INTAKEREVERSE:
+                intakeWheels.setPower(-1.0);
+                sideWheel.setPower(1.0);
+                sideWheel2.setPower(-1.0);
                 break;
         }
         intakeState = state;

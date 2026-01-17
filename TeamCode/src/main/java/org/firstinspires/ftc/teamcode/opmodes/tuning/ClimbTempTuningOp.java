@@ -90,11 +90,11 @@ public class ClimbTempTuningOp extends OpMode {
     public void loop() {
         climb1.setPosition(climb1pos);
         climb2.setPosition(climb2pos);
-        if (gamepad1.a) {
+        if (gamepad1.a) { //up
             climb1pos = 0.52;
             climb2pos = 0.5;
         }
-        if (gamepad1.b) {
+        if (gamepad1.b) { //down
             climb1pos = 1.0;
             climb2pos = 0.11;
         }

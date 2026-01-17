@@ -17,11 +17,11 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     private NormalizedRGBA backResult = null;
 
 
-    public final static float[] intakeGreenHigherHSV = {171f, 0.715f, 0.285f};
-    public final static float[] intakeGreenLowerHSV  = {131f, 0.315f, 0.0f};
+    public final static float[] intakeGreenHigherHSV = {171f, 0.59f, 0.1575f};
+    public final static float[] intakeGreenLowerHSV  = {131f, 0.39f, 0.0f};
 
-    public final static float[] intakePurpleHigherHSV = {204f, 0.57f, 0.279f};
-    public final static float[] intakePurpleLowerHSV  = {164f, 0.17f, 0.0f};
+    public final static float[] intakePurpleHigherHSV = {262f, 0.32f, 0.159f};
+    public final static float[] intakePurpleLowerHSV  = {222f, 0.12f, 0.0f};
 
     public final static float[] backGreenHigherHSV = {174f, 0.86f, 0.31f};
     public final static float[] backGreenLowerHSV  = {134f, 0.46f, 0.0f};
@@ -35,13 +35,13 @@ public class ColorSensorsSubsystem extends SubsystemBase {
 
     public ColorSensorsSubsystem(final HardwareMap hMap) {
         intakeSensor1 = hMap.get(NormalizedColorSensor.class, "colori1");
-        intakeSensor1.setGain(27.0f);
+        intakeSensor1.setGain(17.0f);
 
         intakeSensor2 = hMap.get(NormalizedColorSensor.class, "colori2");
-        intakeSensor2.setGain(27.0f);
+        intakeSensor2.setGain(17.0f);
 
         backSensor = hMap.get(NormalizedColorSensor.class, "colorb");
-        backSensor.setGain(27.0f);
+        backSensor.setGain(17.0f);
     }
     public void setGain(NormalizedColorSensor sensor, float gain) {
         sensor.setGain(gain);
@@ -89,16 +89,13 @@ public class ColorSensorsSubsystem extends SubsystemBase {
         return colorIsBall(intakeSensor1Result)||colorIsBall(intakeSensor2Result);
     }
 
-    // Function to convert RGB to HSV
-
-
-
     private static boolean colorInRange(float[] colorHSV, float[] min, float[] max) {
         return
                 min[0] <= colorHSV[0] && colorHSV[0] <= max[0] && //Red is within min and max range
                         min[1] <= colorHSV[1] && colorHSV[1] <= max[1] && //Green is within min and max range
                         min[2] <= colorHSV[2] && colorHSV[2] <= max[2];   //brue is within the range,
     }
+    // Function to convert RGB to HSV
     public static float[] rgbToHsv(NormalizedRGBA normalizedRGBA) {
         float r = normalizedRGBA.red;
         float g = normalizedRGBA.green;

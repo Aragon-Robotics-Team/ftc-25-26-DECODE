@@ -27,7 +27,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         RAW_TICKS,    // Tune pure motor physics
         LINEAR_SPEED  // Tune game logic (inches/sec)
     }
-    public static Mode tuningMode = Mode.RAW_TICKS;
+    public static Mode tuningMode = Mode.LINEAR_SPEED;
 
     // Set this if using RAW_TICKS
     public static double targetTicks = 0;

@@ -19,7 +19,7 @@ public class ColorSensorTuning extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
     public GamepadEx driver1;
-    float value = 27.0f;
+    float value = 2.0f;
 
     @Override
     public void init() {
@@ -43,22 +43,21 @@ public class ColorSensorTuning extends OpMode {
         float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
 
         // get and set gain
-        driver1.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
-                new InstantCommand(() -> {
-                    value++;
-                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
-                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
-                })
-        );
-        driver1.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
-                new InstantCommand(() -> {
-                    value--;
-                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
-                    colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
-                })
-        );
+        if (gamepad1.dpad_up) {
+            value++;
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+        }
+        if (gamepad1.dpad_down) {
+            value--;
+            if (value < 1.0f) {value = 1.0f;}
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+
+        }
 
         // 3. DISPLAY DATA
+        telemetry.addData("Current Gain", value);
 
         // --- INTAKE SENSOR 1 ---
         telemetry.addLine("--- INTAKE SENSOR 1 ---");

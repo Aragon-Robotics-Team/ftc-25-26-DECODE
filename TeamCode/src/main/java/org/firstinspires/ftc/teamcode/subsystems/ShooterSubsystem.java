@@ -30,6 +30,10 @@ public class ShooterSubsystem extends SubsystemBase {
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;
+    int speedMax;
+    int speedMin;
+    int distMax;
+    int distMin;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.BARE);
@@ -46,10 +50,29 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.set(0);
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
-        lut.add(94, 510);
-        lut.add(132, 600);
-        lut.add(144, 640);
+        lut.add(42, 505);
+        lut.add(59, 505);
+        lut.add(74, 515);
+        lut.add(117, 610);
+        lut.add(134, 660);
         lut.createLUT();
+
+        speedMax = 660;
+        speedMin = 505;
+        distMax = 134;
+        distMin = 42;
+    }
+    public int getSpeedMax() {
+        return speedMax;
+    }
+    public int getSpeedMin() {
+        return speedMin;
+    }
+    public int getDistMax() {
+        return distMax;
+    }
+    public int getDistMin() {
+        return distMin;
     }
     public void setPIDF(double p, double i, double d, double f) {
         this.kPOriginal = p;

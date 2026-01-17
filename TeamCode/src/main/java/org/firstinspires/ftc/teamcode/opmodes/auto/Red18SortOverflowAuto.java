@@ -169,9 +169,9 @@ public class Red18SortOverflowAuto extends CommandOpMode {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
                 new WaitForColorCommand(colorsensor).withTimeout(1500),
-                new MoveSpindexerCommand(spindexer, gate, 1, true),
+                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorsensor).withTimeout(1500),
-                new MoveSpindexerCommand(spindexer, gate, 1, true),
+                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorsensor).withTimeout(1500)
         );
     }
@@ -254,7 +254,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                         })
                 ),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
+                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
 
                 //Second row
                 new ParallelRaceGroup(
@@ -263,7 +263,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootSecondRow, true),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
+                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
 
                 //First row
                 new ParallelRaceGroup(
@@ -271,7 +271,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootFirstRow),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
+                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
 
 //                //Third row
 //                new ParallelRaceGroup(
@@ -285,13 +285,13 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                 new FollowPathCommand(follower, paths.intakeRamp, true),
                 intakeArtifacts().withTimeout(3000),
                 new FollowPathCommand(follower, paths.shootRamp, true),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif),
+                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
 
                 //Ramp cycle
                 new FollowPathCommand(follower, paths.intakeRamp, true),
                 intakeArtifacts().withTimeout(3000),
                 new FollowPathCommand(follower, paths.shootRamp, true),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, motif)
+                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)
 
                 //later: park?
         );

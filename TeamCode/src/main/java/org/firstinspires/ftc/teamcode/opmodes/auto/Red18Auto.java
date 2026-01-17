@@ -172,7 +172,7 @@ public class Red18Auto extends CommandOpMode {
                             new BezierLine(new Pose(127.700, 35.600), new Pose(90.000, 110.000))
                     )
                     .setTangentHeadingInterpolation()
-                    .setReversed()
+                    //.setReversed()
                     .addPath(
                             new BezierLine(new Pose(90.000, 110.000), new Pose(90.000, 110.0001)) //0.0001 offset to avoid div by 0
                     )
@@ -184,7 +184,7 @@ public class Red18Auto extends CommandOpMode {
     //it with an empircally tuned WaitCommand.
     public SequentialCommandGroup shoot() {
         return new SequentialCommandGroup(
-                new MoveSpindexerCommand(spindexer, gate, 3, true),
+                new MoveSpindexerCommand(spindexer, gate, intake, 3, true),
                 new WaitCommand(100), //wait for spindexer to start moving
                 new WaitUntilCommand(() -> spindexer.isLowVelocity() && spindexer.isNearTargetPosition())
         );
@@ -195,9 +195,9 @@ public class Red18Auto extends CommandOpMode {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
                 new WaitForColorCommand(colorSensors).withTimeout(1500),
-                new MoveSpindexerCommand(spindexer, gate, 1, true),
+                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorSensors).withTimeout(1500),
-                new MoveSpindexerCommand(spindexer, gate, 1, true),
+                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorSensors).withTimeout(1500)
         );
     }

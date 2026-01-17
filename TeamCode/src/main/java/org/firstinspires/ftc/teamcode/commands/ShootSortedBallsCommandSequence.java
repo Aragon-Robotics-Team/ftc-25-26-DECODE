@@ -8,6 +8,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
@@ -17,7 +18,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
 
     public ShootSortedBallsCommandSequence(ShooterSubsystem shooterSubsystem,
                                            SpindexerSubsystem spindexerSubsystem,
-                                           GateSubsystem gateSubsystem,
+                                           GateSubsystem gateSubsystem, IntakeSubsystem intakeSubsystem,
                                            RobotConstants.BallColors[] targetBallSequence) {
 
         //1. Choose the best spindexer offset.
@@ -39,14 +40,14 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
             addCommands(
                     new InstantCommand(gateSubsystem::up),
                     new WaitForGateCommand(gateSubsystem),
-                    new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, bestOffset, false),
+                    new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestOffset, false),
                     new InstantCommand(gateSubsystem::down)
             );
         } else {
             addCommands(new InstantCommand(gateSubsystem::down), new WaitForGateCommand(gateSubsystem));
         }
         //2b. ...and shoot the sequence.
-        addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, bestScore, false));
+        addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestScore, false));
 
         //3. Shoot the remaining balls
         for (int i = bestScore; i < 3; i++) {
@@ -77,7 +78,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
             }
 
             // Shoot the ball
-            addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, 1, false));
+            addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, 1, false));
         }
 
         // Move gate back up

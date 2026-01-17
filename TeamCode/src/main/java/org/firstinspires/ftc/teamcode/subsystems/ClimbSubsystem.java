@@ -4,11 +4,11 @@ public class ClimbSubsystem {
     //Climb 2 is on left, climb1 is on right.
     //up() and down() methods -- down to move the wheel things down and climb, up to retract
     /*
-            if (gamepad1.a) { //down
+            if (gamepad1.a) { //up
             climb1pos = 0.6;
             climb2pos = 0.42;
         }
-        if (gamepad1.b) { //up
+        if (gamepad1.b) { //down
             climb1pos = 1.0;
             climb2pos = 0.11;
         }
