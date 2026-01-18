@@ -4,9 +4,6 @@ import static com.seattlesolvers.solverslib.gamepad.GamepadKeys.Button.DPAD_UP;
 import static com.seattlesolvers.solverslib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.seattlesolvers.solverslib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.seattlesolvers.solverslib.util.MathUtils.clamp;
-import static org.firstinspires.ftc.teamcode.RobotConstants.Motifs.GPP;
-import static org.firstinspires.ftc.teamcode.RobotConstants.Motifs.PGP;
-import static org.firstinspires.ftc.teamcode.RobotConstants.Motifs.PPG;
 import static org.firstinspires.ftc.teamcode.RobotConstants.SHOOTER_ANGLE;
 
 import android.annotation.SuppressLint;
@@ -32,8 +29,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
@@ -42,9 +39,7 @@ import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Supplier;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Teleop Field Centric", group = "!")
@@ -57,7 +52,7 @@ public class TeleOp extends CommandOpMode {
         BLUE
     }
     public enum IntakeState {
-        STOP, FORWARD, REVERSE, INTAKEREVERSE
+        STILL, INTAKING, REVERSE, INTAKEREVERSE
     }
     int speedMin;
     int speedMax;
@@ -80,7 +75,7 @@ public class TeleOp extends CommandOpMode {
     //State variables
     Alliance alliance = Alliance.RED;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
-    IntakeState intakeState = IntakeState.STOP;
+    IntakeState intakeState = IntakeState.STILL;
     boolean manualControl = true;
     boolean slowMode = false;
 
@@ -91,6 +86,7 @@ public class TeleOp extends CommandOpMode {
     private ColorSensorsSubsystem colorSensors;
     private LEDSubsystem led;
     private GateSubsystem gate;
+    private ClimbSubsystem climb;
     private LimelightSubsystem limelight;
     public VoltageSensor voltageSensor;
     public GamepadEx driver1;
@@ -102,7 +98,7 @@ public class TeleOp extends CommandOpMode {
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
-    public static double alignerHeadingkP = -1.0; //Coefficients copied from pedro pathing.
+    public static double alignerHeadingkP = 1.0; //Coefficients copied from pedro pathing.
     public static double alignerHeadingkD = 0.02;
     public static double alignerHeadingkF = 0.01;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
@@ -126,8 +122,8 @@ public class TeleOp extends CommandOpMode {
         speedMin = shooter.getSpeedMin();
         distMax = shooter.getDistMax();
         distMin = shooter.getDistMin();
-        closeShooterTarget = 505;
-        farShooterTarget = 660;
+        closeShooterTarget = 505; //450;
+        farShooterTarget = 660; //540;
         new Trigger(() -> driver1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5)
                 .whileActiveContinuous(new InstantCommand(() -> slowMode = true))
                 .whenInactive(new InstantCommand(() -> slowMode = false));
@@ -217,7 +213,7 @@ public class TeleOp extends CommandOpMode {
 
     }
     void initializeSystems() {
-        startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(104,135.8,Math.toRadians(0)));
+        startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(104,135.8,Math.toRadians(-90)));
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose);
         follower.setMaxPower(1.0);
@@ -228,9 +224,10 @@ public class TeleOp extends CommandOpMode {
         led = new LEDSubsystem(hardwareMap);
         gate = new GateSubsystem(hardwareMap);
         limelight = new LimelightSubsystem(hardwareMap);
+        climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        spindexer.set(75);
+        spindexer.set(45);//75
         gate.down();
 
         super.reset();
@@ -245,15 +242,15 @@ public class TeleOp extends CommandOpMode {
         //Driver 1
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.FORWARD) intakeState = IntakeState.STOP;
-                    else intakeState = IntakeState.FORWARD;
+                    if (intakeState == IntakeState.INTAKING) intakeState = IntakeState.STILL;
+                    else intakeState = IntakeState.INTAKING;
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKEREVERSE) intakeState = IntakeState.STOP;
-                    if (intakeState == IntakeState.REVERSE) intakeState = IntakeState.STOP;
+                    if (intakeState == IntakeState.INTAKEREVERSE) intakeState = IntakeState.STILL;
+                    if (intakeState == IntakeState.REVERSE) intakeState = IntakeState.STILL;
                     else intakeState = IntakeState.REVERSE;
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
@@ -310,6 +307,16 @@ public class TeleOp extends CommandOpMode {
                     follower.setPose(follower.getPose().setHeading(0));
                 })
         );
+        driver2.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(
+                new InstantCommand(() -> {
+                    climb.climbUp();
+                })
+        );
+        driver2.getGamepadButton(GamepadKeys.Button.SHARE).whenPressed(
+                new InstantCommand(() -> {
+                    climb.climbDown();
+                })
+        );
 
     }
     void handleTeleopDrive() {
@@ -337,13 +344,16 @@ public class TeleOp extends CommandOpMode {
             double safeSpeed = clamp(ticksSpeed, speedMin, speedMax);
             shooter.setTargetLinearSpeed(safeSpeed);
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            follower.setTeleOpDrive(y / denominator, x / denominator, rx / denominator, false);
+            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
         }
     }
     void handleLED() {
         //LED Code
-        if (intakeState == IntakeState.FORWARD) {
+        if (intakeState == IntakeState.STILL) {
             led.setColor(LEDSubsystem.LEDState.WHITE);
+        }
+        else if (intakeState == IntakeState.INTAKING) {
+            led.setColor(LEDSubsystem.LEDState.YELLOW);
         }
         else if (shooter.getActualVelocity() > 300) { //shooting mode
             if (shooter.getActualVelocity() - shooter.getTargetVelocity() < -30) {
@@ -475,7 +485,7 @@ public class TeleOp extends CommandOpMode {
         // If your hood moves, calculate this based on hood position.
         // For fixed hoods, 45-60 degrees is common.
         double launchAngle = SHOOTER_ANGLE;
-        double latency = 0.300; //TODO: Measure, in seconds so for example, 0.300 is 300 milliseconds
+        double latency = 0.015;
 
         // --- 1. GATHER CURRENT STATE ---
         Pose currentPose = follower.getPose();
@@ -570,7 +580,7 @@ public class TeleOp extends CommandOpMode {
     }
     public Command getIntakeCommand() {
         switch (intakeState) {
-            case FORWARD:
+            case INTAKING:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKING);
                 });
@@ -578,7 +588,7 @@ public class TeleOp extends CommandOpMode {
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.REVERSE);
                 });
-            case STOP:
+            case STILL:
             default:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.STILL);

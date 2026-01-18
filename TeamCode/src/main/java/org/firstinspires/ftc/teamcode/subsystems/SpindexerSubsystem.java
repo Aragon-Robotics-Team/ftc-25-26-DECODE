@@ -143,6 +143,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     public boolean isLowVelocity() {
         return spindexer.getVelocity() < 20;
     }
+    public boolean availableToSenseColor() {return isNearTargetPosition() && isLowVelocity();}
 
     /**
      * @param balls the ball array

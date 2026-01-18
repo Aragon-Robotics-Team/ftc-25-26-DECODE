@@ -65,28 +65,28 @@ public class Red18Auto extends CommandOpMode {
                     .setConstantHeadingInterpolation(Math.toRadians(49))
                     .build();
 
-            intakeSecondRow = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(88.400, 81.800),
-                                    new Pose(78.000, 55.000),
-                                    new Pose(136.000, 59.000)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
-                    .build();
+//            intakeSecondRow = follower
+//                    .pathBuilder()
+//                    .addPath(
+//                            new BezierCurve(
+//                                    new Pose(88.400, 81.800),
+//                                    new Pose(78.000, 55.000),
+//                                    new Pose(136.000, 59.000)
+//                            )
+//                    )
+//                    .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
+//                    .build();
 
             shootSecondRow = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(136.000, 59.000),
-                                    new Pose(78.000, 55.000),
-                                    new Pose(88.400, 81.800)
+                                    new Pose(136, 58),
+                                    new Pose(90.52286874154262, 33.65480378890391),
+                                    new Pose(105.86576454668469, 66.51082543978347)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
+                    .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
                     .build();
 
             intakeRamp = follower
@@ -105,9 +105,9 @@ public class Red18Auto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(133.500, 61.000),
-                                    new Pose(89.000, 58.000),
-                                    new Pose(88.400, 81.800)
+                                    new Pose(134.61542625169147, 67.04059539918808),
+                                    new Pose(96.34059539918808, 53.12855209742896),
+                                    new Pose(115.00297699594047, 72.44682002706358)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(49))
@@ -193,7 +193,7 @@ public class Red18Auto extends CommandOpMode {
     //we might need to split it up.
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
-                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSE)),
                 new WaitForColorCommand(colorSensors).withTimeout(1500),
                 new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorSensors).withTimeout(1500),
@@ -250,12 +250,12 @@ public class Red18Auto extends CommandOpMode {
 
         // Initialize subsystems
         register(intake, spindexer, shooter, colorSensors, led, gate);
-        spindexer.set(75);
+        spindexer.set(45);
         SequentialCommandGroup autonomous = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetLinearSpeed(1200);
+                    shooter.setTargetLinearSpeed(490);
                     gate.down();
-                    follower.setMaxPower(0.8);
+                    follower.setMaxPower(1);
                 }),
                 //Preload
                 new FollowPathCommand(follower, paths.shootPreload, true),
@@ -265,7 +265,7 @@ public class Red18Auto extends CommandOpMode {
                 //Second row
                 new ParallelRaceGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRow)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSE))),
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootSecondRow, true),
@@ -310,7 +310,7 @@ public class Red18Auto extends CommandOpMode {
     @Override
     public void run() {
         handleLED();
-        handleSpindexer();
+        //handleSpindexer();
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -343,12 +343,12 @@ public class Red18Auto extends CommandOpMode {
             }
         }
     }
-    void handleSpindexer() {
-        //spindexer and array logic
-        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
-            spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
-        }
-    }
+//    void handleSpindexer() {
+//        //spindexer and array logic
+//        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
+//            spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
+//        }
+//    }
     void handleTelemetry() {
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));

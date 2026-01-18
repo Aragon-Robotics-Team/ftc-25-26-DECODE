@@ -18,10 +18,10 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
     private SpindexerSubsystem spindexerSubsystem;
     private IntakeSubsystem intake;
     // --- DASHBOARD VARIABLES ---
-    public static double p = -0.014;
+    public static double p = 0.00004;
     public static double i = 0.0;
     public static double d = 0.0;
-    public static double f = -0.00052;
+    public static double f = 0.00045;
 
     public enum Mode {
         RAW_TICKS,    // Tune pure motor physics

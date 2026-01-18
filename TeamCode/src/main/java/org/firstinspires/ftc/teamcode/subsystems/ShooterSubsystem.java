@@ -25,8 +25,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.014;
-    double kFOriginal = -0.00052;
+    double kPOriginal = -0.014; //0.00004;
+    double kFOriginal = -0.00052; //0.00045;
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;
@@ -50,6 +50,11 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.set(0);
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
+//        lut.add(46.5, 435);
+//        lut.add(60, 450);
+//        lut.add(80, 490);
+//        lut.add(206, 540);
+//        lut.add(232.5, 570);
         lut.add(42, 505);
         lut.add(59, 505);
         lut.add(74, 515);
@@ -57,6 +62,10 @@ public class ShooterSubsystem extends SubsystemBase {
         lut.add(134, 660);
         lut.createLUT();
 
+//        speedMax = 570;
+//        speedMin = 435;
+//        distMax = 132;
+//        distMin = 47;
         speedMax = 660;
         speedMin = 505;
         distMax = 134;
@@ -116,7 +125,7 @@ public class ShooterSubsystem extends SubsystemBase {
         double ticksPerRev = 28.0;
         double flywheelDiameter = 2.83465; //72 mm to inches
         double gearRatio = 32.0 / 24.0;
-        return shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
+        return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
         return lut.get(distance);
