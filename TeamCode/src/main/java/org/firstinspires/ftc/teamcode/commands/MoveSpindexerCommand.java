@@ -28,6 +28,7 @@ public class MoveSpindexerCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        safetyTimer.reset();
         if (gateSubsystem.isAtTarget() && gateSubsystem.gateState == GateSubsystem.GateState.DOWN) {
             spindexerSubsystem.setBallAt(2, RobotConstants.BallColors.NONE);
         }

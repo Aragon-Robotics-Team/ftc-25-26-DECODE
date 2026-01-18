@@ -122,7 +122,7 @@ public class Red12SortedAuto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 55), new Pose(130.000, 55))
+                        new BezierLine(new Pose(91, 55), new Pose(135.000, 55))
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build()
@@ -132,7 +132,7 @@ public class Red12SortedAuto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(130.000, 55), new Pose(115.000, 55))
+                        new BezierLine(new Pose(135.000, 55), new Pose(115.000, 55))
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build()
