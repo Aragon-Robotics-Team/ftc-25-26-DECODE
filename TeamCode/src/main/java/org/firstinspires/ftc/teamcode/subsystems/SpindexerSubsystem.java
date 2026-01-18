@@ -134,7 +134,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
-        return error < 5;
+        return error < 10;
     }
 
     /**

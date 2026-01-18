@@ -9,7 +9,7 @@ public class GateSubsystem extends SubsystemBase {
     ServoEx gate;
     AnalogInput gateEncoder;
     public final double UP = 0.78;
-    public final double DOWN = 0.61;
+    public final double DOWN = 0.55;
     public final double UP_VOLTAGE = 2.489; //Volts
     public final double DOWN_VOLTAGE = 1.99; //Volts
 

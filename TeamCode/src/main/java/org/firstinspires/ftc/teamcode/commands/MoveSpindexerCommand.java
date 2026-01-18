@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.RobotConstants.SPINDEXER_TICKS_PER_
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
@@ -15,6 +16,8 @@ public class MoveSpindexerCommand extends CommandBase {
     private IntakeSubsystem intakeSubsystem;
     public int number;
     private boolean instant = false;
+    private final ElapsedTime safetyTimer = new ElapsedTime();
+    private final double TIMEOUT_SEC = 2.5;
     public MoveSpindexerCommand(SpindexerSubsystem spindexerSubsystem, GateSubsystem gateSubsystem, IntakeSubsystem intakeSubsystem, int num, boolean instant) {
         this.spindexerSubsystem = spindexerSubsystem;
         this.gateSubsystem = gateSubsystem;
@@ -25,11 +28,11 @@ public class MoveSpindexerCommand extends CommandBase {
 
     @Override
     public void initialize() {
-//        if (gateSubsystem.isAtTarget() && gateSubsystem.gateState == GateSubsystem.GateState.DOWN) {
-//            spindexerSubsystem.setBallAt(2, RobotConstants.BallColors.NONE);
-//        }
+        if (gateSubsystem.isAtTarget() && gateSubsystem.gateState == GateSubsystem.GateState.DOWN) {
+            spindexerSubsystem.setBallAt(2, RobotConstants.BallColors.NONE);
+        }
         spindexerSubsystem.moveSpindexerBy(120 * number);
-//        spindexerSubsystem.shiftBallsArrayBy(number);
+        spindexerSubsystem.shiftBallsArrayBy(number);
         if (number < 0) {
             intakeSubsystem.set(IntakeSubsystem.IntakeState.INTAKEREVERSE);
         }
@@ -40,6 +43,10 @@ public class MoveSpindexerCommand extends CommandBase {
         if (instant) {
             return true;
         }
-        return spindexerSubsystem.isNearTargetPosition();
+        boolean atTarget = spindexerSubsystem.isNearTargetPosition();
+
+        boolean timedOut = safetyTimer.seconds() > TIMEOUT_SEC;
+
+        return atTarget || timedOut;
     }
 }

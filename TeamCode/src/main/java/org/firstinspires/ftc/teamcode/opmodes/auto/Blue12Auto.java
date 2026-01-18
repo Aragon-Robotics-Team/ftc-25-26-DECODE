@@ -39,8 +39,8 @@ import java.util.ArrayList;
 
 
 @Config
-@Autonomous(name = "Red 12ball no gate", group = "angryBirds", preselectTeleOp = "Teleop")
-public class Red12Auto extends CommandOpMode {
+@Autonomous(name = "Blue 12ball no gate", group = "angryBirds", preselectTeleOp = "Teleop")
+public class Blue12Auto extends CommandOpMode {
     //paths
     private final ArrayList<PathChain> paths = new ArrayList<>();
     public Pose currentPose;
@@ -70,9 +70,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(122.361, 121.175), new Pose(91, 82))
+                        new BezierLine(new Pose(21.639, 121.175), new Pose(91, 89).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
+                .setLinearHeadingInterpolation(Math.toRadians(136), Math.toRadians(136))
                 .build()
         );
 
@@ -81,9 +81,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 82), new Pose(96, 82.000))
+                        new BezierLine(new Pose(91, 89).mirror(), new Pose(96, 87.000).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(136), Math.toRadians(180))
                 .build()
         );
 
@@ -91,9 +91,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(96, 82.000), new Pose(117, 82.000))
+                        new BezierLine(new Pose(96, 87.000).mirror(), new Pose(132, 87.000).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build()
         );
 
@@ -101,9 +101,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(117, 82), new Pose(91, 82))
+                        new BezierLine(new Pose(132, 87).mirror(), new Pose(91, 89).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(136))
                 .build()
         );
 
@@ -111,9 +111,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91,  82), new Pose(91, 55))
+                        new BezierLine(new Pose(91,  89).mirror(), new Pose(91, 60).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(136), Math.toRadians(180))
                 .build()
         );
 
@@ -122,9 +122,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 55), new Pose(130.000, 55))
+                        new BezierLine(new Pose(91, 60).mirror(), new Pose(142, 60).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build()
         );
 
@@ -132,9 +132,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(130.000, 55), new Pose(115.000, 55))
+                        new BezierLine(new Pose(142, 60).mirror(), new Pose(115.000, 60).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build()
         );
 
@@ -142,9 +142,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(115.000, 55), new Pose(91, 82))
+                        new BezierLine(new Pose(115.000, 60).mirror(), new Pose(91, 89).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(51))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(137))
                 .build()
         );
 
@@ -152,9 +152,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 82), new Pose(91, 31))
+                        new BezierLine(new Pose(91, 89).mirror(), new Pose(91, 38).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(51), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(137), Math.toRadians(180))
                 .build()
         );
 
@@ -163,9 +163,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 31), new Pose(130, 31))
+                        new BezierLine(new Pose(91, 38).mirror(), new Pose(142, 38).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build()
         );
 
@@ -173,9 +173,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(130, 31), new Pose(125, 31))
+                        new BezierLine(new Pose(142, 38).mirror(), new Pose(125, 38).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build()
         );
 
@@ -183,9 +183,9 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(125, 31), new Pose(91, 82))
+                        new BezierLine(new Pose(125, 38).mirror(), new Pose(91, 89).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(137))
                 .build()
         );
 
@@ -194,12 +194,11 @@ public class Red12Auto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 82), new Pose(99, 78))
+                        new BezierLine(new Pose(91, 89).mirror(), new Pose(99, 83).mirror())
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
+                .setLinearHeadingInterpolation(Math.toRadians(137), Math.toRadians(136))
                 .build()
         );
-
     }
 
     private SequentialCommandGroup intakeArtifacts() {

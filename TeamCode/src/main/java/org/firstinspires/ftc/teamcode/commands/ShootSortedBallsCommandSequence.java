@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
+import java.nio.file.Watchable;
 import java.util.Arrays;
 
 public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
@@ -39,15 +40,20 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
         if (bestOffset > 0) {
             addCommands(
                     new InstantCommand(gateSubsystem::up),
-                    new WaitForGateCommand(gateSubsystem),
+//                    new WaitForGateCommand(gateSubsystem),
+                    new WaitCommand(300),
                     new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestOffset, false),
-                    new InstantCommand(gateSubsystem::down)
+                    new InstantCommand(gateSubsystem::down),
+                    new WaitCommand(500)
             );
         } else {
-            addCommands(new InstantCommand(gateSubsystem::down), new WaitForGateCommand(gateSubsystem));
+            addCommands(new InstantCommand(gateSubsystem::down),
+//                    new WaitForGateCommand(gateSubsystem)
+                    new WaitCommand(500)
+            );
         }
         //2b. ...and shoot the sequence.
-        addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestScore, false));
+        addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestScore, false).withTimeout(3000));
 
         //3. Shoot the remaining balls
         for (int i = bestScore; i < 3; i++) {
@@ -58,6 +64,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                 // If it's the very last ball, we can't sort it (no other balls to swap).
                 // Just ensure gate is down and shoot.
                 addCommands(new InstantCommand(gateSubsystem::down));
+                addCommands(new WaitCommand(300));
             } else {
                 // If we still have choices (2 balls left), we try to sort.
                 addCommands(new ConditionalCommand(
@@ -67,10 +74,12 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                         // If false: open gate -> load correct ball -> close gate
                         new SequentialCommandGroup(
                                 new InstantCommand(gateSubsystem::up),
-                                new WaitForGateCommand(gateSubsystem),
+//                                new WaitForGateCommand(gateSubsystem),
+                                new WaitCommand(300),
                                 new LoadBallCommand(spindexerSubsystem, target),
                                 new InstantCommand(gateSubsystem::down),
-                                new WaitForGateCommand(gateSubsystem)
+//                                new WaitForGateCommand(gateSubsystem)
+                                new WaitCommand(500)
                         ),
                         // Check if the ball at exit matches target
                         () -> spindexerSubsystem.getBalls()[2] == target || target == RobotConstants.BallColors.UNKNOWN

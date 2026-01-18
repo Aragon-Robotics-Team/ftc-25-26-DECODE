@@ -38,32 +38,49 @@
 //
 //import java.util.Arrays;
 //@Autonomous
-//public class Red18Auto extends CommandOpMode {
-//    //Generated from auto18red.pp file. (01/17/26)
+//public class Red12Sorted extends CommandOpMode {
+//    //Generated from auto12redsort.pp file. (01/18/26)
 //    public static class Paths {
 //
 //        public PathChain shootPreload;
-//        public PathChain intakeSecondRow;
-//        public PathChain shootSecondRow;
-//        public PathChain intakeRamp;
-//        public PathChain shootRamp;
-//        public PathChain intakeRamp2;
-//        public PathChain shootRamp2;
 //        public PathChain intakeFirstRow;
 //        public PathChain shootFirstRow;
+//        public PathChain intakeSecondRow;
+//        public PathChain shootSecondRow;
 //        public PathChain intakeThirdRow;
 //        public PathChain shootThirdRow;
 //
 //        public Paths(Follower follower) {
 //            shootPreload = follower.pathBuilder().addPath(
 //                            new BezierLine(
-//                                    new Pose(122.361, 121.175),
+//                                    new Pose(104.200, 135.700),
 //
 //                                    new Pose(88.400, 81.000)
 //                            )
-//                    ).setConstantHeadingInterpolation(Math.toRadians(49))
+//                    ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(49))
 //
 //                    .build();
+//
+//            intakeFirstRow = follower.pathBuilder().addPath(
+//                            new BezierLine(
+//                                    new Pose(88.400, 81.000),
+//
+//                                    new Pose(125.000, 83.000)
+//                            )
+//                    ).setTangentHeadingInterpolation()
+//
+//                    .build();
+//
+//            shootFirstRow = follower.pathBuilder().addPath(
+//                            new BezierLine(
+//                                    new Pose(125.000, 83.000),
+//
+//                                    new Pose(88.400, 81.000)
+//                            )
+//                    ).setTangentHeadingInterpolation()
+//                    .setReversed()
+//                    .build();
+//
 //            intakeSecondRow = follower.pathBuilder().addPath(
 //                            new BezierCurve(
 //                                    new Pose(88.400, 81.000),
@@ -86,71 +103,9 @@
 //
 //                    .build();
 //
-//            intakeRamp = follower.pathBuilder().addPath(
-//                            new BezierCurve(
-//                                    new Pose(88.400, 81.000),
-//                                    new Pose(96.341, 53.129),
-//                                    new Pose(115.003, 72.447),
-//                                    new Pose(134.615, 67.041)
-//                            )
-//                    ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(49))
-//
-//                    .build();
-//
-//            shootRamp = follower.pathBuilder().addPath(
-//                            new BezierCurve(
-//                                    new Pose(134.615, 67.041),
-//                                    new Pose(89.000, 58.000),
-//                                    new Pose(133.500, 61.000),
-//                                    new Pose(88.400, 81.000)
-//                            )
-//                    ).setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(50))
-//
-//                    .build();
-//
-//            intakeRamp2 = follower.pathBuilder().addPath(
-//                            new BezierLine(
-//                                    new Pose(88.400, 81.000),
-//
-//                                    new Pose(88.400, 81.000)
-//                            )
-//                    ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(49))
-//
-//                    .build();
-//
-//            shootRamp2 = follower.pathBuilder().addPath(
-//                            new BezierLine(
-//                                    new Pose(88.400, 81.000),
-//
-//                                    new Pose(125.000, 83.000)
-//                            )
-//                    ).setTangentHeadingInterpolation()
-//
-//                    .build();
-//
-//            intakeFirstRow = follower.pathBuilder().addPath(
-//                            new BezierLine(
-//                                    new Pose(125.000, 83.000),
-//
-//                                    new Pose(88.400, 81.000)
-//                            )
-//                    ).setTangentHeadingInterpolation()
-//                    .setReversed()
-//                    .build();
-//
-//            shootFirstRow = follower.pathBuilder().addPath(
-//                            new BezierLine(
-//                                    new Pose(88.400, 81.000),
-//
-//                                    new Pose(88.400, 81.001)
-//                            )
-//                    ).setConstantHeadingInterpolation(Math.toRadians(49))
-//
-//                    .build();
-//
 //            intakeThirdRow = follower.pathBuilder().addPath(
 //                            new BezierCurve(
-//                                    new Pose(88.400, 81.001),
+//                                    new Pose(88.400, 81.000),
 //                                    new Pose(82.430, 0.310),
 //                                    new Pose(92.208, 42.349),
 //                                    new Pose(133.288, 31.834)
@@ -203,7 +158,7 @@
 //    private Follower follower;
 //
 //    //update starting pose
-//    public static Pose startingPose = new Pose(122.361,121.175,Math.toRadians(49));
+//    public static Pose startingPose = new Pose(104.200,135.7,Math.toRadians(90));
 //    private IntakeSubsystem intake;
 //    private ShooterSubsystem shooter;
 //    private SpindexerSubsystem spindexer;
@@ -254,28 +209,16 @@
 //
 //                //Second row
 //                new ParallelRaceGroup(
-//                        new FollowPathCommand(follower, paths.intakeSecondRow)
+//                        new FollowPathCommand(follower, paths.intakeFirstRow)
 //                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSE))),
 //                        intakeArtifacts()
 //                ),
-//                new FollowPathCommand(follower, paths.shootSecondRow, true),
-//                shoot(),
-//
-//                //Ramp cycle
-//                new FollowPathCommand(follower, paths.intakeRamp, true),
-//                intakeArtifacts().withTimeout(3000),
-//                new FollowPathCommand(follower, paths.shootRamp, true),
-//                shoot(),
-//
-//                //Ramp cycle
-//                new FollowPathCommand(follower, paths.intakeRamp, true),
-//                intakeArtifacts().withTimeout(3000),
-//                new FollowPathCommand(follower, paths.shootRamp, true),
+//                new FollowPathCommand(follower, paths.shootFirstRow, true),
 //                shoot(),
 //
 //                //First row
 //                new ParallelRaceGroup(
-//                        new FollowPathCommand(follower, paths.intakeFirstRow).withTimeout(3000),
+//                        new FollowPathCommand(follower, paths.intakeSecondRow).withTimeout(3000),
 //                        intakeArtifacts()
 //                ),
 //                new FollowPathCommand(follower, paths.shootFirstRow),
@@ -332,7 +275,7 @@
 //            }
 //        }
 //    }
-////    void handleSpindexer() {
+//    //    void handleSpindexer() {
 ////        //spindexer and array logic
 ////        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
 ////            spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
