@@ -267,7 +267,6 @@ public class Red12SortedAuto extends CommandOpMode {
                             shooter.setTargetLinearSpeed(495);
 //                            shooter.setHood(0.45); //Placeholder
                             gate.down();
-                            follower.setMaxPower(1);
                             spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                         }), //start shoot
                         new FollowPathCommand(follower, paths.get(0), true), //drive to shooting pos
@@ -275,9 +274,6 @@ public class Red12SortedAuto extends CommandOpMode {
                                 new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
                                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)) //shoot motif
                         ),
-                        new InstantCommand(() -> {
-                            follower.setMaxPower(1);
-                            shooter.setTargetLinearSpeed(495);}),
                         //cycle one
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSE);}),
