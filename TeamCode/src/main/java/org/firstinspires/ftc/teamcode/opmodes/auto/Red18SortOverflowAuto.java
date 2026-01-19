@@ -41,9 +41,6 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 @Autonomous
 public class Red18SortOverflowAuto extends CommandOpMode {
-    //Generated from december_18.pp file.
-    //Note: I consolidaated shootfirstrow1/2 into one pathchain for optimization.
-    //also done to shootthirdrow
     public static class Paths {
 
         public PathChain shootPreload;
@@ -187,7 +184,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(122.361,121.175,Math.toRadians(49));
+    public static Pose startingPose = new Pose(88.000,136.000,Math.toRadians(0));
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;
