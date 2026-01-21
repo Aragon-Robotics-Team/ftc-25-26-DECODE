@@ -220,7 +220,7 @@ public class TeleOp extends CommandOpMode {
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        spindexer.set(45);//75
+        spindexer.set(115);//75
         gate.down();
 
         super.reset();

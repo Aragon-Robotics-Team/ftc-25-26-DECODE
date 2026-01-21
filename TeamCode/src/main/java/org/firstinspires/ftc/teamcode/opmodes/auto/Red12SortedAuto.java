@@ -246,7 +246,7 @@ public class Red12SortedAuto extends CommandOpMode {
 
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
-        spindexer.set(45);
+        spindexer.set(115);
         motif = new RobotConstants.BallColors[]{PURPLE, GREEN, PURPLE};
 
         //init paths

@@ -245,7 +245,7 @@ public class Red12Auto extends CommandOpMode {
 
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
-        spindexer.set(45);
+        spindexer.set(115);
 
         //init paths
         buildPaths(follower);
