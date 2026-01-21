@@ -161,10 +161,11 @@ public class SpindexerSubsystem extends SubsystemBase {
     }
 
     /**
-     * @param n number of balls
+     * @param m number of balls
      * @return shifts the array of balls (colors) based on when/if the balls enter/leave the robot
      */
-    public void shiftBallsArrayBy(int n) {
+    public void shiftBallsArrayBy(int m) {
+        int n = -m;
         n = ((n % 3) + 3) % 3;
         if (n == 0) return;
 
@@ -186,11 +187,11 @@ public class SpindexerSubsystem extends SubsystemBase {
                 balls[0] = PURPLE;
             }
 
-            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
-                balls[1] = GREEN;
-            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
-                balls[1] = PURPLE;
-            }
+//            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
+//                balls[1] = GREEN;
+//            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
+//                balls[1] = PURPLE;
+//            }
     }
 
     /**

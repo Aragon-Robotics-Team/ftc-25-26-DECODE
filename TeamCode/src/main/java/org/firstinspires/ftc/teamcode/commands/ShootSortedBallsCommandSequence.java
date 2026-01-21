@@ -12,16 +12,15 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
-
     public ShootSortedBallsCommandSequence(ShooterSubsystem shooterSubsystem,
                                            SpindexerSubsystem spindexerSubsystem,
                                            GateSubsystem gateSubsystem, IntakeSubsystem intakeSubsystem,
                                            RobotConstants.BallColors[] targetBallSequence) {
 
-        //1. Choose the best spindexer offset.
         RobotConstants.BallColors[] current = spindexerSubsystem.getBalls();
         int bestOffset = 0;
         int bestScore = 0;
+
         for (int offset = 0; offset < 3; offset++) {
             int score = calculateMatchScore(current, targetBallSequence, offset);
             if (score > bestScore) {
@@ -29,64 +28,54 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                 bestOffset = offset;
             }
         }
-        if (bestScore == 2) {
-            bestScore = 3;
-        }
-        //2a. Move to the best offset
+        if (bestScore == 2) bestScore = 3;
+
+        // --- PART 2: INITIAL POSITIONING ---
         if (bestOffset > 0) {
             addCommands(
                     new InstantCommand(gateSubsystem::up),
-                    new WaitForGateCommand(gateSubsystem),
+                    new WaitCommand(250), // Replaced WaitForGate with timed wait
                     new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestOffset, false),
                     new InstantCommand(gateSubsystem::down),
-                    new WaitCommand(500)
+                    new WaitCommand(400)
             );
         } else {
-            addCommands(new InstantCommand(gateSubsystem::down),
-                    new WaitForGateCommand(gateSubsystem)
-            );
+            // ONLY command down if we aren't already sure it's down.
+            // This prevents the "jitter" if the gate is already down from setup.
+            addCommands(new InstantCommand(gateSubsystem::down));
         }
-        //2b. ...and shoot the sequence.
-        addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestScore, false).withTimeout(3000));
 
-        //3. Shoot the remaining balls
+        // Shoot the initial matching streak
+        if (bestScore > 0) {
+            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestScore, false).withTimeout(2500));
+        }
+
+        // --- PART 3: REMAINING BALLS ---
         for (int i = bestScore; i < 3; i++) {
             RobotConstants.BallColors target = targetBallSequence[i];
-            boolean isLastBall = (i == 2);
 
-            if (isLastBall) {
-                // If it's the very last ball, we can't sort it (no other balls to swap).
-                // Just ensure gate is down and shoot.
-                addCommands(new InstantCommand(gateSubsystem::down));
-                addCommands(new WaitCommand(300));
-            } else {
-                // If we still have choices (2 balls left), we try to sort.
-                addCommands(new ConditionalCommand(
-                        // If true, ball matches. Keep gate down.
-                        new InstantCommand(gateSubsystem::down),
+            addCommands(new ConditionalCommand(
+                    // If ball matches, just ensure gate is down
+                    new InstantCommand(gateSubsystem::down),
+                    // If ball doesn't match, swap it
+                    new SequentialCommandGroup(
+                            new InstantCommand(gateSubsystem::up),
+                            new WaitCommand(250),
+                            new LoadBallCommand(spindexerSubsystem, target).withTimeout(1500),
+                            new InstantCommand(gateSubsystem::down),
+                            new WaitCommand(400)
+                    ),
+                    () -> spindexerSubsystem.getBalls()[2] == target || target == RobotConstants.BallColors.UNKNOWN
+            ));
 
-                        // If false: open gate -> load correct ball -> close gate
-                        new SequentialCommandGroup(
-                                new InstantCommand(gateSubsystem::up),
-//                                new WaitForGateCommand(gateSubsystem),
-                                new WaitCommand(300),
-                                new LoadBallCommand(spindexerSubsystem, target),
-                                new InstantCommand(gateSubsystem::down),
-//                                new WaitForGateCommand(gateSubsystem)
-                                new WaitCommand(500)
-                        ),
-                        // Check if the ball at exit matches target
-                        () -> spindexerSubsystem.getBalls()[2] == target || target == RobotConstants.BallColors.UNKNOWN
-                ));
-            }
-
-            // Shoot the ball
+            // Execute the single shot
             addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, 1, false));
         }
 
-        // Move gate back up
-        addCommands(new InstantCommand(gateSubsystem::up));
+        // Final safety: Gate stays down until next intake cycle starts
+        addCommands(new InstantCommand(gateSubsystem::down));
     }
+    // ... calculateMatchScore remains the same ...
     /**
      * Helper: How many balls match the target sequence if we start at 'offset'?
      * Spindexer Order Assumption: Exit is Index 2. Order of arrival is 2 -> 1 -> 0.

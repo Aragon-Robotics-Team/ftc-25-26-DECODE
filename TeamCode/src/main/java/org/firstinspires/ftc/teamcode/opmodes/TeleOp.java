@@ -132,7 +132,7 @@ public class TeleOp extends CommandOpMode {
         handleTeleopDrive();
         handleLED();
         handleVoltageCompensation();
-        //handleSpindexer();
+        handleBallsArrayUpdate();
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -376,13 +376,10 @@ public class TeleOp extends CommandOpMode {
             lastVoltageCheck.reset();
         }
     }
-    void handleSpindexer() {
+    void handleBallsArrayUpdate() {
         //spindexer and array logic
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
-            if (colorSensors.doesLastResultHaveBall() && spindexer.getBalls()[2].equals(RobotConstants.BallColors.NONE)) {
-                schedule(new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true));
-            }
         }
     }
     void handleTelemetry() {
@@ -473,7 +470,7 @@ public class TeleOp extends CommandOpMode {
         // If your hood moves, calculate this based on hood position.
         // For fixed hoods, 45-60 degrees is common.
         double launchAngle = SHOOTER_ANGLE;
-        double latency = 0.015;
+        double latency = 0.015+0.16;
 
         // --- 1. GATHER CURRENT STATE ---
         Pose currentPose = follower.getPose();

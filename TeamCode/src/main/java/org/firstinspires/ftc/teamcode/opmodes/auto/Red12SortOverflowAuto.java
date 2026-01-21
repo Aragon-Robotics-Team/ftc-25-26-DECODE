@@ -20,10 +20,12 @@ import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
+import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -206,13 +208,13 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         if (motifid != null) {
             switch ((int) motifid) {
                 case 21:
-                    motif = new RobotConstants.BallColors[]{GREEN, PURPLE, PURPLE};
+                    motif = new RobotConstants.BallColors[]{PURPLE, PURPLE, GREEN}; //actually correct bc robot shoots from end to start
                     break;
                 case 22:
                     motif = new RobotConstants.BallColors[]{PURPLE, GREEN, PURPLE};
                     break;
                 case 23:
-                    motif = new RobotConstants.BallColors[]{PURPLE, PURPLE, GREEN};
+                    motif = new RobotConstants.BallColors[]{GREEN, PURPLE, PURPLE}; //actually correct bc robot shoots from end to start
                     break;
             }
         }
@@ -227,6 +229,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         follower.setPose(startingPose);
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
+        intake.set(IntakeSubsystem.IntakeState.STILL);
         shooter = new ShooterSubsystem(hardwareMap);
         spindexer = new SpindexerSubsystem(hardwareMap);
         colorsensor = new ColorSensorsSubsystem(hardwareMap);
@@ -251,10 +254,11 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup autonomous = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1200);
+                    shooter.setTargetTicks(1150);
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
+                new WaitCommand(1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                 //Preload
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, paths.shootPreload, false),
@@ -263,7 +267,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
                 setCount(3),
 
                 //Second row
@@ -273,7 +277,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootSecondRow, false),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
                 new ParallelRaceGroup(
@@ -282,7 +286,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootFirstRow),
-                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //move to end pos
                 new FollowPathCommand(follower, paths.endPose)
@@ -319,7 +323,12 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void run() {
-        spindexer.handleUpdateArray(colorsensor.getIntakeSensor1Result(), colorsensor.getIntakeSensor2Result(), colorsensor.getBackResult());
+        colorsensor.updateSensor1();
+        colorsensor.updateSensor2();
+        colorsensor.updateBack();
+        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
+            spindexer.handleUpdateArray(colorsensor.getIntakeSensor1Result(), colorsensor.getIntakeSensor2Result(), colorsensor.getBackResult());
+        }
         if (shooter.getVelocityTicks() - shooter.getTargetTicks() < -30) {
             led.setColor(LEDSubsystem.LEDState.RED);
         }
