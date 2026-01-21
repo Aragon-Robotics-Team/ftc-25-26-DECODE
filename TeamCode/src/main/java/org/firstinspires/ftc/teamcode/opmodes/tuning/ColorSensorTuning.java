@@ -19,7 +19,7 @@ public class ColorSensorTuning extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
     public GamepadEx driver1;
-    float value = 2.0f;
+    float value = 17.0f;
 
     @Override
     public void init() {

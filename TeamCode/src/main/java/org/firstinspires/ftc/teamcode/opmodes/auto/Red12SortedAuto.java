@@ -204,7 +204,7 @@ public class Red12SortedAuto extends CommandOpMode {
 
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
-                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSE)),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(1500)
@@ -271,12 +271,12 @@ public class Red12SortedAuto extends CommandOpMode {
                         }), //start shoot
                         new FollowPathCommand(follower, paths.get(0), true), //drive to shooting pos
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSES);}),
                                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)) //shoot motif
                         ),
                         //cycle one
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSE);}),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
                                 new FollowPathCommand(follower, paths.get(1), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(
@@ -306,7 +306,7 @@ public class Red12SortedAuto extends CommandOpMode {
                         //cycle two
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> follower.setMaxPower(0.7)),
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSE);}),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
                                 new FollowPathCommand(follower, paths.get(4), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(
@@ -330,7 +330,7 @@ public class Red12SortedAuto extends CommandOpMode {
                         //cycle three
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> follower.setMaxPower(0.7)),
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSE);}),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
                                 new FollowPathCommand(follower, paths.get(8), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(

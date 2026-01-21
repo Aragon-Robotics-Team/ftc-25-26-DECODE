@@ -7,7 +7,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
     public enum IntakeState {
-        STILL, INTAKING, REVERSE, INTAKEREVERSE;
+        STILL, REVERSES, INTAKING, INTAKEREVERSE;
     }
     public IntakeState intakeState = IntakeState.STILL;
     private DcMotor intakeWheels;
@@ -27,12 +27,12 @@ public class IntakeSubsystem extends SubsystemBase {
                 sideWheel.setPower(-1.0);
                 sideWheel2.setPower(1.0);
                 break;
-            case INTAKING:
+            case REVERSES:
                 intakeWheels.setPower(1.0);
                 sideWheel.setPower(-1.0);
                 sideWheel2.setPower(1.0);
                 break;
-            case REVERSE:
+            case INTAKING:
                 intakeWheels.setPower(-1.0);
                 sideWheel.setPower(-1.0);
                 sideWheel2.setPower(1.0);

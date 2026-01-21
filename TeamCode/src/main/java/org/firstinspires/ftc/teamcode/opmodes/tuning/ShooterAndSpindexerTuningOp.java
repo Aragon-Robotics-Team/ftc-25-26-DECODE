@@ -76,9 +76,9 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
                 break;
         }
         if (gamepad1.right_bumper) {
-            intake.set(IntakeSubsystem.IntakeState.INTAKING);
+            intake.set(IntakeSubsystem.IntakeState.REVERSES);
         } else if (gamepad1.left_bumper) {
-            intake.set(IntakeSubsystem.IntakeState.REVERSE);
+            intake.set(IntakeSubsystem.IntakeState.INTAKING);
         } else {
             intake.set(IntakeSubsystem.IntakeState.STILL);
         }

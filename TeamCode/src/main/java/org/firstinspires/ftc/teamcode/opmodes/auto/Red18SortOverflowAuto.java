@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.GREEN;
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.PURPLE;
-import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.UNKNOWN;
 
 import android.annotation.SuppressLint;
 
@@ -12,18 +11,14 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
@@ -164,7 +159,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
     //we might need to split it up.
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
-                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSES)),
                 new WaitForColorCommand(colorsensor).withTimeout(1500),
                 new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
                 new WaitForColorCommand(colorsensor).withTimeout(1500),
@@ -256,7 +251,7 @@ public class Red18SortOverflowAuto extends CommandOpMode {
                 //Second row
                 new ParallelRaceGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRow)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING))),
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.REVERSES))),
                         intakeArtifacts()
                 ),
                 new FollowPathCommand(follower, paths.shootSecondRow, true),

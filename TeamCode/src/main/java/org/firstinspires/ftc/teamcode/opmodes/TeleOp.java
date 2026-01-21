@@ -52,7 +52,7 @@ public class TeleOp extends CommandOpMode {
         BLUE
     }
     public enum IntakeState {
-        STILL, INTAKING, REVERSE, INTAKEREVERSE
+        STILL, REVERSE, INTAKING, INTAKEREVERSE
     }
     int speedMin;
     int speedMax;
@@ -129,14 +129,7 @@ public class TeleOp extends CommandOpMode {
                 .whenInactive(new InstantCommand(() -> slowMode = false));
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double currentHeading = follower.getPose().getHeading();
-                    follower.setPose(follower.getPose().setHeading(currentHeading + Math.toRadians(45)));
-                    gamepad2.rumbleBlips(1);
-                }));
-        driver2.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)
-                .whenPressed(new InstantCommand(() -> {
-                    double currentHeading = follower.getPose().getHeading();
-                    follower.setPose(follower.getPose().setHeading(currentHeading - Math.toRadians(45)));
+                    follower.setPose(follower.getPose().setHeading(0));
                     gamepad2.rumbleBlips(1);
                 }));
         driver2.getGamepadButton(RIGHT_BUMPER).whenActive(  //shooter close
@@ -304,7 +297,6 @@ public class TeleOp extends CommandOpMode {
                     shooter.setTargetLinearSpeed(0);
                     gamepad2.rumbleBlips(1);
                     selectedMotif = allMotifs[index];
-                    follower.setPose(follower.getPose().setHeading(0));
                 })
         );
         driver2.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(
@@ -582,11 +574,11 @@ public class TeleOp extends CommandOpMode {
         switch (intakeState) {
             case INTAKING:
                 return new InstantCommand(() -> {
-                    intake.set(IntakeSubsystem.IntakeState.INTAKING);
+                    intake.set(IntakeSubsystem.IntakeState.REVERSES);
                 });
             case REVERSE:
                 return new InstantCommand(() -> {
-                    intake.set(IntakeSubsystem.IntakeState.REVERSE);
+                    intake.set(IntakeSubsystem.IntakeState.INTAKING);
                 });
             case STILL:
             default:

@@ -17,17 +17,17 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     private NormalizedRGBA backResult = null;
 
 
-    public final static float[] intakeGreenHigherHSV = {171f, 0.59f, 0.1575f};
-    public final static float[] intakeGreenLowerHSV  = {131f, 0.39f, 0.0f};
+    public final static float[] intakeGreenHigherHSV = {176f, 0.83f, 0.276f};
+    public final static float[] intakeGreenLowerHSV  = {136f, 0.43f, 0.0f};
 
-    public final static float[] intakePurpleHigherHSV = {262f, 0.32f, 0.159f};
-    public final static float[] intakePurpleLowerHSV  = {222f, 0.12f, 0.0f};
+    public final static float[] intakePurpleHigherHSV = {246f, 0.60f, 0.264f};
+    public final static float[] intakePurpleLowerHSV  = {206f, 0.20f, 0.0f};
 
-    public final static float[] backGreenHigherHSV = {170f, 0.41f, 0.163f};
-    public final static float[] backGreenLowerHSV  = {130f, 0.21f, 0.0f};
+    public final static float[] backGreenHigherHSV = {178f, 0.80f, 0.329f};
+    public final static float[] backGreenLowerHSV  = {138f, 0.40f, 0.0f};
 
-    public final static float[] backPurpleHigherHSV = {172f, 0.41f, 0.164f};
-    public final static float[] backPurpleLowerHSV  = {132f, 0.21f, 0.0f};
+    public final static float[] backPurpleHigherHSV = {220f, 0.60f, 0.390f};
+    public final static float[] backPurpleLowerHSV  = {200f, 0.20f, 0.0f};
 
     public final static float[] whiteLowerHSV = {0f, 0.99f, 0.99f};
     public final static float[] whiteHigherHSV = {360f, 1f, 1f};
