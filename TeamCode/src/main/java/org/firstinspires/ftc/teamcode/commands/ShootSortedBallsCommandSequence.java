@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
@@ -11,9 +10,6 @@ import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
-
-import java.nio.file.Watchable;
-import java.util.Arrays;
 
 public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
 
@@ -40,20 +36,18 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
         if (bestOffset > 0) {
             addCommands(
                     new InstantCommand(gateSubsystem::up),
-//                    new WaitForGateCommand(gateSubsystem),
-                    new WaitCommand(300),
-                    new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestOffset, false),
+                    new WaitForGateCommand(gateSubsystem),
+                    new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestOffset, false),
                     new InstantCommand(gateSubsystem::down),
                     new WaitCommand(500)
             );
         } else {
             addCommands(new InstantCommand(gateSubsystem::down),
-//                    new WaitForGateCommand(gateSubsystem)
-                    new WaitCommand(500)
+                    new WaitForGateCommand(gateSubsystem)
             );
         }
         //2b. ...and shoot the sequence.
-        addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, bestScore, false).withTimeout(3000));
+        addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestScore, false).withTimeout(3000));
 
         //3. Shoot the remaining balls
         for (int i = bestScore; i < 3; i++) {
@@ -87,7 +81,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
             }
 
             // Shoot the ball
-            addCommands(new MoveSpindexerCommand(spindexerSubsystem, gateSubsystem, intakeSubsystem, 1, false));
+            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, 1, false));
         }
 
         // Move gate back up

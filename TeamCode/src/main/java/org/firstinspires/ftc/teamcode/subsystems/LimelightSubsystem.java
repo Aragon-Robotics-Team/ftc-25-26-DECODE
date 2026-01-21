@@ -41,10 +41,10 @@ public class LimelightSubsystem extends SubsystemBase {
     public void setPipeline(LIMELIGHT_PIPELINES pipeline) {
         switch (pipeline) {
             case APRILTAG:
-                limelight.pipelineSwitch(0);
+                limelight.pipelineSwitch(1);
                 break;
             case ARTIFACT_AND_RAMP:
-                limelight.pipelineSwitch(1);
+                limelight.pipelineSwitch(0);
                 break;
             case ARTIFACT_ONLY:
                 limelight.pipelineSwitch(2);

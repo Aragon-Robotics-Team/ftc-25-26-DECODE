@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.hardware.ServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -16,17 +15,14 @@ public class ShooterSubsystem extends SubsystemBase {
     private Motor shooter1;
     private Motor shooter2;
     private MotorGroup shooter;
-    public double getTargetVelocity() {
-        return flywheelController.getSetPoint();
-    }
-    public double getActualVelocity() {
+    public double getVelocityTicks() {
         return shooter1.getCorrectedVelocity();
     }
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.014; //0.00004;
-    double kFOriginal = -0.00052; //0.00045;
+    double kPOriginal = -0.014; //although the coefficients are negative it is fine because it works;
+    double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;

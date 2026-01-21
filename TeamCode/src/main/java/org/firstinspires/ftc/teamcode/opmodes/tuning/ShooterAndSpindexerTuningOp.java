@@ -76,9 +76,9 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
                 break;
         }
         if (gamepad1.right_bumper) {
-            intake.set(IntakeSubsystem.IntakeState.REVERSES);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
         } else if (gamepad1.left_bumper) {
-            intake.set(IntakeSubsystem.IntakeState.INTAKING);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
         } else {
             intake.set(IntakeSubsystem.IntakeState.STILL);
         }
@@ -90,7 +90,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
 
         // 4. Telemetry for Graphing
         double target = shooterSubsystem.getTargetTicks();
-        double actual = shooterSubsystem.getActualVelocity();
+        double actual = shooterSubsystem.getVelocityTicks();
 
         telemetry.addData("Target (Ticks/Sec)", target);
         telemetry.addData("Actual (Ticks/Sec)", actual);

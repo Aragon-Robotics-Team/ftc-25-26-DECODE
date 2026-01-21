@@ -20,9 +20,9 @@ public class IntakeTestOpmode extends OpMode {
     @Override
     public void loop() {
         if (gamepad1.a) {
-            intake.set(IntakeSubsystem.IntakeState.REVERSES);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
         } else if (gamepad1.b) {
-            intake.set(IntakeSubsystem.IntakeState.INTAKING);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
         } else {
             intake.set(IntakeSubsystem.IntakeState.STILL);
         }

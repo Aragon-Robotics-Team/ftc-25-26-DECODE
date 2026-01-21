@@ -13,7 +13,7 @@ import com.seattlesolvers.solverslib.hardware.ServoEx;
 public class GatePositionTuningOp extends OpMode {
 
     // Edit this in Dashboard to move the servo
-    public static double targetPos = 0.75;
+    public static double targetPos = 0.55;
 
     private ServoEx gate;
     private AnalogInput gateEncoder;

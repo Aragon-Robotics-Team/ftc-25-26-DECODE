@@ -22,9 +22,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
-import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
-import org.firstinspires.ftc.teamcode.commands.MoveSpindexerCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
+import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -39,8 +37,9 @@ import java.util.ArrayList;
 
 
 @Config
-@Autonomous(name = "Red 12ball sorted", group = "angryBirds", preselectTeleOp = "Teleop")
-public class Red12SortedAuto extends CommandOpMode {
+@Autonomous(name = "Red 12ball unsorted (LM2)", group = "angryBirds", preselectTeleOp = "Teleop")
+public class Red12UnsortedAuto extends CommandOpMode {
+    //LM2 auto, 12 balls no gate
     //paths
     private final ArrayList<PathChain> paths = new ArrayList<>();
     public Pose currentPose;
@@ -54,7 +53,7 @@ public class Red12SortedAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(122.361,121.175,Math.toRadians(50)); //find actual statring pos
+    public static Pose startingPose = new Pose(122.361,121.175,Math.toRadians(49)); //find actual statring pos
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;
@@ -72,7 +71,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(122.361, 121.175), new Pose(91, 82))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(50))
+                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
                 .build()
         );
 
@@ -83,7 +82,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(91, 82), new Pose(96, 82.000))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
                 .build()
         );
 
@@ -103,7 +102,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(117, 82), new Pose(91, 82))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
                 .build()
         );
 
@@ -113,7 +112,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(91,  82), new Pose(91, 55))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(0))
                 .build()
         );
 
@@ -122,7 +121,7 @@ public class Red12SortedAuto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(91, 55), new Pose(135.000, 55))
+                        new BezierLine(new Pose(91, 55), new Pose(130.000, 55))
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build()
@@ -132,7 +131,7 @@ public class Red12SortedAuto extends CommandOpMode {
         paths.add(follower
                 .pathBuilder()
                 .addPath(
-                        new BezierLine(new Pose(135.000, 55), new Pose(115.000, 55))
+                        new BezierLine(new Pose(130.000, 55), new Pose(115.000, 55))
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build()
@@ -144,7 +143,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(115.000, 55), new Pose(91, 82))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(51))
                 .build()
         );
 
@@ -154,7 +153,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(91, 82), new Pose(91, 31))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(51), Math.toRadians(0))
                 .build()
         );
 
@@ -185,7 +184,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(125, 31), new Pose(91, 82))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(49))
                 .build()
         );
 
@@ -196,7 +195,7 @@ public class Red12SortedAuto extends CommandOpMode {
                 .addPath(
                         new BezierLine(new Pose(91, 82), new Pose(99, 78))
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(50))
+                .setLinearHeadingInterpolation(Math.toRadians(49), Math.toRadians(49))
                 .build()
         );
 
@@ -204,21 +203,40 @@ public class Red12SortedAuto extends CommandOpMode {
 
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
-                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKING)),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(1500)
                 ),
-                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
                 ),
-                new MoveSpindexerCommand(spindexer, gate, intake, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
                 )
+        );
+    }
+    private SequentialCommandGroup shoot() {
+        return new SequentialCommandGroup(
+            new InstantCommand(gate::down),
+            new WaitCommand(700),
+            new ParallelCommandGroup(
+                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                    new WaitCommand(499)
+            ),
+            new ParallelCommandGroup(
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                new WaitCommand(499)
+            ),
+            new ParallelCommandGroup(
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                new WaitCommand(499)
+            ),
+            new InstantCommand(gate::down)
         );
     }
 
@@ -247,7 +265,6 @@ public class Red12SortedAuto extends CommandOpMode {
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
         spindexer.set(115);
-        motif = new RobotConstants.BallColors[]{PURPLE, GREEN, PURPLE};
 
         //init paths
         buildPaths(follower);
@@ -267,16 +284,17 @@ public class Red12SortedAuto extends CommandOpMode {
                             shooter.setTargetLinearSpeed(495);
 //                            shooter.setHood(0.45); //Placeholder
                             gate.down();
-                            spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
+                            follower.setMaxPower(1);
+                            spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, PURPLE});
                         }), //start shoot
                         new FollowPathCommand(follower, paths.get(0), true), //drive to shooting pos
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.REVERSES);}),
-                                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)) //shoot motif
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);}),
+                                shoot()
                         ),
                         //cycle one
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);}),
                                 new FollowPathCommand(follower, paths.get(1), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(
@@ -284,6 +302,7 @@ public class Red12SortedAuto extends CommandOpMode {
                                 intakeArtifacts(),
                                 new ParallelRaceGroup(
                                         new FollowPathCommand(follower, paths.get(2), true), //drive and pick up balls
+                                        new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);}),
 //                                        new WaitForRobotStuckCommand(follower) //does not work for some reason
                                         new WaitCommand(2000)
                                 )
@@ -293,20 +312,13 @@ public class Red12SortedAuto extends CommandOpMode {
                             follower.setMaxPower(1);
                             spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                         }),
-//                        new InstantCommand(() -> {
-//                            follower.setMaxPower(0.6);
-//                        }),
-//                        new FollowPathCommand(follower, shimmy, true),
-//                        new InstantCommand(() -> {
-//                            follower.setMaxPower(1);
-//                        }),
                         new FollowPathCommand(follower, paths.get(3), true), // returning to shooting pos
-                        new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)), //shoot motif
+                        shoot(),
 
                         //cycle two
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> follower.setMaxPower(0.7)),
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
+                                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);}),
                                 new FollowPathCommand(follower, paths.get(4), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(
@@ -325,12 +337,12 @@ public class Red12SortedAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.get(6), true),
 
                         new FollowPathCommand(follower, paths.get(7), true), //return to shooting pos
-                        new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)), //shoot motif
+                        shoot(),
 
                         //cycle three
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> follower.setMaxPower(0.7)),
-                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKING);}),
+                                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                                new InstantCommand(() -> {intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);}),
                                 new FollowPathCommand(follower, paths.get(8), true) //drives to balls and lines itself up to intake
                         ),
                         new ParallelCommandGroup(
@@ -349,7 +361,7 @@ public class Red12SortedAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.get(10), true),
 
                         new FollowPathCommand(follower, paths.get(11), true), //return to shooting pos
-                        new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)), //shoot motif
+                        shoot(),
 
                         //move off shooting line so that you get extra points theoretically
                         new FollowPathCommand(follower, paths.get(12), true),
@@ -363,10 +375,10 @@ public class Red12SortedAuto extends CommandOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void run() {
-        if (shooter.getActualVelocity() - shooter.getTargetVelocity() < -30) {
+        if (shooter.getVelocityTicks() - shooter.getTargetTicks() < -30) {
             led.setColor(LEDSubsystem.LEDState.RED);
         }
-        else if (shooter.getActualVelocity() - shooter.getTargetVelocity() > 50) {
+        else if (shooter.getVelocityTicks() - shooter.getTargetTicks() > 50) {
             led.setColor(LEDSubsystem.LEDState.BLUE);
         }
         else {
@@ -391,8 +403,8 @@ public class Red12SortedAuto extends CommandOpMode {
 
         telemetry.addData("------------------",null);
 
-        telemetry.addData("shooter target velocity", shooter.getTargetVelocity());
-        telemetry.addData("shooter actual velocity", shooter.getActualVelocity());
+        telemetry.addData("shooter target velocity", shooter.getTargetTicks());
+        telemetry.addData("shooter actual velocity", shooter.getVelocityTicks());
 
         telemetry.addData("------------------",null);
 

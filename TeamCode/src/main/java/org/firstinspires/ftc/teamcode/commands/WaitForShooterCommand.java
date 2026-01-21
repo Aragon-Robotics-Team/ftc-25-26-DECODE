@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
@@ -10,8 +11,14 @@ public class WaitForShooterCommand extends CommandBase {
         this.shooterSubsystem = shooterSubsystem;
         addRequirements(shooterSubsystem);
     }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+    }
+
     @Override
     public boolean isFinished() {
-        return (shooterSubsystem.getActualVelocity() - shooterSubsystem.getTargetVelocity() < -50) && (shooterSubsystem.getActualVelocity() - shooterSubsystem.getTargetVelocity() > 50);
+        return (shooterSubsystem.getVelocityTicks() - shooterSubsystem.getTargetTicks() < -50) && (shooterSubsystem.getVelocityTicks() - shooterSubsystem.getTargetTicks() > 50);
     }
 }
