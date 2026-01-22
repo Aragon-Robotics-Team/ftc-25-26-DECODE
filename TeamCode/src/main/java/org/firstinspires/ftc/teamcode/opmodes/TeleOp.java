@@ -92,7 +92,7 @@ public class TeleOp extends CommandOpMode {
     public VoltageSensor voltageSensor;
     public GamepadEx driver1;
     public GamepadEx driver2;
-    
+
     //Pedro and PID
     private Follower follower;
     public static Pose startingPose;
