@@ -92,17 +92,7 @@ public class LimelightSubsystem extends SubsystemBase {
             for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
                 int id = fiducial.getFiducialId();
                 if (GOAL_TAG_IDS.contains(id)) {
-                    Pose3D botpose_mt2 = result.getBotpose_MT2();
-                    if (botpose_mt2 != null) {
-                        double x = botpose_mt2.getPosition().x;
-                        double y = botpose_mt2.getPosition().y;
-                        double z = botpose_mt2.getPosition().z;
-
-                        x = DistanceUnit.INCH.fromMeters(x);
-                        y = DistanceUnit.INCH.fromMeters(y);
-                        z = DistanceUnit.INCH.fromMeters(z);
-                        return x;
-                    }
+                    return result.getTx();
                 }
             }
         }

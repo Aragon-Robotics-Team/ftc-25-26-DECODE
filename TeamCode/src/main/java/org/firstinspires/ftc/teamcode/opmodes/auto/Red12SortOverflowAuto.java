@@ -152,7 +152,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
             endPose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(88.400, 81.800), new Pose(125, 83))
+                            new BezierLine(new Pose(88.400, 81.800), new Pose(115, 83))
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(48))
                     .build();
@@ -271,7 +271,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
-//                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new FollowPathCommand(follower, paths.shootSecondRow, false),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
@@ -281,7 +281,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
-//                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 new FollowPathCommand(follower, paths.shootFirstRow),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
@@ -290,7 +290,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000),
                         intakeArtifacts()
                 ),
-//                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
                 new FollowPathCommand(follower, paths.shootThirdRow),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 3, false, false),
 
