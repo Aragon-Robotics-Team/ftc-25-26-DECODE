@@ -42,7 +42,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                     new InstantCommand(gateSubsystem::up),
                     new WaitCommand(200),
                     // Move spindexer to alignment (Does not shoot, just rotates)
-                    new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestOffset, false),
+                    new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestOffset, false, false),
                     new InstantCommand(gateSubsystem::down),
                     new WaitCommand(300)
             );
@@ -61,7 +61,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                 }
             }));
             // Physically shoot the balls
-            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestScore, false).withTimeout(3000));
+            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestScore, false, true).withTimeout(3000));
         }
 
         // --- PART 3: HANDLE REMAINING BALLS (Smart Fallback) ---
@@ -102,8 +102,8 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                     }
             ));
 
-            // Execute the shot for this iteration
-            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, 1, false));
+            // Shoot the single ball
+            addCommands(new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, 1, false, true));
         }
 
         // Cleanup
