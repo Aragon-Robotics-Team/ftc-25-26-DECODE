@@ -208,13 +208,13 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         if (motifid != null) {
             switch ((int) motifid) {
                 case 21:
-                    motif = new RobotConstants.BallColors[]{PURPLE, PURPLE, GREEN}; //actually correct bc robot shoots from end to start
+                    motif = new RobotConstants.BallColors[]{GREEN, PURPLE, PURPLE}; //changed to actual motif
                     break;
                 case 22:
                     motif = new RobotConstants.BallColors[]{PURPLE, GREEN, PURPLE};
                     break;
                 case 23:
-                    motif = new RobotConstants.BallColors[]{GREEN, PURPLE, PURPLE}; //actually correct bc robot shoots from end to start
+                    motif = new RobotConstants.BallColors[]{PURPLE, PURPLE, GREEN}; //changed to actual motif
                     break;
             }
         }
