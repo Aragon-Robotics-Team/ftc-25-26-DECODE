@@ -192,11 +192,11 @@ public class TeleOp extends CommandOpMode {
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true)
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true),
+                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
                     new InstantCommand(() -> {
                         intakeState = IntakeState.REVERSE_AND_INTAKE_ROLLERS;
                         new SelectCommand(this::getIntakeCommand).schedule();

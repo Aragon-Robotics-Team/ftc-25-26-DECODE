@@ -208,12 +208,12 @@ public class Red12UnsortedAuto extends CommandOpMode {
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(1500)
                 ),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
                 ),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
@@ -225,15 +225,15 @@ public class Red12UnsortedAuto extends CommandOpMode {
             new InstantCommand(gate::down),
             new WaitCommand(700),
             new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true, false),
                     new WaitCommand(499)
             ),
             new ParallelCommandGroup(
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true, false),
                 new WaitCommand(499)
             ),
             new ParallelCommandGroup(
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate,1, true, false),
                 new WaitCommand(499)
             ),
             new InstantCommand(gate::down)

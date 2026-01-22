@@ -208,12 +208,12 @@ public class Red12SortedAuto extends CommandOpMode {
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(1500)
                 ),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
                 ),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new ParallelRaceGroup(
                         new WaitForColorCommand(colorsensor),
                         new WaitCommand(500)
