@@ -2,44 +2,34 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
-
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import com.pedropathing.geometry.Pose; // Import Pedro Pose
 
 import java.util.Arrays;
 import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import java.time.LocalTime;
-import java.time.Instant;
 
 public class LimelightSubsystem extends SubsystemBase {
-    Limelight3A limelight;
-    private static final List<Integer> MOTIF_TAG_IDS = Arrays.asList(21, 22, 23); // Tags we should detect for motif
-    private static final List<Integer> GOAL_TAG_IDS = Arrays.asList(20, 24); // Tags we should detect for goal
+    public Limelight3A limelight;
+    private static final List<Integer> MOTIF_TAG_IDS = Arrays.asList(21, 22, 23);
+    private static final List<Integer> GOAL_TAG_IDS = Arrays.asList(20, 24);
+
     public enum LIMELIGHT_PIPELINES {
         APRILTAG,
         ARTIFACT_AND_RAMP,
         ARTIFACT_ONLY
     }
+
     public LimelightSubsystem(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(90); // This sets how often we ask Limelight for data (90 times per second)
-        //Probably our pipelines will look something like this:
-        //  0: Apriltag/megatag2
-        //  1: Color blob detection
-        limelight.pipelineSwitch(0); // Switch to pipeline number 0
-        limelight.start(); // This tells Limelight to start looking!
+        limelight.setPollRateHz(90);
+        limelight.pipelineSwitch(0);
+        limelight.start();
     }
 
-    /**
-     * change the limelight pipeline. May have a short delay ???
-     * @param pipeline what pipeline to switch to.
-     */
     public void setPipeline(LIMELIGHT_PIPELINES pipeline) {
         switch (pipeline) {
             case APRILTAG:
@@ -53,33 +43,64 @@ public class LimelightSubsystem extends SubsystemBase {
                 break;
         }
     }
-    /**
-     * @return performs hardware call on limelight to return a detection
-     * */
+
     public LLResult getResult() {
         return limelight.getLatestResult();
     }
+
     /**
-     * @return pass in list of detections to detect motif id num (21, 22, or 23)
-     * */
-    public Object detectMotif(LLResult result) {
-        //TODO for Claire: Make this method return the biggest motif fiducial! rn it returns the first tag with a motif it can find.
-        //fiducial.getTargetArea() might work?? i havent looked into it 
-        //https://docs.steelbootrobotics.org/docs/Documents/limelight%20stuff.pdf
-        // Obelisk GPP ID = 21
-        // Obelisk PGP ID = 22
-        // Obelisk PPG ID = 23
+     * Updates the Limelight with the robot's current heading.
+     * REQUIRED for MegaTag2 to work.
+     * @param headingRadians Robot heading in Radians (Pedro standard)
+     */
+    public void updateRobotOrientation(double headingRadians) {
+        // Limelight expects degrees
+        limelight.updateRobotOrientation(Math.toDegrees(headingRadians));
+    }
+
+    /**
+     * Gets the robot's field position using MegaTag2.
+     * @param result The latest LLResult
+     * @return A PedroPathing Pose in INCHES, or null if invalid.
+     */
+    public Pose getMegaTagPose(LLResult result) {
         if (result != null && result.isValid()) {
-            for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
-                int id = fiducial.getFiducialId();
-                if (MOTIF_TAG_IDS.contains(id)) {
-                    return id;
-                }
+            // MegaTag2 is robust because it uses our IMU heading
+            Pose3D botpose_mt1 = result.getBotpose();
+
+            if (botpose_mt1 != null) {
+                // Convert Meters (Limelight) to Inches (Pedro)
+                double x = botpose_mt1.getPosition().x;
+                double y = botpose_mt1.getPosition().y;
+
+                // MT2 returns heading in degrees, convert back to radians for Pedro
+                double heading_rad = Math.toRadians(botpose_mt1.getOrientation().getYaw());
+
+                return new Pose(x, y);
             }
         }
         return null;
     }
 
+    public Integer detectMotif(LLResult result) {
+        if (result != null && result.isValid()) {
+            // Find the biggest tag (closest) to avoid noise
+            LLResultTypes.FiducialResult biggestTag = null;
+            double maxArea = 0;
+
+            for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
+                int id = fiducial.getFiducialId();
+                if (MOTIF_TAG_IDS.contains(id)) {
+                    if (fiducial.getTargetArea() > maxArea) {
+                        maxArea = fiducial.getTargetArea();
+                        biggestTag = fiducial;
+                    }
+                }
+            }
+            if (biggestTag != null) return biggestTag.getFiducialId();
+        }
+        return null;
+    }
 
 
     /**
@@ -164,4 +185,3 @@ public class LimelightSubsystem extends SubsystemBase {
         limelight.captureSnapshot(String.valueOf(System.currentTimeMillis()));
     }
 }
-

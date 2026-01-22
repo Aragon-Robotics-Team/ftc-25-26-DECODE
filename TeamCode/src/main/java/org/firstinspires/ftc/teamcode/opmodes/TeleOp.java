@@ -27,6 +27,7 @@ import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
@@ -62,6 +63,7 @@ public class TeleOp extends CommandOpMode {
     int farShooterTarget;
     boolean isAdjustingFar = false;
     boolean isHoldingPoint = false;
+    double headingError;
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(135,141.5);
     final Pose GOAL_BLUE = new Pose(9,141.5);
@@ -100,7 +102,7 @@ public class TeleOp extends CommandOpMode {
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
-    public static double alignerHeadingkP = 0.004;
+    public static double alignerHeadingkP = -0.02;
     public static double alignerHeadingkD = 0.0;
     public static double alignerHeadingkF = 0.0;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
@@ -141,7 +143,6 @@ public class TeleOp extends CommandOpMode {
         //Update color sensors
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
-        colorSensors.updateBack(); //Update every time.... for now .......
 
         handleTelemetry();
 
@@ -156,7 +157,10 @@ public class TeleOp extends CommandOpMode {
         }
     }
     void initializeSystems() {
-        startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(104,135.8,Math.toRadians(-90)));
+        startingPose = (Pose) blackboard.get("endpose");
+        if (startingPose == null) {
+            startingPose = new Pose(104,135.8,Math.toRadians(-90));
+        }
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose);
         follower.setMaxPower(1.0);
@@ -316,12 +320,14 @@ public class TeleOp extends CommandOpMode {
 
     }
     void handleTeleopDrive() {
+        LLResult result = limelight.getResult();
+
         //Drivetrain code
         if (manualControl) {
             //shooter.setTargetLinearSpeed(50);
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
-            double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1);
+            double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             double magnitude = Math.abs(x) + Math.abs(y) + Math.abs(rx);
 //            if (magnitude> 0.1) {
@@ -340,31 +346,25 @@ public class TeleOp extends CommandOpMode {
 //            }
             follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
         } else {
+            // --- AUTO AIM MODE ---
             if (gamepad1.touchpad_finger_1) {
                 manualControl = true;
                 gamepad1.rumbleBlips(1);
             }
+
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
-            double rx = -driver1.getRightX();
-            double error = 0;
-            LLResult result = limelight.getResult();
-            if (result != null && limelight.detectGoalXDistance(result) != null) {
-                error = (double) limelight.detectGoalXDistance(result);
+            double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
+            headingError = 0;
+            if (result != null && result.isValid()) {
+                headingError = result.getTy() + 1;
             }
-            rx -= alignerHeadingPID.calculate(error, 0);
-            telemetry.addData("rx, error", rx + ", " + error);
-//            Vector v_ball = calculateTargetVector2(follower, (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE), shooter);
-//            double targetDirection = v_ball.getTheta();
-//            double error = getAngleDifference(targetDirection, follower.getHeading());
-//            rx = alignerHeadingPID.calculate(error, 0);
-//            double ticksSpeed = v_ball.getMagnitude();
-//            double safeSpeed = clamp(ticksSpeed, speedMin, speedMax);
-//            shooter.setTargetLinearSpeed(safeSpeed);
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            double magnitude = Math.abs(x) + Math.abs(y) + Math.abs(rx);
-            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
 
+
+            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, 0), -0.5, 0.5);
+
+            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
         }
     }
     void handleLED() {
@@ -417,6 +417,7 @@ public class TeleOp extends CommandOpMode {
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("Loop Time", loopTimer.milliseconds());
+        telemetry.addData("headingError", headingError);
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
@@ -497,7 +498,7 @@ public class TeleOp extends CommandOpMode {
      * @param shooter shooter subsystem
      * @return A vector representing the trajectory the ball should follow. The magnitude of the vector is the linear speed the ball should have.
      */
-    public Vector calculateTargetVector2(Follower follower, Pose targetPose, ShooterSubsystem shooter) {
+    public Vector calculateTargetVector2(Follower follower,Pose robotPose, Pose targetPose, ShooterSubsystem shooter) {
         // --- 0. CONFIGURATION ---
         // You must estimate your shooter's launch angle relative to the floor.
         // If your hood moves, calculate this based on hood position.
@@ -506,7 +507,7 @@ public class TeleOp extends CommandOpMode {
         double latency = 0.015+0.16;
 
         // --- 1. GATHER CURRENT STATE ---
-        Pose currentPose = follower.getPose();
+        Pose currentPose = robotPose;
         Vector v_robot = follower.getVelocity();
         double angularVel = follower.getAngularVelocity();
         Vector a_robot = follower.getAcceleration();

@@ -7,6 +7,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.MathUtils;
 
 public class ShooterSubsystem extends SubsystemBase {
     //Note: I changed the motor type from 312 rpm to bare (6k i think).
@@ -124,7 +125,8 @@ public class ShooterSubsystem extends SubsystemBase {
         return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        return lut.get(distance);
+        double clamped = MathUtils.clamp(distance, 42.1, 133.9);
+        return lut.get(clamped);
     }
     public void updatePIDVoltage(double voltage) {
         double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
