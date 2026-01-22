@@ -53,7 +53,7 @@ public class TeleOp extends CommandOpMode {
         BLUE
     }
     public enum IntakeState {
-        STILL, REVERSE, INTAKING, REVERSE_AND_INTAKE_ROLLERS
+        INTAKESTILL_ROLLERSIN, REVERSE, INTAKING, REVERSE_AND_INTAKE_ROLLERS
     }
     int speedMin;
     int speedMax;
@@ -79,7 +79,7 @@ public class TeleOp extends CommandOpMode {
     //State variables
     Alliance alliance = Alliance.RED;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
-    IntakeState intakeState = IntakeState.STILL;
+    IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
     boolean slowMode = false;
 
@@ -190,15 +190,15 @@ public class TeleOp extends CommandOpMode {
         //Driver 1
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKING) intakeState = IntakeState.STILL;
+                    if (intakeState == IntakeState.INTAKING) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
                     else intakeState = IntakeState.INTAKING;
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.REVERSE_AND_INTAKE_ROLLERS) intakeState = IntakeState.STILL;
-                    if (intakeState == IntakeState.REVERSE) intakeState = IntakeState.STILL;
+                    if (intakeState == IntakeState.REVERSE_AND_INTAKE_ROLLERS) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == IntakeState.REVERSE) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
                     else intakeState = IntakeState.REVERSE;
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
@@ -369,7 +369,7 @@ public class TeleOp extends CommandOpMode {
     }
     void handleLED() {
         //LED Code
-        if (intakeState == IntakeState.STILL) {
+        if (intakeState == IntakeState.INTAKESTILL_ROLLERSIN) {
             led.setColor(LEDSubsystem.LEDState.WHITE);
         }
         else if (intakeState == IntakeState.INTAKING) {
@@ -611,7 +611,7 @@ public class TeleOp extends CommandOpMode {
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSIN);
                 });
-            case STILL:
+            case INTAKESTILL_ROLLERSIN:
             default:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSIN);
