@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.hardware.ServoEx;
 
 @Config
@@ -13,10 +14,11 @@ import com.seattlesolvers.solverslib.hardware.ServoEx;
 public class GatePositionTuningOp extends OpMode {
 
     // Edit this in Dashboard to move the servo
-    public static double targetPos = 0.55;
+    public static double targetPos = 0.58;
 
     private ServoEx gate;
     private AnalogInput gateEncoder;
+    private GamepadEx driver1;
 
     @Override
     public void init() {
@@ -30,6 +32,9 @@ public class GatePositionTuningOp extends OpMode {
         // Match the inversion setting from your Subsystem
         gate.setInverted(true);
 
+        driver1 = new GamepadEx(gamepad1);
+
+
         telemetry.addLine("Initialized. Use Dashboard to tune 'targetPos'.");
     }
 
@@ -37,6 +42,12 @@ public class GatePositionTuningOp extends OpMode {
     public void loop() {
         // Set the servo to the dashboard variable
         gate.set(targetPos);
+        if (gamepad1.a) {
+            targetPos = 0.73;
+        }
+        if (gamepad1.b) {
+            targetPos = 0.58;
+        }
 
         double currentVoltage = gateEncoder.getVoltage();
 

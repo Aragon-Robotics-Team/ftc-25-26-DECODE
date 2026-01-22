@@ -7,9 +7,9 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
     public enum IntakeState {
-        STILL, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN;
+        INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL;
     }
-    public IntakeState intakeState = IntakeState.STILL;
+    public IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     private DcMotor intakeWheels;
     private CRServo sideWheel;
     private CRServo sideWheel2;
@@ -22,7 +22,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void set(IntakeState state) {
         switch(state) {
-            case STILL:
+            case INTAKESTILL_ROLLERSIN:
                 intakeWheels.setPower(0.0);
                 sideWheel.setPower(-1.0);
                 sideWheel2.setPower(1.0);
@@ -41,6 +41,11 @@ public class IntakeSubsystem extends SubsystemBase {
                 intakeWheels.setPower(-1.0);
                 sideWheel.setPower(1.0);
                 sideWheel2.setPower(-1.0);
+                break;
+            case INTAKESTILL_ROLLERSSTILL:
+                intakeWheels.setPower(0.0);
+                sideWheel.setPower(0.0);
+                sideWheel2.setPower(0.0);
                 break;
         }
         intakeState = state;

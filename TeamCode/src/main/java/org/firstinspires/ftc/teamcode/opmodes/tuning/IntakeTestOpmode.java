@@ -24,7 +24,7 @@ public class IntakeTestOpmode extends OpMode {
         } else if (gamepad1.b) {
             intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
         } else {
-            intake.set(IntakeSubsystem.IntakeState.STILL);
+            intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSIN);
         }
     }
 

@@ -18,7 +18,7 @@ public class MoveSpindexerAndUpdateArrayCommand extends CommandBase {
     private final ElapsedTime safetyTimer = new ElapsedTime();
     private final ElapsedTime delayTimer = new ElapsedTime();
     private final double TIMEOUT_SEC = 2.5;
-    public final double DELAY_SEC = 0.2;
+    public final double DELAY_SEC = 0.5;
     private boolean slow;
     private int timesMoved = 0;
     public MoveSpindexerAndUpdateArrayCommand(SpindexerSubsystem spindexerSubsystem, GateSubsystem gateSubsystem, int num, boolean instant, boolean slow) {

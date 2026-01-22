@@ -14,6 +14,8 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import java.time.LocalTime;
+import java.time.Instant;
 
 public class LimelightSubsystem extends SubsystemBase {
     Limelight3A limelight;
@@ -156,6 +158,10 @@ public class LimelightSubsystem extends SubsystemBase {
             return distance;
         }
         return null;
+    }
+
+    public void takeSnapshot() {
+        limelight.captureSnapshot(String.valueOf(System.currentTimeMillis()));
     }
 }
 

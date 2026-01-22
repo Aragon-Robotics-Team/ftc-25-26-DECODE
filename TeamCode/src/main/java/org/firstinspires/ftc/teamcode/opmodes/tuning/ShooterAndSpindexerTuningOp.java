@@ -80,7 +80,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         } else if (gamepad1.left_bumper) {
             intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
         } else {
-            intake.set(IntakeSubsystem.IntakeState.STILL);
+            intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSIN);
         }
 
         // 3. Run Subsystem Loop (Calculates PID)

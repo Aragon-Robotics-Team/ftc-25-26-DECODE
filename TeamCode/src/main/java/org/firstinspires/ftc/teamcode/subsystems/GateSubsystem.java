@@ -8,10 +8,10 @@ import com.seattlesolvers.solverslib.hardware.ServoEx;
 public class GateSubsystem extends SubsystemBase {
     ServoEx gate;
     AnalogInput gateEncoder;
-    public final double UP = 0.79;
-    public final double DOWN = 0.63;
-    public final double UP_VOLTAGE = 2.56; //Volts
-    public final double DOWN_VOLTAGE = 2.04; //Volts
+    public final double UP = 0.64;
+    public final double DOWN = 0.49;
+    public final double UP_VOLTAGE = 2.07; //Volts
+    public final double DOWN_VOLTAGE = 1.63; //Volts
 
     public GateSubsystem(final HardwareMap hMap) {
         gate = new ServoEx(hMap, "gate");

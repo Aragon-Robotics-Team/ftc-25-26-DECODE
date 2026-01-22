@@ -16,11 +16,11 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
@@ -62,7 +62,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
             shootPreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(123, 127), new Pose(88.400, 81.800))
+                            new BezierLine(new Pose(123, 127), new Pose(91.400, 86.800))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(48))
                     .build();
@@ -70,7 +70,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(88.400, 81.800),
+                                    new Pose(91.400, 86.800),
                                     new Pose(78.000, 30.000),
                                     new Pose(136.000, 47.000)
                             )
@@ -87,7 +87,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                                     new Pose(88.400, 81.800)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
                     .build();
 
             intakeThirdRow = follower
@@ -96,7 +96,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(88.400, 81.800),
                                     new Pose(80.3, 19.1),
-                                    new Pose(127.700, 21.6)
+                                    new Pose(131.700, 21.6)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -105,7 +105,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
             shootThirdRow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(127.700, 21.6), new Pose(88.400, 81.800))
+                            new BezierLine(new Pose(131.700, 21.6), new Pose(88.400, 81.800))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
                     .build();
@@ -123,7 +123,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(new Pose(115.000, 77.000), new Pose(88.400, 81.800))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
                     .build();
             intakeRamp = follower
                     .pathBuilder()
@@ -134,7 +134,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                                     new Pose(133.500, 51.000)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(50))
+                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(50))
                     .build();
 
             shootRamp = follower
@@ -224,7 +224,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         follower.setPose(startingPose);
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
-        intake.set(IntakeSubsystem.IntakeState.STILL);
+        intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSSTILL);
         shooter = new ShooterSubsystem(hardwareMap);
         spindexer = new SpindexerSubsystem(hardwareMap);
         colorsensor = new ColorSensorsSubsystem(hardwareMap);
@@ -253,10 +253,10 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
-                new WaitCommand(1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                 //Preload
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootPreload, false),
+                        new FollowPathCommand(follower, paths.shootPreload, false)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif))
                 ),
                 setCount(1),
@@ -266,33 +266,43 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 setCount(3),
 
                 //Second row
-                new ParallelRaceGroup(
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRow)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootSecondRow, false),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
-                new ParallelRaceGroup(
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeFirstRow).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootFirstRow),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //Third row
-                new ParallelRaceGroup(
-                        new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000),
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRow),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 3, false, false),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //move to end pos
                 new FollowPathCommand(follower, paths.endPose)

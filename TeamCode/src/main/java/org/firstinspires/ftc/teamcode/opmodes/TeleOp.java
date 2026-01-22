@@ -46,6 +46,7 @@ import java.util.function.Supplier;
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Teleop Field Centric", group = "!")
 public class TeleOp extends CommandOpMode {
     //Constants
+    private ElapsedTime snapshotTimer;
     public enum Alliance {
         RED,
         BLUE
@@ -117,6 +118,7 @@ public class TeleOp extends CommandOpMode {
     @Override
     public void initialize () {
         initializeSystems();
+        snapshotTimer = new ElapsedTime();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         createBinds();
         speedMax = shooter.getSpeedMax();
@@ -125,6 +127,7 @@ public class TeleOp extends CommandOpMode {
         distMin = shooter.getDistMin();
         closeShooterTarget = 505; //450;
         farShooterTarget = 660; //540;
+        snapshotTimer.reset();
     }
 
     @SuppressLint("DefaultLocale")
@@ -147,7 +150,10 @@ public class TeleOp extends CommandOpMode {
         telemetry.update();
         super.run();
 
-
+        if (snapshotTimer.seconds() > 5) {
+            limelight.takeSnapshot();
+            snapshotTimer.reset();
+        }
     }
     void initializeSystems() {
         startingPose = (Pose) blackboard.getOrDefault("endpose", new Pose(104,135.8,Math.toRadians(-90)));
@@ -607,7 +613,7 @@ public class TeleOp extends CommandOpMode {
             case STILL:
             default:
                 return new InstantCommand(() -> {
-                    intake.set(IntakeSubsystem.IntakeState.STILL);
+                    intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSIN);
                 });
         }
     }
