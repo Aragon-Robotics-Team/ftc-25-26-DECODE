@@ -6,25 +6,28 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Shooter PID Tuning", group = "Tuning")
-public class ShooterPIDTuningOp extends OpMode {
+@TeleOp(name = "Lucas Berliner Test Mode OK", group = "Tuning")
+public class ShooterAndSpindexerTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
-
+    private SpindexerSubsystem spindexerSubsystem;
+    private IntakeSubsystem intake;
     // --- DASHBOARD VARIABLES ---
-    public static double p = -0.008;
+    public static double p = 0.00004;
     public static double i = 0.0;
     public static double d = 0.0;
-    public static double f = -0.00052;
+    public static double f = 0.00045;
 
     public enum Mode {
         RAW_TICKS,    // Tune pure motor physics
         LINEAR_SPEED  // Tune game logic (inches/sec)
     }
-    public static Mode tuningMode = Mode.RAW_TICKS;
+    public static Mode tuningMode = Mode.LINEAR_SPEED;
 
     // Set this if using RAW_TICKS
     public static double targetTicks = 0;
@@ -36,6 +39,9 @@ public class ShooterPIDTuningOp extends OpMode {
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         shooterSubsystem = new ShooterSubsystem(hardwareMap);
+        spindexerSubsystem = new SpindexerSubsystem(hardwareMap);
+        intake = new IntakeSubsystem(hardwareMap);
+        spindexerSubsystem.set(75);
 
         telemetry.addLine("Initialized.");
         telemetry.addLine("1. Open Dashboard.");
@@ -45,6 +51,18 @@ public class ShooterPIDTuningOp extends OpMode {
 
     @Override
     public void loop() {
+        if (gamepad1.aWasPressed()) {
+            spindexerSubsystem.moveSpindexerBy(120);
+        }
+        if (gamepad1.bWasPressed()) {
+            spindexerSubsystem.moveSpindexerBy(-120);
+        }
+        if (gamepad1.dpad_up) {
+            targetTicks = 1500;
+        }
+        else if (gamepad1.dpad_down) {
+            targetTicks = 0;
+        }
         // 1. Update PIDF from Dashboard
         shooterSubsystem.setPIDF(p, i, d, f);
 
@@ -57,9 +75,18 @@ public class ShooterPIDTuningOp extends OpMode {
                 shooterSubsystem.setTargetLinearSpeed(targetSpeedInches);
                 break;
         }
+        if (gamepad1.right_bumper) {
+            intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
+        } else if (gamepad1.left_bumper) {
+            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+        } else {
+            intake.set(IntakeSubsystem.IntakeState.STILL);
+        }
 
         // 3. Run Subsystem Loop (Calculates PID)
         shooterSubsystem.periodic();
+        spindexerSubsystem.periodic();
+        intake.periodic();
 
         // 4. Telemetry for Graphing
         double target = shooterSubsystem.getTargetTicks();
@@ -72,6 +99,7 @@ public class ShooterPIDTuningOp extends OpMode {
         // Helpful helper to see if math works
         if(tuningMode == Mode.LINEAR_SPEED) {
             telemetry.addData("Target Linear (in/s)", targetSpeedInches);
+            telemetry.addData("Actual Linear (in/s)", shooterSubsystem.getFlywheelLinearSpeed());
         }
 
         telemetry.update();

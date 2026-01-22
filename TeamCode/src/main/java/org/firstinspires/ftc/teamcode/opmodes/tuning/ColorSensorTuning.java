@@ -5,38 +5,84 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
 
-import java.util.Arrays;
+import java.util.Locale;
 
 @Config
-@TeleOp(name = "Color Sensor Tuning ", group = "tuning")
+@TeleOp(name = "Color Sensor Tuning", group = "Tuning")
 public class ColorSensorTuning extends OpMode {
-    private ColorSensorsSubsystem colorSensor;
+
+    private ColorSensorsSubsystem colorSubsystem;
+    public GamepadEx driver1;
+    float value = 17.0f;
+
     @Override
     public void init() {
-        colorSensor = new ColorSensorsSubsystem(hardwareMap);
+        colorSubsystem = new ColorSensorsSubsystem(hardwareMap);
+        driver1 = new GamepadEx(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry.addLine("Ready to tune color sensors.");
+        telemetry.update();
     }
 
     @Override
     public void loop() {
-        float[] sensedColor1 = colorSensor.senseColorsHSV(1);
-        boolean isGreen1 = colorSensor.checkIfGreen(1);
-        boolean isPurple1 = colorSensor.checkIfPurple(1);
+        // 1. READ DATA (Manually update each sensor)
+        colorSubsystem.updateSensor1();
+        colorSubsystem.updateSensor2();
+        colorSubsystem.updateBack();
 
-        float[] sensedColor2 = colorSensor.senseColorsHSV(2);
-        boolean isGreen2 = colorSensor.checkIfGreen(2);
-        boolean isPurple2 = colorSensor.checkIfPurple(2);
+        // 2. GET HSV VALUES (Convert raw result to HSV for display)
+        float[] hsv1 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor1Result());
+        float[] hsv2 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor2Result());
+        float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
 
-        telemetry.addData("#1 sensed color hsv ", Arrays.toString(sensedColor1));
-        telemetry.addData("#1 detects green ", isGreen1);
-        telemetry.addData("#1 detects purple ", isPurple1);
+        // get and set gain
+        if (gamepad1.dpad_up) {
+            value++;
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+        }
+        if (gamepad1.dpad_down) {
+            value--;
+            if (value < 1.0f) {value = 1.0f;}
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
 
-        telemetry.addData("#2 sensed color hsv ", Arrays.toString(sensedColor2));
-        telemetry.addData("#2 detects green ", isGreen2);
-        telemetry.addData("#2 detects purple ", isPurple2);
+        }
 
+        // 3. DISPLAY DATA
+        telemetry.addData("Current Gain", value);
+
+        // --- INTAKE SENSOR 1 ---
+        telemetry.addLine("--- INTAKE SENSOR 1 ---");
+        telemetry.addData("HSV", formatHSV(hsv1));
+        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor1Result()));
+        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor1Result()));
+        telemetry.addLine();
+
+        // --- INTAKE SENSOR 2 ---
+        telemetry.addLine("--- INTAKE SENSOR 2 ---");
+        telemetry.addData("HSV", formatHSV(hsv2));
+        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor2Result()));
+        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor2Result()));
+        telemetry.addLine();
+
+        // --- BACK SENSOR ---
+        telemetry.addLine("--- BACK SENSOR ---");
+        telemetry.addData("HSV", formatHSV(hsvBack));
+        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenBack(colorSubsystem.getBackResult()));
+        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleBack(colorSubsystem.getBackResult()));
+
+        telemetry.update();
+    }
+
+    private String formatHSV(float[] hsv) {
+        return String.format(Locale.US, "H: %.0f,  S: %.2f,  V: %.3f", hsv[0], hsv[1], hsv[2]);
     }
 }

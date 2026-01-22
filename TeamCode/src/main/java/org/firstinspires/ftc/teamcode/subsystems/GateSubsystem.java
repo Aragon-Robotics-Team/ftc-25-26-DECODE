@@ -8,13 +8,14 @@ import com.seattlesolvers.solverslib.hardware.ServoEx;
 public class GateSubsystem extends SubsystemBase {
     ServoEx gate;
     AnalogInput gateEncoder;
-    public final double UP = 0.55;
-    public final double DOWN = 0.40;
-    public final double UP_VOLTAGE = 1.6; //Volts
-    public final double DOWN_VOLTAGE = 1.3; //Volts
+    public final double UP = 0.79;
+    public final double DOWN = 0.63;
+    public final double UP_VOLTAGE = 2.56; //Volts
+    public final double DOWN_VOLTAGE = 2.04; //Volts
 
     public GateSubsystem(final HardwareMap hMap) {
         gate = new ServoEx(hMap, "gate");
+        gateEncoder = hMap.get(AnalogInput.class, "gateEncoder");
         gate.setInverted(true);
     }
     public enum GateState {
@@ -35,12 +36,7 @@ public class GateSubsystem extends SubsystemBase {
     public boolean isAtTarget() {
         //is gate at position
         //add wait for gate finish command
-        if (Math.abs(gateEncoder.getVoltage() - UP_VOLTAGE) < 0.1 || Math.abs(gateEncoder.getVoltage() - DOWN_VOLTAGE) < 0.1) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return Math.abs(gateEncoder.getVoltage() - UP_VOLTAGE) < 0.05 || Math.abs(gateEncoder.getVoltage() - DOWN_VOLTAGE) < 0.05;
     }
 
 }

@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.hardware.ServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
@@ -16,20 +15,21 @@ public class ShooterSubsystem extends SubsystemBase {
     private Motor shooter1;
     private Motor shooter2;
     private MotorGroup shooter;
-    public double getTargetVelocity() {
-        return flywheelController.getSetPoint();
-    }
-    public double getActualVelocity() {
+    public double getVelocityTicks() {
         return shooter1.getCorrectedVelocity();
     }
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.008;
+    double kPOriginal = -0.014; //although the coefficients are negative it is fine because it works;
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;
+    int speedMax;
+    int speedMin;
+    int distMax;
+    int distMin;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.BARE);
@@ -46,9 +46,62 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.set(0);
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
-        lut.add(10, 50); //placeholder
-        lut.add(10, 50); //placeholder
+//        lut.add(46.5, 435);
+//        lut.add(60, 450);
+//        lut.add(80, 490);
+//        lut.add(206, 540);
+//        lut.add(232.5, 570);
+        lut.add(42, 505);
+        lut.add(59, 505);
+        lut.add(74, 515);
+        lut.add(117, 610);
+        lut.add(134, 660);
         lut.createLUT();
+
+//        speedMax = 570;
+//        speedMin = 435;
+//        distMax = 132;
+//        distMin = 47;
+        speedMax = 660;
+        speedMin = 505;
+        distMax = 134;
+        distMin = 42;
+    }
+    public int getSpeedMax() {
+        return speedMax;
+    }
+    public int getSpeedMin() {
+        return speedMin;
+    }
+    public int getDistMax() {
+        return distMax;
+    }
+    public int getDistMin() {
+        return distMin;
+    }
+    public void setPIDF(double p, double i, double d, double f) {
+        this.kPOriginal = p;
+        this.kFOriginal = f;
+        this.flywheelController.setPIDF(p, i, d, f);
+
+        // Temporarily apply directly to current kP/kF in case voltage comp isn't running
+        this.kP = p;
+        this.kF = f;
+    }
+
+    /**
+     * Sets a raw target in Ticks Per Second (bypasses linear math).
+     * Useful for initial feedforward tuning.
+     */
+    public void setTargetTicks(double ticksPerSec) {
+        flywheelController.setSetPoint(ticksPerSec);
+    }
+
+    /**
+     * @return The target velocity in Ticks Per Second
+     */
+    public double getTargetTicks() {
+        return flywheelController.getSetPoint();
     }
     public void setTargetLinearSpeed(double vel) {
         double ticksPerRev = 28.0;
@@ -68,7 +121,7 @@ public class ShooterSubsystem extends SubsystemBase {
         double ticksPerRev = 28.0;
         double flywheelDiameter = 2.83465; //72 mm to inches
         double gearRatio = 32.0 / 24.0;
-        return shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
+        return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
         return lut.get(distance);

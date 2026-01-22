@@ -17,17 +17,17 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     private NormalizedRGBA backResult = null;
 
 
-    public final static float[] intakeGreenHigherHSV = {174f, 0.86f, 0.31f};
-    public final static float[] intakeGreenLowerHSV  = {134f, 0.46f, 0.0f};
+    public final static float[] intakeGreenHigherHSV = {176f, 0.83f, 0.276f};
+    public final static float[] intakeGreenLowerHSV  = {136f, 0.43f, 0.0f};
 
-    public final static float[] intakePurpleHigherHSV = {238.11765f, 0.5617021f, 0.29681849f};
-    public final static float[] intakePurpleLowerHSV  = {198.11765f, 0.1617021f, 0.0f};
+    public final static float[] intakePurpleHigherHSV = {246f, 0.60f, 0.264f};
+    public final static float[] intakePurpleLowerHSV  = {206f, 0.20f, 0.0f};
 
-    public final static float[] backGreenHigherHSV = {174f, 0.86f, 0.31f};
-    public final static float[] backGreenLowerHSV  = {134f, 0.46f, 0.0f};
+    public final static float[] backGreenHigherHSV = {178f, 0.80f, 0.329f};
+    public final static float[] backGreenLowerHSV  = {138f, 0.40f, 0.0f};
 
-    public final static float[] backPurpleHigherHSV = {238.11765f, 0.5617021f, 0.29681849f};
-    public final static float[] backPurpleLowerHSV  = {198.11765f, 0.1617021f, 0.0f};
+    public final static float[] backPurpleHigherHSV = {220f, 0.60f, 0.390f};
+    public final static float[] backPurpleLowerHSV  = {200f, 0.20f, 0.0f};
 
     public final static float[] whiteLowerHSV = {0f, 0.99f, 0.99f};
     public final static float[] whiteHigherHSV = {360f, 1f, 1f};
@@ -35,14 +35,20 @@ public class ColorSensorsSubsystem extends SubsystemBase {
 
     public ColorSensorsSubsystem(final HardwareMap hMap) {
         intakeSensor1 = hMap.get(NormalizedColorSensor.class, "colori1");
-        intakeSensor1.setGain(27.0f);
+        intakeSensor1.setGain(17.0f);
 
         intakeSensor2 = hMap.get(NormalizedColorSensor.class, "colori2");
-        intakeSensor2.setGain(27.0f);
+        intakeSensor2.setGain(17.0f);
 
         backSensor = hMap.get(NormalizedColorSensor.class, "colorb");
-        backSensor.setGain(27.0f);
+        backSensor.setGain(17.0f);
     }
+    public void setGain(NormalizedColorSensor sensor, float gain) {
+        sensor.setGain(gain);
+    }
+    public NormalizedColorSensor getIntakeSensor1() {return intakeSensor1;}
+    public NormalizedColorSensor getIntakeSensor2() {return intakeSensor2;}
+    public NormalizedColorSensor getBackSensor() {return backSensor;}
     public NormalizedRGBA getIntakeSensor1Result() {
         return intakeSensor1Result;
     }
@@ -83,16 +89,13 @@ public class ColorSensorsSubsystem extends SubsystemBase {
         return colorIsBall(intakeSensor1Result)||colorIsBall(intakeSensor2Result);
     }
 
-    // Function to convert RGB to HSV
-
-
-
     private static boolean colorInRange(float[] colorHSV, float[] min, float[] max) {
         return
                 min[0] <= colorHSV[0] && colorHSV[0] <= max[0] && //Red is within min and max range
                         min[1] <= colorHSV[1] && colorHSV[1] <= max[1] && //Green is within min and max range
                         min[2] <= colorHSV[2] && colorHSV[2] <= max[2];   //brue is within the range,
     }
+    // Function to convert RGB to HSV
     public static float[] rgbToHsv(NormalizedRGBA normalizedRGBA) {
         float r = normalizedRGBA.red;
         float g = normalizedRGBA.green;

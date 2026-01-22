@@ -56,10 +56,17 @@ public class LimelightSubsystem extends SubsystemBase {
      *                      1: Ball Neural Detection
      *                      2: AprilTags
      */
-    public void setPipeline(int pipelineIndex) {
-        if (pipelineIndex != currentPipeline) {
-            limelight.pipelineSwitch(pipelineIndex);
-            currentPipeline = pipelineIndex;
+    public void setPipeline(LIMELIGHT_PIPELINES pipeline) {
+        switch (pipeline) {
+            case APRILTAG:
+                limelight.pipelineSwitch(1);
+                break;
+            case ARTIFACT_AND_RAMP:
+                limelight.pipelineSwitch(0);
+                break;
+            case ARTIFACT_ONLY:
+                limelight.pipelineSwitch(2);
+                break;
         }
     }
 
@@ -163,11 +170,9 @@ public class LimelightSubsystem extends SubsystemBase {
     public Double detectGoalXDistance(LLResult result) {
         if (result != null && result.isValid()) {
             for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
-                if (GOAL_TAG_IDS.contains(fiducial.getFiducialId())) {
-                    Pose3D botpose = result.getBotpose();
-                    if (botpose != null) {
-                        return DistanceUnit.INCH.fromMeters(botpose.getPosition().x);
-                    }
+                int id = fiducial.getFiducialId();
+                if (GOAL_TAG_IDS.contains(id)) {
+                    return result.getTx();
                 }
             }
         }

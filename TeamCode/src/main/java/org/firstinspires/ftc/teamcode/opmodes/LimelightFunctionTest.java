@@ -19,6 +19,7 @@ public class LimelightFunctionTest extends CommandOpMode {
     @Override
     public void initialize() {
         limelight = new LimelightSubsystem(hardwareMap);
+        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
         timer = new ElapsedTime();
         timer.reset();
     }
@@ -31,6 +32,7 @@ public class LimelightFunctionTest extends CommandOpMode {
         List<LLResultTypes.ClassifierResult> classifications = detections.getClassifierResults();
 
         telemetry.addData("Loop Time", timer.milliseconds());
+        telemetry.addData("Debug: LLresult object", detections);
         telemetry.addData("---------subsystem functions---------",null);
         telemetry.addData("detected motif: ", limelight.detectMotif(detections));
         telemetry.addData("goal april tag: ", limelight.findAprilTag(detections));
