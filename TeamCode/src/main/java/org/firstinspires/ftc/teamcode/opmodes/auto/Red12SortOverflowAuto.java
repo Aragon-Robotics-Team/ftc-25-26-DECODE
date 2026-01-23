@@ -18,7 +18,6 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -56,7 +55,8 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         public PathChain shootFirstRow;
         public PathChain intakeRamp;
         public PathChain shootRamp;
-        public PathChain endPose;
+        public PathChain parkAfter12;
+        public PathChain parkAfter9;
 
 
         public Paths(Follower follower) {
@@ -150,12 +150,19 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(48))
                     .build();
 
-            endPose = follower
+            parkAfter12 = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(new Pose(88.400, 81.800), new Pose(115, 83))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(-90))
+                    .build();
+            parkAfter9 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 47))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
 
         }
@@ -175,6 +182,13 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 new WaitForColorCommand(colorsensor).withTimeout(500)
         );
     }
+
+    //Selectiopn
+    private enum AUTOS {
+        NINE, TWELVE
+    }
+    final AUTOS CURRENTAUTO = AUTOS.TWELVE;
+
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
 
@@ -232,6 +246,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         spindexer = new SpindexerSubsystem(hardwareMap);
         colorsensor = new ColorSensorsSubsystem(hardwareMap);
         gate = new GateSubsystem(hardwareMap);
+        gate.down();
         led = new LEDSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         limelight = new LimelightSubsystem(hardwareMap);
@@ -250,7 +265,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
         spindexer.set(115);
-        SequentialCommandGroup autonomous = new SequentialCommandGroup(
+        SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
                     shooter.setTargetTicks(1150);
                     gate.down();
@@ -261,7 +276,12 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.shootPreload, false)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif))
-                ),
+                ).alongWith(new ParallelCommandGroup(
+                        new WaitCommand(100),
+                        new InstantCommand(gate::up),
+                        new WaitCommand(100),
+                        new InstantCommand(gate::down)
+                )),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
@@ -300,34 +320,39 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.intakeThirdRow).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
                                 .withTimeout(3000),
-                        intakeArtifacts()
+                        new WaitCommand(2000)
+                                .andThen(intakeArtifacts())
                 ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootThirdRow),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
-
-                //move to end pos
-                new FollowPathCommand(follower, paths.endPose)
-
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});})
 //                //Ramp cycle
 //                new FollowPathCommand(follower, paths.intakeRamp, false),
 //                intakeArtifacts().withTimeout(3000),
 //                new FollowPathCommand(follower, paths.shootRamp, true),
 //                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
-//
-//                //Ramp cycle
-//                new FollowPathCommand(follower, paths.intakeRamp, true),
-//                intakeArtifacts().withTimeout(3000),
-//                new FollowPathCommand(follower, paths.shootRamp, true),
-//                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)
-
-                //later: park?
         );
+        SequentialCommandGroup twelve_ball = new SequentialCommandGroup(
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootThirdRow),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+
+                //move to end pos
+                new FollowPathCommand(follower, paths.parkAfter12)
+        );
+        SequentialCommandGroup nine_ball = new SequentialCommandGroup(
+                new FollowPathCommand(follower, paths.parkAfter9, 1.0)
+        );
+
+
         schedule(
                 new RunCommand(() -> follower.update()),
-                autonomous
+                nine_sorted
         );
+        if (CURRENTAUTO == AUTOS.TWELVE) {
+            schedule(twelve_ball);
+        }
+        else if (CURRENTAUTO == AUTOS.NINE) {
+            schedule(nine_ball);
+        }
 
 
     }
