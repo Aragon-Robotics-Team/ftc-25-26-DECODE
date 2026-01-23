@@ -102,7 +102,7 @@ public class TeleOp extends CommandOpMode {
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
-    public static double alignerHeadingkP = -0.02;
+    public static double alignerHeadingkP = -0.01;
     public static double alignerHeadingkD = 0.0;
     public static double alignerHeadingkF = 0.0;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
@@ -468,6 +468,7 @@ public class TeleOp extends CommandOpMode {
         telemetry.addData("Position ", String.format("X: %8.2f, Y: %8.2f", follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("Heading ", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("Slow mode", slowMode);
+        telemetry.addData("Blackboard endpose", (Pose) blackboard.get("endpose"));
 
     }
     /**

@@ -108,14 +108,14 @@ public class LimelightSubsystem extends SubsystemBase {
      * Returns the horizontal distance of the center crosshair to the goal apriltags. Used for camera-only autoaim (not preferrable).
      * @return camera's horizontal distance from each specific tag's center as a double or null if nothing is found
      * */
-    public Object detectGoalXDistance(LLResult result) {
+    public Object detectGoalTy(LLResult result) {
         // Red ID = 24
         // Blue ID = 20
         if (result != null && result.isValid()) {
             for (LLResultTypes.FiducialResult fiducial : result.getFiducialResults()) {
                 int id = fiducial.getFiducialId();
                 if (GOAL_TAG_IDS.contains(id)) {
-                    return result.getTx();
+                    return result.getTy();
                 }
             }
         }

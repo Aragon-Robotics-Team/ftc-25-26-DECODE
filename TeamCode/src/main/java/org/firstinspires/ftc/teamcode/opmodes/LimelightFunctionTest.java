@@ -36,7 +36,7 @@ public class LimelightFunctionTest extends CommandOpMode {
         telemetry.addData("---------subsystem functions---------",null);
         telemetry.addData("detected motif: ", limelight.detectMotif(detections));
         telemetry.addData("goal april tag: ", limelight.findAprilTag(detections));
-        telemetry.addData("horizontal distance from goal: ", limelight.detectGoalXDistance(detections));
+        telemetry.addData("horizontal distance from goal: ", limelight.detectGoalTy(detections));
         telemetry.addData("robot position: ", limelight.detectRobotPosition(detections));
         telemetry.addData("----------random limelight functions--------",null);
         telemetry.addData("target's x: ", detections.getTx());
