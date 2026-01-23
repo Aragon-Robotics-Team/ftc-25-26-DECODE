@@ -40,7 +40,7 @@ public class MoveSpindexerAndUpdateArrayCommand extends CommandBase {
                 spindexerSubsystem.setBallAt(2, RobotConstants.BallColors.NONE);
             }
             spindexerSubsystem.shiftBallsArrayBy(number);
-            timesMoved = number;
+            timesMoved += (int) Math.signum(number);
         }
     }
 

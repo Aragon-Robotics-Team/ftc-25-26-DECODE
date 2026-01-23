@@ -21,6 +21,7 @@ import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
@@ -165,11 +166,13 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
-                new WaitForColorCommand(colorsensor).withTimeout(1500),
+                new WaitForColorCommand(colorsensor).withTimeout(3000),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                new WaitForColorCommand(colorsensor).withTimeout(1500),
+                new WaitCommand(100),
+                new WaitForColorCommand(colorsensor).withTimeout(500),
+                new WaitCommand(100),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                new WaitForColorCommand(colorsensor).withTimeout(1500)
+                new WaitForColorCommand(colorsensor).withTimeout(500)
         );
     }
     public Pose currentPose;
