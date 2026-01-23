@@ -154,7 +154,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(new Pose(88.400, 81.800), new Pose(115, 83))
                     )
-                    .setConstantHeadingInterpolation(Math.toRadians(48))
+                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(-90))
                     .build();
 
         }

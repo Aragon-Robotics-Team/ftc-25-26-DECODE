@@ -9,6 +9,7 @@ import static org.firstinspires.ftc.teamcode.RobotConstants.SHOOTER_ANGLE;
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -43,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
-
+@Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Teleop Field Centric", group = "!")
 public class TeleOp extends CommandOpMode {
     //Constants
@@ -53,7 +54,7 @@ public class TeleOp extends CommandOpMode {
         BLUE
     }
     public enum IntakeState {
-        INTAKESTILL_ROLLERSIN, REVERSE, INTAKING, REVERSE_AND_INTAKE_ROLLERS
+        INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
     int speedMin;
     int speedMax;
@@ -109,6 +110,7 @@ public class TeleOp extends CommandOpMode {
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
     double lastSeenX;
     double headingVector;
+    int spOffset = 0;
 
     //Voltage compensation
     double currentVoltage = 14;
@@ -150,6 +152,8 @@ public class TeleOp extends CommandOpMode {
         follower.update();
         loopTimer.reset();
         telemetry.update();
+        alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
+
         super.run();
 
         if (snapshotTimer.seconds() > 5) {
@@ -192,16 +196,21 @@ public class TeleOp extends CommandOpMode {
         //Driver 1
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKING) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-                    else intakeState = IntakeState.INTAKING;
+                    if (intakeState == IntakeState.INTAKEIN_ROLLERSIN) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    else {
+                        intakeState = IntakeState.INTAKEIN_ROLLERSIN;
+                        gamepad1.rumbleBlips(1);
+                    }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.REVERSE_AND_INTAKE_ROLLERS) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-                    if (intakeState == IntakeState.REVERSE) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-                    else intakeState = IntakeState.REVERSE;
+                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    else {
+                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
+                    }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
@@ -212,7 +221,7 @@ public class TeleOp extends CommandOpMode {
                 new ParallelCommandGroup(
                     new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
                     new InstantCommand(() -> {
-                        intakeState = IntakeState.REVERSE_AND_INTAKE_ROLLERS;
+                        intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
                         new SelectCommand(this::getIntakeCommand).schedule();
                     })
                 )
@@ -357,13 +366,32 @@ public class TeleOp extends CommandOpMode {
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
-            headingError = 0;
-            if (result != null && result.isValid()) {
-                headingError = result.getTy() + 1;
+
+            if (alliance == Alliance.RED) {
+                //shift offset to the right if close
+                if (shooter.getTargetTicks() < 1300) {
+                    spOffset = 0;
+                }
+                else if (shooter.getTargetTicks() > 1300) {
+                    spOffset = 4;
+                }
+            }
+            else if (alliance == Alliance.BLUE) {
+                //shift offset to the left if close
+                if (shooter.getTargetTicks() < 1300) {
+                    spOffset = 0;
+                }
+                else if (shooter.getTargetTicks() > 1300) {
+                    spOffset = -4;
+                }
             }
 
+            headingError = spOffset;
+            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
+                headingError = (double) limelight.detectGoalTy(result) ;
+            }
 
-            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, 0), -0.5, 0.5);
+            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, spOffset), -0.5, 0.5);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
@@ -374,7 +402,7 @@ public class TeleOp extends CommandOpMode {
         if (intakeState == IntakeState.INTAKESTILL_ROLLERSIN) {
             led.setColor(LEDSubsystem.LEDState.WHITE);
         }
-        else if (intakeState == IntakeState.INTAKING) {
+        else if (intakeState == IntakeState.INTAKEIN_ROLLERSIN) {
             led.setColor(LEDSubsystem.LEDState.YELLOW);
         }
         else if (shooter.getVelocityTicks() > 300) { //shooting mode
@@ -420,6 +448,7 @@ public class TeleOp extends CommandOpMode {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
+        telemetry.addData("pid output", alignerHeadingPID.calculate());
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
@@ -603,15 +632,15 @@ public class TeleOp extends CommandOpMode {
     }
     public Command getIntakeCommand() {
         switch (intakeState) {
-            case INTAKING:
+            case INTAKEIN_ROLLERSIN:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
                 });
-            case REVERSE:
+            case INTAKEOUT_ROLLERSOUT:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
                 });
-            case REVERSE_AND_INTAKE_ROLLERS:
+            case INTAKEOUT_ROLLERSIN:
                 return new InstantCommand(() -> {
                     intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSIN);
                 });
