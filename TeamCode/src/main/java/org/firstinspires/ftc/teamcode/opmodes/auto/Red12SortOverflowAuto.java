@@ -330,7 +330,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
 //                new FollowPathCommand(follower, paths.shootRamp, true),
 //                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
         );
-        SequentialCommandGroup twelve_ball = new SequentialCommandGroup(
+        SequentialCommandGroup shoot_and_park = new SequentialCommandGroup(
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRow),
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
@@ -338,20 +338,25 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 //move to end pos
                 new FollowPathCommand(follower, paths.parkAfter12)
         );
-        SequentialCommandGroup nine_ball = new SequentialCommandGroup(
+        SequentialCommandGroup hold_and_park = new SequentialCommandGroup(
                 new FollowPathCommand(follower, paths.parkAfter9, 1.0)
         );
 
 
         schedule(
-                new RunCommand(() -> follower.update()),
-                nine_sorted
+                new RunCommand(() -> follower.update())
         );
         if (CURRENTAUTO == AUTOS.TWELVE) {
-            schedule(twelve_ball);
+            schedule(new SequentialCommandGroup(
+                    nine_sorted,
+                    shoot_and_park
+            ));
         }
         else if (CURRENTAUTO == AUTOS.NINE) {
-            schedule(nine_ball);
+            schedule(new SequentialCommandGroup(
+                    nine_sorted,
+                    hold_and_park
+            ));
         }
 
 
