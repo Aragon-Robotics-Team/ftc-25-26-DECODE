@@ -187,7 +187,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     private enum AUTOS {
         NINE, TWELVE
     }
-    final AUTOS CURRENTAUTO = AUTOS.NINE;
+    final AUTOS CURRENTAUTO = AUTOS.TWELVE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -216,6 +216,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         return new InstantCommand(() -> debug = n);
     }
     void scanMotif() {
+        limelight.takeSnapshot("MOTIF");
         Object motifid = limelight.detectMotif(limelight.getResult());
         if (motifid != null) {
             switch ((int) motifid) {

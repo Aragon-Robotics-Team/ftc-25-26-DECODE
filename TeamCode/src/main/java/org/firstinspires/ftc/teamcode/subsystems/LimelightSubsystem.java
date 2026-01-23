@@ -184,4 +184,7 @@ public class LimelightSubsystem extends SubsystemBase {
     public void takeSnapshot() {
         limelight.captureSnapshot(String.valueOf(System.currentTimeMillis()));
     }
+    public void takeSnapshot(String name) {
+        limelight.captureSnapshot(name);
+    }
 }
