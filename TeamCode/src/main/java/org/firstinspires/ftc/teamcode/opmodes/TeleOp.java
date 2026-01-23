@@ -131,7 +131,7 @@ public class TeleOp extends CommandOpMode {
         distMax = shooter.getDistMax();
         distMin = shooter.getDistMin();
         closeShooterTarget = 505; //450;
-        farShooterTarget = 660; //540;
+        farShooterTarget = 620; //540;
         snapshotTimer.reset();
     }
 
@@ -153,6 +153,10 @@ public class TeleOp extends CommandOpMode {
         loopTimer.reset();
         telemetry.update();
         alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
+
+        if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == IntakeState.INTAKEOUT_ROLLERSIN) {
+            gamepad1.rumbleBlips(1);
+        }
 
         super.run();
 
@@ -194,22 +198,20 @@ public class TeleOp extends CommandOpMode {
     }
     void createBinds() {
         //Driver 1
-        driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
+        driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
                     if (intakeState == IntakeState.INTAKEIN_ROLLERSIN) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
                     else {
                         intakeState = IntakeState.INTAKEIN_ROLLERSIN;
-                        gamepad1.rumbleBlips(1);
                     }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
-        driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
+        driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
                     else {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
+                        intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
                     }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
@@ -614,11 +616,11 @@ public class TeleOp extends CommandOpMode {
         switch (intakeState) {
             case INTAKEIN_ROLLERSIN:
                 return new InstantCommand(() -> {
-                    intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
+                    intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
                 });
             case INTAKEOUT_ROLLERSOUT:
                 return new InstantCommand(() -> {
-                    intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                    intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
                 });
             case INTAKEOUT_ROLLERSIN:
                 return new InstantCommand(() -> {
