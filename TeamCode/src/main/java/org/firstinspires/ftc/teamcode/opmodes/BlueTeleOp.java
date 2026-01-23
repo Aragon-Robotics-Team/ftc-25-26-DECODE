@@ -45,8 +45,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 import java.util.function.Supplier;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Teleop Field Centric", group = "!")
-public class TeleOp extends CommandOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD35 Teleop Field Centric", group = "!")
+public class BlueTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
@@ -79,7 +79,7 @@ public class TeleOp extends CommandOpMode {
     int index = 0;
 
     //State variables
-    Alliance alliance = Alliance.RED;
+    Alliance alliance = Alliance.BLUE;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
@@ -219,11 +219,11 @@ public class TeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
-                    new InstantCommand(() -> {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
-                        new SelectCommand(this::getIntakeCommand).schedule();
-                    })
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
+                        new InstantCommand(() -> {
+                            intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
+                            new SelectCommand(this::getIntakeCommand).schedule();
+                        })
                 )
         );
         new Trigger( //Auto aim
