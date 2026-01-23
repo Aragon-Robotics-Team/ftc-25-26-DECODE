@@ -44,7 +44,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                     // Move spindexer to alignment (Does not shoot, just rotates)
                     new MoveSpindexerAndUpdateArrayCommand(spindexerSubsystem, gateSubsystem, bestOffset, false, false),
                     new InstantCommand(gateSubsystem::down),
-                    new WaitCommand(300)
+                    new WaitCommand(200)
             );
         } else {
             addCommands(new InstantCommand(gateSubsystem::down));
@@ -80,7 +80,7 @@ public class ShootSortedBallsCommandSequence extends SequentialCommandGroup {
                             new WaitCommand(200),
                             new LoadBallCommand(spindexerSubsystem, target).withTimeout(1500),
                             new InstantCommand(gateSubsystem::down),
-                            new WaitCommand(300)
+                            new WaitCommand(200)
                     ),
 
                     // THE SMART CONDITION

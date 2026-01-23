@@ -160,7 +160,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
             parkAfter9 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 47))
+                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 83))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
@@ -187,7 +187,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     private enum AUTOS {
         NINE, TWELVE
     }
-    final AUTOS CURRENTAUTO = AUTOS.TWELVE;
+    final AUTOS CURRENTAUTO = AUTOS.NINE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
