@@ -63,6 +63,7 @@ public class TeleOp extends CommandOpMode {
     int farShooterTarget;
     boolean isAdjustingFar = false;
     boolean isHoldingPoint = false;
+    int snapshots = 0;
     double headingError;
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(135,141.5);
@@ -152,6 +153,7 @@ public class TeleOp extends CommandOpMode {
         super.run();
 
         if (snapshotTimer.seconds() > 5) {
+            snapshots++;
             limelight.takeSnapshot();
             snapshotTimer.reset();
         }
@@ -469,6 +471,7 @@ public class TeleOp extends CommandOpMode {
         telemetry.addData("Heading ", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Blackboard endpose", (Pose) blackboard.get("endpose"));
+        telemetry.addData("snapshots taken", snapshots);
 
     }
     /**
