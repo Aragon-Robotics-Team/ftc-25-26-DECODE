@@ -104,7 +104,7 @@ public class TeleOp extends CommandOpMode {
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
-    public static double alignerHeadingkP = -0.01;
+    public static double alignerHeadingkP = -0.015;
     public static double alignerHeadingkD = 0.0;
     public static double alignerHeadingkF = 0.0;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
@@ -165,7 +165,7 @@ public class TeleOp extends CommandOpMode {
     void initializeSystems() {
         startingPose = (Pose) blackboard.get("endpose");
         if (startingPose == null) {
-            startingPose = new Pose(104,135.8,Math.toRadians(-90));
+            startingPose = new Pose(104,135.8,Math.toRadians(0));
         }
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose);
@@ -366,32 +366,12 @@ public class TeleOp extends CommandOpMode {
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
-
-            if (alliance == Alliance.RED) {
-                //shift offset to the right if close
-                if (shooter.getTargetTicks() < 1300) {
-                    spOffset = 0;
-                }
-                else if (shooter.getTargetTicks() > 1300) {
-                    spOffset = 4;
-                }
-            }
-            else if (alliance == Alliance.BLUE) {
-                //shift offset to the left if close
-                if (shooter.getTargetTicks() < 1300) {
-                    spOffset = 0;
-                }
-                else if (shooter.getTargetTicks() > 1300) {
-                    spOffset = -4;
-                }
-            }
-
             headingError = spOffset;
             if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
                 headingError = (double) limelight.detectGoalTy(result) ;
             }
 
-            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, spOffset), -0.5, 0.5);
+            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, spOffset), -0.3, 0.3);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
