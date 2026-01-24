@@ -43,8 +43,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Hold", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12SortHoldAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+public class Blue12SortOverflowAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -70,58 +70,58 @@ public class Red12SortHoldAuto extends CommandOpMode {
             shootClosePreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(123, 127), new Pose(87.3, 101.8))
+                            new BezierLine(new Pose(144-123, 127), new Pose(144-87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-180), Math.toRadians(180-46))
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
-                                    new Pose(81.6, 55),
-                                    new Pose(130.5, 66)
+                                    new Pose(144-87.3, 101.8),
+                                    new Pose(144-81.6, 55),
+                                    new Pose(144-130.5, 66)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(130.5, 66),
-                                    new Pose(81.6, 55),
-                                    new Pose(87.3, 101.8)
+                                    new Pose(144-130.5, 66),
+                                    new Pose(144-81.6, 55),
+                                    new Pose(144-87.3, 101.8)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180-46))
                     .build();
 
             intakeThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
-                                    new Pose(93, 24.75),
-                                    new Pose(129.3, 43.6)
+                                    new Pose(144-87.3, 101.8),
+                                    new Pose(144-93, 24.75),
+                                    new Pose(144-129.3, 43.6)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(129.3, 43.6), new Pose(87.3, 101.8))
+                            new BezierLine(new Pose(144-129.3, 43.6), new Pose(144-87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180-46))
                     .build();
 
             intakeFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(125, 97.6))
+                            new BezierLine(new Pose(144-87.3, 101.8), new Pose(144-125, 97.6))
                     )
 //                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .setTangentHeadingInterpolation()
@@ -130,60 +130,60 @@ public class Red12SortHoldAuto extends CommandOpMode {
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(125, 97.6), new Pose(87.3, 101.8))
+                            new BezierLine(new Pose(144-125, 97.6), new Pose(144-87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180-46))
                     .build();
             intakeRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
-                                    new Pose(80.4, 57.6),
-                                    new Pose(133, 63.7)
+                                    new Pose(144-87.3, 101.8),
+                                    new Pose(144-80.4, 57.6),
+                                    new Pose(144-133, 63.7)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(75))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-46), Math.toRadians(180-75))
                     .build();
 
             shootRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(133, 63.7),
-                                    new Pose(80.4, 57.6),
-                                    new Pose(87.3, 101.8)
+                                    new Pose(144-133, 63.7),
+                                    new Pose(144-80.4, 57.6),
+                                    new Pose(144-87.3, 101.8)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-75), Math.toRadians(180-46))
                     .build();
 
             parkAfter12Overflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(100, 87.3))
+                            new BezierLine(new Pose(144-87.3, 101.8), new Pose(144-100, 87.3))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-46), Math.toRadians(180+90))
                     .build();
             parkAfter12Hold = follower
                     .pathBuilder()
                     .addPath(
 //                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 83))
                             new BezierCurve(
-                                    new Pose(129.3, 48.6),
-                                    new Pose(89, 47),
-                                    new Pose(100, 87.3)
+                                    new Pose(144-129.3, 48.6),
+                                    new Pose(144-89, 47),
+                                    new Pose(144-100, 87.3)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180+90))
                     .build();
 
             parkAfterShoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(100,87.3))
+                            new BezierLine(new Pose(144-87.3, 101.8), new Pose(144-100,87.3))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-46), Math.toRadians(180+90))
                     .build();
         }
     }
@@ -207,7 +207,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
     private enum AUTOS {
         TWELVE_HOLD, TWELVE_OVERFLOW, NINE_INTAKEGATE_HOLD//, FAR
     }
-    final AUTOS CURRENTAUTO = AUTOS.TWELVE_HOLD;
+    final AUTOS CURRENTAUTO = AUTOS.TWELVE_OVERFLOW;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -221,7 +221,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(123,127,Math.toRadians(180));
+    public static Pose startingPose = new Pose(144-123,127,Math.toRadians(180-180));
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;
@@ -481,4 +481,3 @@ public class Red12SortHoldAuto extends CommandOpMode {
         super.end();
     }
 }
-

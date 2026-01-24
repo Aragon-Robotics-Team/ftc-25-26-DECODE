@@ -12,6 +12,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -39,7 +40,7 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
-
+@Disabled
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 6 Sorted Far", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedFarAuto extends CommandOpMode {
@@ -54,7 +55,7 @@ public class RedFarAuto extends CommandOpMode {
             shootFarPreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(80, 15), new Pose(83.5, 20))
+                            new BezierLine(new Pose(78, 15), new Pose(83.5, 20))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(65))
                     .build();
@@ -65,7 +66,7 @@ public class RedFarAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(83.5, 20),
                                     new Pose(80.3, 34),
-                                    new Pose(131.700, 41.6)
+                                    new Pose(129.3, 43.6)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -116,7 +117,7 @@ public class RedFarAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(80,15,Math.toRadians(90));;
+    public static Pose startingPose = new Pose(78,15,Math.toRadians(90));;
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;

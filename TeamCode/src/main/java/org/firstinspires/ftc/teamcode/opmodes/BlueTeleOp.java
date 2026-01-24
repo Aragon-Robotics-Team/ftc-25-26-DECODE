@@ -176,7 +176,7 @@ public class BlueTeleOp extends CommandOpMode {
         }
         follower = Constants.createFollower(hardwareMap);
 //        follower.setStartingPose(startingPose);
-        follower.setPose(new Pose(0, 0, Math.toRadians(0)));
+        follower.setPose(new Pose(0, 0, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
