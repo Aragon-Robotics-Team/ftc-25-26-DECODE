@@ -46,8 +46,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 import java.util.function.Supplier;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
-public class RedTeleOp extends CommandOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD35 Teleop Field Centric", group = "!")
+public class BlueTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
@@ -80,7 +80,7 @@ public class RedTeleOp extends CommandOpMode {
     int index = 0;
 
     //State variables
-    Alliance alliance = Alliance.RED;
+    Alliance alliance = Alliance.BLUE;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
@@ -189,18 +189,7 @@ public class RedTeleOp extends CommandOpMode {
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        if (Math.abs(spindexer.getWrappedPosition() - 115) < 60) {
-            spindexer.set(115);
-        }
-        else if (Math.abs(spindexer.getWrappedPosition() - 235) < 60){
-            spindexer.set(235);
-        }
-        else if (Math.abs(spindexer.getWrappedPosition() - 355) < 60) {
-            spindexer.set(355);
-        }
-        else {
-            spindexer.set(115);
-        }
+        spindexer.set(115);//75
         gate.down();
 
         super.reset();
@@ -236,11 +225,11 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
-                    new InstantCommand(() -> {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
-                        new SelectCommand(this::getIntakeCommand).schedule();
-                    })
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
+                        new InstantCommand(() -> {
+                            intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
+                            new SelectCommand(this::getIntakeCommand).schedule();
+                        })
                 )
         );
         new Trigger( //Auto aim
@@ -307,7 +296,7 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    follower.setPose(follower.getPose().setHeading(alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    follower.setPose(follower.getPose().setHeading(alliance== Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
                     gamepad2.rumbleBlips(1);
                 }));
         driver2.getGamepadButton(RIGHT_STICK_BUTTON) //toggle gate

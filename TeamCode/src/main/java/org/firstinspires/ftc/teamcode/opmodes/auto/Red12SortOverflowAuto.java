@@ -388,7 +388,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
 
                 //move to end pos
-                new FollowPathCommand(follower, paths.parkAfter12Hold, 1.0)
+                new FollowPathCommand(follower, paths.parkAfter12Hold, 1.0).alongWith(new InstantCommand(() -> {gate.up();}))
         );
 
         schedule(
