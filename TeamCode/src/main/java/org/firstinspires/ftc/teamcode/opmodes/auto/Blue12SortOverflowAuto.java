@@ -344,12 +344,11 @@ public class Blue12SortOverflowAuto extends CommandOpMode {
         SequentialCommandGroup intake_gate_shoot_and_park = new SequentialCommandGroup(
                 //move to end pos
                 new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> {
-                                    intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
-                                    shooter.setTargetTicks(600);
-                                }))
-                                .withTimeout(3000),
+                        new InstantCommand(() -> {
+                            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                            shooter.setTargetTicks(600);
+                        }),
+                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000).withTimeout(3000),
                         new WaitCommand(3000).andThen(
                                 new SequentialCommandGroup(
                                         new WaitForColorCommand(colorsensor),
