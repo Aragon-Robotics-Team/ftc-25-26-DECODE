@@ -84,6 +84,7 @@ public class RedTeleOp extends CommandOpMode {
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
     boolean slowMode = false;
+    private double gateAdjustment;
 
     //subsystems
     private IntakeSubsystem intake;
@@ -132,6 +133,7 @@ public class RedTeleOp extends CommandOpMode {
         distMin = shooter.getDistMin();
         closeShooterTarget = 505; //450;
         farShooterTarget = 620; //540;
+        gateAdjustment = 0.0;
         snapshotTimer.reset();
     }
 
@@ -239,24 +241,36 @@ public class RedTeleOp extends CommandOpMode {
                 .whenInactive(new InstantCommand(() -> slowMode = false));
 
         //Driver 2
+//        driver2.getGamepadButton(DPAD_UP).whenPressed(
+//                new InstantCommand(() -> {
+//                    selectedMotif = XXX;
+//                })
+//        );
+//        driver2.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+//                new InstantCommand(() -> {
+//                    index++;
+//                    index%=3;
+//                    selectedMotif = allMotifs[index];
+//                })
+//        );
+//        driver2.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+//                new InstantCommand(() -> {
+//                    index++;
+//                    index+=3;
+//                    index%=3;
+//                    selectedMotif = allMotifs[index];
+//                })
+//        );
         driver2.getGamepadButton(DPAD_UP).whenPressed(
                 new InstantCommand(() -> {
-                    selectedMotif = XXX;
+                    gateAdjustment += 0.01;
+                    gate.setAdjustment(gateAdjustment);
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+        driver2.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new InstantCommand(() -> {
-                    index++;
-                    index%=3;
-                    selectedMotif = allMotifs[index];
-                })
-        );
-        driver2.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-                new InstantCommand(() -> {
-                    index++;
-                    index+=3;
-                    index%=3;
-                    selectedMotif = allMotifs[index];
+                    gateAdjustment -= 0.01;
+                    gate.setAdjustment(gateAdjustment);
                 })
         );
         driver2.getGamepadButton(LEFT_BUMPER).whenActive(  //turn off shooter

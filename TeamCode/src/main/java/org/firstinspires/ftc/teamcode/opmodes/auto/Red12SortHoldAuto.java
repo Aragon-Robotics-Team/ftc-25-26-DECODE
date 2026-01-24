@@ -43,7 +43,6 @@ import java.util.Arrays;
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 12 Sorted Hold", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class Red12SortHoldAuto extends CommandOpMode {
-    //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -57,7 +56,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
         public PathChain shootRamp;
         public PathChain parkAfter12Overflow;
         public PathChain parkAfter12Hold;
-        public PathChain parkAfter9;
+        public PathChain parkAfterShoot;
 
         //far autos
         public PathChain shootFarPreload;
@@ -177,7 +176,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
 
-            parkAfter9 = follower
+            parkAfterShoot = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(new Pose(88.400, 81.800), new Pose(105,83))
@@ -204,7 +203,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
 
     //Selectiopn
     private enum AUTOS {
-        TWELVE_HOLD, TWELVE_OVERFLOW, NINE//, FAR
+        TWELVE_HOLD, TWELVE_OVERFLOW, NINE_INTAKEGATE_HOLD//, FAR
     }
     final AUTOS CURRENTAUTO = AUTOS.TWELVE_HOLD;
 
@@ -339,9 +338,17 @@ public class Red12SortHoldAuto extends CommandOpMode {
 //                new FollowPathCommand(follower, paths.shootRamp, true),
 //                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
         );
-        SequentialCommandGroup park_nine = new SequentialCommandGroup(
+        SequentialCommandGroup intake_gate_shoot_and_park = new SequentialCommandGroup(
                 //move to end pos
-                new FollowPathCommand(follower, paths.parkAfter9)
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
+                        new WaitCommand(3000).andThen(intakeArtifacts())
+                ),
+                new FollowPathCommand(follower, paths.shootFirstRowClose),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
+                new FollowPathCommand(follower, paths.parkAfterShoot, true)
         );
         SequentialCommandGroup park_overflow = new SequentialCommandGroup(
                 //intake third row
@@ -395,10 +402,10 @@ public class Red12SortHoldAuto extends CommandOpMode {
                     park_twelve
             ));
         }
-        else if (CURRENTAUTO == AUTOS.NINE) {
+        else if (CURRENTAUTO == AUTOS.NINE_INTAKEGATE_HOLD) {
             schedule(new SequentialCommandGroup(
                     nine_sorted,
-                    park_nine
+                    intake_gate_shoot_and_park
             ));
         }
 
@@ -464,3 +471,4 @@ public class Red12SortHoldAuto extends CommandOpMode {
         super.end();
     }
 }
+

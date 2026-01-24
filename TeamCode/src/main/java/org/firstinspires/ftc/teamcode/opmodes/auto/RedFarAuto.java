@@ -64,8 +64,8 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     new Pose(83.5, 20),
-                                    new Pose(80.3, 24),
-                                    new Pose(131.700, 31.6)
+                                    new Pose(80.3, 34),
+                                    new Pose(131.700, 41.6)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -76,7 +76,7 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(new Pose(131.7, 21.6), new Pose(83.5, 20))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(65))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
                     .build();
 
             parkFar = follower
