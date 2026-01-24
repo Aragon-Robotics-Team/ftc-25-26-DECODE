@@ -86,7 +86,7 @@ public class GateWiggleOp extends OpMode {
      */
     @Override
     public void loop() {
-        frequency = (2 + (double) (9 - 2) /2 * (Math.sin(runtime.seconds() * 0.3 * 3) + 1));
+        frequency = (2 + (double) (8 - 2) / 2.0 * (Math.sin(runtime.seconds() * 0.2) + 1));
         gate.set(low + (high - low)/2 * (Math.sin(runtime.seconds() * frequency) + 1));
         telemetry.addData("Status", "Run Time: " + runtime.toString());
     }

@@ -171,10 +171,11 @@ public class RedTeleOp extends CommandOpMode {
     void initializeSystems() {
         startingPose = (Pose) blackboard.get("endpose");
         if (startingPose == null) {
-            startingPose = new Pose(104,135.8,Math.toRadians(0));
+            startingPose = new Pose(104,135.8,Math.toRadians(90));
         }
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startingPose);
+//        follower.setStartingPose(startingPose);
+        follower.setPose(new Pose(0, 0, Math.toRadians(0)));
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
