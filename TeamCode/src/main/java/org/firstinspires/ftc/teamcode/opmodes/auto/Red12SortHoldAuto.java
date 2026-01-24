@@ -41,8 +41,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12SortOverflowAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 12 Sorted Hold", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class Red12SortHoldAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
         //close autos
@@ -206,7 +206,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     private enum AUTOS {
         TWELVE_HOLD, TWELVE_OVERFLOW, NINE//, FAR
     }
-    final AUTOS CURRENTAUTO = AUTOS.TWELVE_OVERFLOW;
+    final AUTOS CURRENTAUTO = AUTOS.TWELVE_HOLD;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
