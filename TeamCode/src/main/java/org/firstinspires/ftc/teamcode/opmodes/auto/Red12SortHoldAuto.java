@@ -93,7 +93,7 @@ public class Red12SortHoldAuto extends CommandOpMode {
                                     new Pose(88.400, 81.800)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(47))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
                     .build();
 
             intakeThirdRowClose = follower
@@ -344,11 +344,16 @@ public class Red12SortHoldAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
                                 .withTimeout(3000),
-                        new WaitCommand(3000).andThen(intakeArtifacts())
-                ),
-                new FollowPathCommand(follower, paths.shootFirstRowClose),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
-                new FollowPathCommand(follower, paths.parkAfterShoot, true)
+                        new WaitCommand(3000).andThen(
+                                new SequentialCommandGroup(
+                                        new WaitForColorCommand(colorsensor),
+                                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                        new WaitCommand(500),
+                                        new WaitForColorCommand(colorsensor),
+                                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
+                                )
+                        )
+                )
         );
         SequentialCommandGroup park_overflow = new SequentialCommandGroup(
                 //intake third row

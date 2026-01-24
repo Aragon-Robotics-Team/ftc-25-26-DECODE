@@ -48,6 +48,7 @@ public class GateWiggleOp extends OpMode {
     private GateSubsystem gateSubsystem;
     double high;
     double low;
+    double frequency = 6;
     /**
      * This method will be called once, when the INIT button is pressed.
      */
@@ -85,7 +86,8 @@ public class GateWiggleOp extends OpMode {
      */
     @Override
     public void loop() {
-        gate.set(low + (high - low)/2 * Math.sin(runtime.seconds() * 5 + 1));
+        frequency = (2 + (double) (9 - 2) /2 * (Math.sin(runtime.seconds() * 0.3 * 3) + 1));
+        gate.set(low + (high - low)/2 * (Math.sin(runtime.seconds() * frequency) + 1));
         telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
 

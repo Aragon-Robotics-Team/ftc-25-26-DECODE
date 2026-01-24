@@ -129,7 +129,8 @@ public class ShooterSubsystem extends SubsystemBase {
         return lut.get(clamped);
     }
     public void updatePIDVoltage(double voltage) {
-        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
+//        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
+        double compensation = 1;
         kP = compensation * kPOriginal;
         kF = compensation * kFOriginal;
     }
