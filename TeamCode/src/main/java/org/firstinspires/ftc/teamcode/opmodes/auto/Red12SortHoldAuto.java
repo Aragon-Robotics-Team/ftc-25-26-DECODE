@@ -139,22 +139,22 @@ public class Red12SortHoldAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(88.400, 81.800),
                                     new Pose(89.000, 58.000),
-                                    new Pose(131.7, 21.6)
+                                    new Pose(131.7, 49)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(90))
+                    .setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(75))
                     .build();
 
             shootRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131.7, 21.6),
+                                    new Pose(131.7, 49),
                                     new Pose(89.000, 58.000),
                                     new Pose(88.400, 81.800)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(45))
+                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(47))
                     .build();
 
             parkAfter12Overflow = follower

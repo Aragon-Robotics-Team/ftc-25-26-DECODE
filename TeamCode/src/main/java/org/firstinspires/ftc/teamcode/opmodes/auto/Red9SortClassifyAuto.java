@@ -41,7 +41,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 9 Sorted Gate Intake", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 9 Sorted with Gate Intake", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class Red9SortClassifyAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
@@ -139,22 +139,22 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(88.400, 81.800),
                                     new Pose(89.000, 58.000),
-                                    new Pose(131.7, 21.6)
+                                    new Pose(131.7, 49)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(90))
+                    .setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(75))
                     .build();
 
             shootRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131.7, 21.6),
+                                    new Pose(131.7, 49),
                                     new Pose(89.000, 58.000),
                                     new Pose(88.400, 81.800)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(45))
+                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(47))
                     .build();
 
             parkAfter12Overflow = follower
@@ -204,9 +204,9 @@ public class Red9SortClassifyAuto extends CommandOpMode {
 
     //Selectiopn
     private enum AUTOS {
-        TWELVE_HOLD, TWELVE_OVERFLOW, NINE//, FAR
+        TWELVE_HOLD, TWELVE_OVERFLOW, NINE_INTAKEGATE_HOLD//, FAR
     }
-    final AUTOS CURRENTAUTO = AUTOS.NINE;
+    final AUTOS CURRENTAUTO = AUTOS.NINE_INTAKEGATE_HOLD;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -395,7 +395,7 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                     park_twelve
             ));
         }
-        else if (CURRENTAUTO == AUTOS.NINE) {
+        else if (CURRENTAUTO == AUTOS.NINE_INTAKEGATE_HOLD) {
             schedule(new SequentialCommandGroup(
                     nine_sorted,
                     park_nine
