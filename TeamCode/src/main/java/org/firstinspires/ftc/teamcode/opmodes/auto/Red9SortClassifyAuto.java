@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.PURPLE;
 
 import android.annotation.SuppressLint;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -68,17 +70,17 @@ public class Red9SortClassifyAuto extends CommandOpMode {
             shootClosePreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(123, 127), new Pose(91.400, 86.800))
+                            new BezierLine(new Pose(123, 127), new Pose(87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(48))
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(46))
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(91.400, 86.800),
-                                    new Pose(78.000, 30.000),
-                                    new Pose(136.000, 47.000)
+                                    new Pose(87.3, 101.8),
+                                    new Pose(81.6, 55),
+                                    new Pose(130.5, 66)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -88,21 +90,21 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(136.000, 47.000),
-                                    new Pose(78.000, 55.000),
-                                    new Pose(88.400, 81.800)
+                                    new Pose(130.5, 66),
+                                    new Pose(81.6, 55),
+                                    new Pose(87.3, 101.8)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(48))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
                     .build();
 
             intakeThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(88.400, 81.800),
-                                    new Pose(80.3, 19.1),
-                                    new Pose(131.700, 21.6)
+                                    new Pose(87.3, 101.8),
+                                    new Pose(93, 24.75),
+                                    new Pose(129.3, 43.6)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -111,15 +113,15 @@ public class Red9SortClassifyAuto extends CommandOpMode {
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(131.700, 21.6), new Pose(88.400, 81.800))
+                            new BezierLine(new Pose(129.3, 43.6), new Pose(87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(47))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
                     .build();
 
             intakeFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(88.400, 81.800), new Pose(115.000, 77.000))
+                            new BezierLine(new Pose(87.3, 101.8), new Pose(125, 97.6))
                     )
 //                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .setTangentHeadingInterpolation()
@@ -128,49 +130,49 @@ public class Red9SortClassifyAuto extends CommandOpMode {
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(115.000, 77.000), new Pose(88.400, 81.800))
+                            new BezierLine(new Pose(125, 97.6), new Pose(87.3, 101.8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(47))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
                     .build();
             intakeRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(88.400, 81.800),
-                                    new Pose(89.000, 58.000),
-                                    new Pose(131.7, 49)
+                                    new Pose(87.3, 101.8),
+                                    new Pose(80.4, 57.6),
+                                    new Pose(133, 63.7)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(47), Math.toRadians(75))
+                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(75))
                     .build();
 
             shootRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131.7, 49),
-                                    new Pose(89.000, 58.000),
-                                    new Pose(88.400, 81.800)
+                                    new Pose(133, 63.7),
+                                    new Pose(80.4, 57.6),
+                                    new Pose(87.3, 101.8)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(47))
+                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(46))
                     .build();
 
             parkAfter12Overflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(88.400, 81.800), new Pose(105, 83))
+                            new BezierLine(new Pose(87.3, 101.8), new Pose(100, 87.3))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
                     .build();
             parkAfter12Hold = follower
                     .pathBuilder()
                     .addPath(
 //                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 83))
                             new BezierCurve(
-                                    new Pose(131.7, 21.6),
-                                    new Pose(90, 52.3),
-                                    new Pose(105, 83)
+                                    new Pose(129.3, 48.6),
+                                    new Pose(89, 47),
+                                    new Pose(100, 87.3)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
@@ -179,9 +181,9 @@ public class Red9SortClassifyAuto extends CommandOpMode {
             parkAfterShoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(88.400, 81.800), new Pose(105,83))
+                            new BezierLine(new Pose(87.3, 101.8), new Pose(100,87.3))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
                     .build();
         }
     }
@@ -256,6 +258,7 @@ public class Red9SortClassifyAuto extends CommandOpMode {
         timer.reset();
 
         //systems and pedro
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(startingPose);
         follower.setMaxPower(1.0);
@@ -286,13 +289,13 @@ public class Red9SortClassifyAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1150);
+                    shooter.setTargetTicks(1140);
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootClosePreload, false)
+                        new FollowPathCommand(follower, paths.shootClosePreload, true)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif))
                 ).alongWith(new ParallelCommandGroup(
@@ -317,7 +320,7 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootSecondRowClose, false),
+                new FollowPathCommand(follower, paths.shootSecondRowClose, true),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
@@ -330,7 +333,7 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootFirstRowClose),
+                new FollowPathCommand(follower, paths.shootFirstRowClose, true),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif))
 //                //Ramp cycle
 //                new FollowPathCommand(follower, paths.intakeRamp, false),
@@ -341,9 +344,11 @@ public class Red9SortClassifyAuto extends CommandOpMode {
         SequentialCommandGroup intake_gate_shoot_and_park = new SequentialCommandGroup(
                 //move to end pos
                 new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
+                        new InstantCommand(() -> {
+                            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                            shooter.setTargetTicks(600);
+                        }),
+                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000).withTimeout(3000),
                         new WaitCommand(3000).andThen(
                                 new SequentialCommandGroup(
                                         new WaitForColorCommand(colorsensor),
@@ -369,8 +374,8 @@ public class Red9SortClassifyAuto extends CommandOpMode {
 
                 //shoot third row
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootThirdRowClose),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                new FollowPathCommand(follower, paths.shootThirdRowClose, true),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
 
                 //move to end pos
                 new FollowPathCommand(follower, paths.parkAfter12Overflow)
@@ -388,7 +393,7 @@ public class Red9SortClassifyAuto extends CommandOpMode {
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
 
                 //move to end pos
-                new FollowPathCommand(follower, paths.parkAfter12Hold, 1.0).alongWith(new InstantCommand(() -> {gate.up();}))
+                new FollowPathCommand(follower, paths.parkAfter12Hold,true, 1.0).alongWith(new InstantCommand(() -> {gate.up();}))
         );
 
         schedule(
@@ -420,7 +425,6 @@ public class Red9SortClassifyAuto extends CommandOpMode {
     public void run() {
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
-        colorsensor.updateBack();
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
             spindexer.handleUpdateArray(colorsensor.getIntakeSensor1Result(), colorsensor.getIntakeSensor2Result(), colorsensor.getBackResult());
         }
@@ -452,17 +456,17 @@ public class Red9SortClassifyAuto extends CommandOpMode {
 //        telemetry.addData("spindexer pos", spindexer.getCurrentPosition());
         telemetry.addData("spindexer's balls", Arrays.toString(spindexer.getBalls()));
 
-        telemetry.addData("------------------",null);
+        telemetry.addData("------------------",0);
 
         telemetry.addData("shooter target velocity", shooter.getTargetTicks());
         telemetry.addData("shooter actual velocity", shooter.getVelocityTicks());
 
-        telemetry.addData("------------------",null);
+        telemetry.addData("------------------",0);
 
         telemetry.addData("current pos", String.format("X: %8.2f, Y: %8.2f", follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("current heading", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("t value", follower.getCurrentTValue());
-        telemetry.addData("------------------",null);
+        telemetry.addData("------------------",0);
         currentPose = follower.getPose();
         timer.reset();
         telemetry.update();

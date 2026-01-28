@@ -35,12 +35,12 @@ public class ColorSensorTuning extends OpMode {
         // 1. READ DATA (Manually update each sensor)
         colorSubsystem.updateSensor1();
         colorSubsystem.updateSensor2();
-        colorSubsystem.updateBack();
+        // colorSubsystem.updateBack();
 
         // 2. GET HSV VALUES (Convert raw result to HSV for display)
         float[] hsv1 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor1Result());
         float[] hsv2 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor2Result());
-        float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
+        //float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
 
         // get and set gain
         if (gamepad1.dpad_up) {
@@ -74,10 +74,10 @@ public class ColorSensorTuning extends OpMode {
         telemetry.addLine();
 
         // --- BACK SENSOR ---
-        telemetry.addLine("--- BACK SENSOR ---");
-        telemetry.addData("HSV", formatHSV(hsvBack));
-        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenBack(colorSubsystem.getBackResult()));
-        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleBack(colorSubsystem.getBackResult()));
+//        telemetry.addLine("--- BACK SENSOR ---");
+//        telemetry.addData("HSV", formatHSV(hsvBack));
+//        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenBack(colorSubsystem.getBackResult()));
+//        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleBack(colorSubsystem.getBackResult()));
 
         telemetry.update();
     }

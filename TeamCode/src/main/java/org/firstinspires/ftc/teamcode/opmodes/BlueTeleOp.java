@@ -176,7 +176,7 @@ public class BlueTeleOp extends CommandOpMode {
         }
         follower = Constants.createFollower(hardwareMap);
 //        follower.setStartingPose(startingPose);
-        follower.setPose(new Pose(0, 0, Math.toRadians(0)));
+        follower.setPose(new Pose(0, 0, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
@@ -189,7 +189,18 @@ public class BlueTeleOp extends CommandOpMode {
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
-        spindexer.set(115);//75
+        if (Math.abs(spindexer.getWrappedPosition() - 115) < 60) {
+            spindexer.set(115);
+        }
+        else if (Math.abs(spindexer.getWrappedPosition() - 235) < 60){
+            spindexer.set(235);
+        }
+        else if (Math.abs(spindexer.getWrappedPosition() - 355) < 60) {
+            spindexer.set(355);
+        }
+        else {
+            spindexer.set(115);
+        }
         gate.down();
 
         super.reset();
@@ -213,7 +224,9 @@ public class BlueTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) {
+                        intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    }
                     else {
                         intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
                     }
@@ -296,7 +309,7 @@ public class BlueTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    follower.setPose(follower.getPose().setHeading(alliance== Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    follower.setPose(follower.getPose().setHeading(alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
                     gamepad2.rumbleBlips(1);
                 }));
         driver2.getGamepadButton(RIGHT_STICK_BUTTON) //toggle gate

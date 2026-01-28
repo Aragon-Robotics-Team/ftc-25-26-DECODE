@@ -38,9 +38,9 @@ public class IntakeSubsystem extends SubsystemBase {
                 sideWheel2.setPower(1.0);
                 break;
             case INTAKEOUT_ROLLERSIN:
-                intakeWheels.setPower(-1.0);
-                sideWheel.setPower(1.0);
-                sideWheel2.setPower(-1.0);
+                intakeWheels.setPower(1.0);
+                sideWheel.setPower(-1.0);
+                sideWheel2.setPower(1.0);
                 break;
             case INTAKESTILL_ROLLERSSTILL:
                 intakeWheels.setPower(0.0);

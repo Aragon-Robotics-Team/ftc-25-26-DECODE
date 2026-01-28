@@ -176,7 +176,7 @@ public class RedTeleOp extends CommandOpMode {
         }
         follower = Constants.createFollower(hardwareMap);
 //        follower.setStartingPose(startingPose);
-        follower.setPose(new Pose(0, 0, Math.toRadians(0)));
+        follower.setPose(new Pose(0, 0, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
         follower.setMaxPower(1.0);
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
@@ -224,7 +224,9 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKEOUT_ROLLERSOUT) {
+                        intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
+                    }
                     else {
                         intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
                     }

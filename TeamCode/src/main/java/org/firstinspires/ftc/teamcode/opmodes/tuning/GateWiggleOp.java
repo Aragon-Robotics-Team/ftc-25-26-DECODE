@@ -40,7 +40,7 @@ import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 /*
  * Demonstrates an empty iterative OpMode
  */
-@TeleOp(name = "wiggly wobbly", group = "tuning")
+@TeleOp(name = "🦐🥴😵‍💫👽wiggly wobbly", group = "tuning")
 public class GateWiggleOp extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
