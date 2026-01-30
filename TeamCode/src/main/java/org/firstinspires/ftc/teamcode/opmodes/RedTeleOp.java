@@ -33,6 +33,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
+import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -145,6 +146,7 @@ public class RedTeleOp extends CommandOpMode {
         handleLED();
         handleVoltageCompensation();
         handleBallsArrayUpdate();
+        handleAutoSpindexer();
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -457,6 +459,19 @@ public class RedTeleOp extends CommandOpMode {
         //spindexer and array logic
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
+        }
+    }
+    void handleAutoSpindexer() {
+        //auto advance spindexer
+        if (intakeState == IntakeState.INTAKEIN_ROLLERSIN) {
+            if (spindexer.getBalls()[2] == RobotConstants.BallColors.NONE) {
+                if (colorSensors.doesLastResultHaveBall()) {
+                    schedule(new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false));
+                }
+            }
+            else {
+                intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
+            }
         }
     }
     void handleTelemetry() {
