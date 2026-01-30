@@ -12,7 +12,7 @@ import com.seattlesolvers.solverslib.hardware.ServoEx;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Spindexer and Gate Tuner", group = "Tuning")
+@TeleOp(group = "Tuning")
 public class SpindexerAndGateTuningOp extends LinearOpMode {
 
     private SpindexerSubsystem spindexer;
