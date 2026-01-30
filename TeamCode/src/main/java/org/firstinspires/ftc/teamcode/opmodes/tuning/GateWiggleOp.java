@@ -33,7 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.seattlesolvers.solverslib.hardware.ServoEx;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 
@@ -44,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 public class GateWiggleOp extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
-    private ServoEx gate;
+    private com.seattlesolvers.solverslib.hardware.servos.ServoEx gate;
     private GateSubsystem gateSubsystem;
     double high;
     double low;

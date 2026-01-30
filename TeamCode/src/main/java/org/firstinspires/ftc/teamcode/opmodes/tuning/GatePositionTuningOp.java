@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.hardware.ServoEx;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 
@@ -18,7 +18,7 @@ public class GatePositionTuningOp extends OpMode {
     // Edit this in Dashboard to move the servo
     public static double targetPos;
 
-    private ServoEx gate;
+    private com.seattlesolvers.solverslib.hardware.servos.ServoEx gate;
     private AnalogInput gateEncoder;
     private GamepadEx driver1;
     private GateSubsystem gateSubsystem;

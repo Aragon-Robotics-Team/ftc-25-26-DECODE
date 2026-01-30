@@ -17,11 +17,11 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     private NormalizedRGBA backResult = null;
 
 
-    public final static float[] intakeGreenHigherHSV = {176f, 0.83f, 0.276f};
-    public final static float[] intakeGreenLowerHSV  = {136f, 0.43f, 0.0f};
+    public final static float[] intakeGreenHigherHSV = {173f, 0.75f, 0.272f};
+    public final static float[] intakeGreenLowerHSV  = {133f, 0.45f, 0.0f};
 
-    public final static float[] intakePurpleHigherHSV = {234f, 0.53f, 0.242f};
-    public final static float[] intakePurpleLowerHSV  = {174f, 0.13f, 0.0f};
+    public final static float[] intakePurpleHigherHSV = {240f, 0.4f, 0.242f};
+    public final static float[] intakePurpleLowerHSV  = {200f, 0.15f, 0.0f};
 
     public final static float[] backGreenHigherHSV = {178f, 0.80f, 0.329f};
     public final static float[] backGreenLowerHSV  = {138f, 0.40f, 0.0f};
