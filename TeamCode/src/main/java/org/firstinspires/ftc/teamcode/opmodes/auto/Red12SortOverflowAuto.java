@@ -26,6 +26,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
@@ -468,6 +469,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
         currentPose = follower.getPose();
+        AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();
         super.run();
@@ -476,7 +478,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
 
     @Override
     public void end() {
-        blackboard.put("endpose", currentPose);
+        AutoPoseSaver.lastPose = currentPose;
         super.end();
     }
 }

@@ -32,6 +32,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -71,6 +72,7 @@ public class RedTeleOp extends CommandOpMode {
     int snapshots = 0;
     double headingError;
     int spindexerAutomoveCount = 0;
+    boolean firstLoop = true;
 
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(135,141.5);
@@ -111,8 +113,8 @@ public class RedTeleOp extends CommandOpMode {
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
-    public static double alignerHeadingkP = -0.015;
-    public static double alignerHeadingkD = 0.0;
+    public static double alignerHeadingkP = 0.5;
+    public static double alignerHeadingkD = 0.01;
     public static double alignerHeadingkF = 0.0;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
     double lastSeenX;
@@ -143,9 +145,22 @@ public class RedTeleOp extends CommandOpMode {
         snapshotTimer.reset();
     }
 
+    @Override
+    public void initialize_loop() {
+        if (AutoPoseSaver.lastPose != null) follower.setPose(AutoPoseSaver.lastPose);
+        super.initialize_loop();
+    }
+    void onStart() {
+        if (AutoPoseSaver.lastPose != null) follower.setPose(AutoPoseSaver.lastPose);
+        follower.update();
+    }
     @SuppressLint("DefaultLocale")
     @Override
     public void run() {
+        if (firstLoop) {
+            onStart();
+            firstLoop = false;
+        }
         handleTeleopDrive();
         handleLED();
         handleVoltageCompensation();
@@ -175,14 +190,14 @@ public class RedTeleOp extends CommandOpMode {
         }
     }
     void initializeSystems() {
-        startingPose = (Pose) blackboard.get("endpose");
+        startingPose = AutoPoseSaver.lastPose;
         if (startingPose == null) {
-            startingPose = new Pose(104,135.8,Math.toRadians(90));
+            startingPose = new Pose(0,0,alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
         }
         follower = Constants.createFollower(hardwareMap);
-//        follower.setStartingPose(startingPose);
-        follower.setPose(new Pose(0, 0, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+        follower.setPose(startingPose);
         follower.setMaxPower(1.0);
+        follower.update();
         intake = new IntakeSubsystem(hardwareMap);
         shooter = new ShooterSubsystem(hardwareMap);
         spindexer = new SpindexerSubsystem(hardwareMap);
@@ -372,6 +387,12 @@ public class RedTeleOp extends CommandOpMode {
                     }
                 })
         );
+        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+                new InstantCommand(() -> {
+                    follower.setPose(new Pose(7, 7, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    gamepad2.rumbleBlips(1);
+                })
+        );
 
         //Auto spindexer
         new Trigger(
@@ -422,12 +443,12 @@ public class RedTeleOp extends CommandOpMode {
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
-            headingError = spOffset;
-            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
-                headingError = (double) limelight.detectGoalTy(result) ;
-            }
+//            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
+//                headingError = (double) limelight.detectGoalTy(result);
+//            }
+            headingError = follower.getHeading() - Math.atan2(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX());
 
-            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, spOffset), -0.3, 0.3);
+            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, 0), -1, 1);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
@@ -536,7 +557,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Position ", String.format("X: %8.2f, Y: %8.2f", follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("Heading ", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("Slow mode", slowMode);
-        telemetry.addData("Blackboard endpose", (Pose) blackboard.get("endpose"));
+        telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
 
     }
