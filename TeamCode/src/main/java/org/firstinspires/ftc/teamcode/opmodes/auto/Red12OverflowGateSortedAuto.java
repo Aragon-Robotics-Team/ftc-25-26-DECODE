@@ -388,7 +388,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                 //shoot third row
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //move to end pos
                 new FollowPathCommand(follower, paths.parkAfter12Overflow)
