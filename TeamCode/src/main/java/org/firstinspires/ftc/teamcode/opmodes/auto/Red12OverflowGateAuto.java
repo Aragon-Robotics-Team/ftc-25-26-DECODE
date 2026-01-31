@@ -44,42 +44,44 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12SortOverflowAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow with Gate", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class Red12OverflowGateAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
         public PathChain intakeSecondRowClose;
         public PathChain shootSecondRowClose;
-        public PathChain intakeThirdRowClose;
-        public PathChain shootThirdRowClose;
+        public PathChain hitGateSecond;
         public PathChain intakeFirstRowClose;
         public PathChain shootFirstRowClose;
+        public PathChain hitGateFirst;
+        public PathChain intakeThirdRowClose;
+        public PathChain shootThirdRowClose;
         public PathChain intakeRamp;
         public PathChain shootRamp;
         public PathChain parkAfter12Overflow;
         public PathChain parkAfter12Hold;
         public PathChain parkAfterShoot;
 
-        //far autos
-        public PathChain shootFarPreload;
-        public PathChain intakeThirdRowFar;
-        public PathChain shootThirdRowFar;
-        public PathChain parkFar;
+        public static class Poses {
+            public static final Pose LAUNCH = new Pose(87.3, 101.8, Math.toRadians(46));
+            public static final Pose START = new Pose(123,127,Math.toRadians(180));
+            public static final Pose PARK_CLOSE = new Pose(100,87.3, Math.toRadians(-90));
+        }
 
         public Paths(Follower follower) {
             shootClosePreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(123, 127), new Pose(87.3, 101.8))
+                            new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
+                                    Poses.LAUNCH,
                                     new Pose(81.6, 55),
                                     new Pose(130.5, 66)
                             )
@@ -87,23 +89,60 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .build();
 
+            hitGateSecond = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(130.5, 66), new Pose(125, 66))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+                    .build();
+
             shootSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(130.5, 66),
+                                    new Pose(125, 66),
                                     new Pose(81.6, 55),
-                                    new Pose(87.3, 101.8)
+                                    Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(-90), Poses.LAUNCH.getHeading())
+                    .build();
+
+            intakeFirstRowClose = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(125, 97.6))
+                    )
+//                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            hitGateFirst = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(125, 97.6),
+                                    new Pose(103,79),
+                                    new Pose(125, 70)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
+                    .build();
+
+            shootFirstRowClose = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(125, 70), Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
+                                    Poses.LAUNCH,
                                     new Pose(93, 24.75),
                                     new Pose(129.3, 43.6)
                             )
@@ -114,37 +153,21 @@ public class Red12SortOverflowAuto extends CommandOpMode {
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(129.3, 43.6), new Pose(87.3, 101.8))
+                            new BezierLine(new Pose(129.3, 43.6), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
                     .build();
 
-            intakeFirstRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(125, 97.6))
-                    )
-//                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .setTangentHeadingInterpolation()
-                    .build();
-
-            shootFirstRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(125, 97.6), new Pose(87.3, 101.8))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(46))
-                    .build();
             intakeRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(87.3, 101.8),
+                                    Poses.LAUNCH,
                                     new Pose(80.4, 57.6),
                                     new Pose(133, 63.7)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(75))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(75))
                     .build();
 
             shootRamp = follower
@@ -153,18 +176,18 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(133, 63.7),
                                     new Pose(80.4, 57.6),
-                                    new Pose(87.3, 101.8)
+                                    Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(75), Math.toRadians(46))
+                    .setLinearHeadingInterpolation(Math.toRadians(75), Poses.LAUNCH.getHeading())
                     .build();
 
             parkAfter12Overflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(100, 87.3))
+                            new BezierLine(Poses.LAUNCH, Poses.PARK_CLOSE)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Poses.PARK_CLOSE.getHeading())
                     .build();
             parkAfter12Hold = follower
                     .pathBuilder()
@@ -173,18 +196,18 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(129.3, 48.6),
                                     new Pose(89, 47),
-                                    new Pose(100, 87.3)
+                                    Poses.PARK_CLOSE
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_CLOSE.getHeading())
                     .build();
 
             parkAfterShoot = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(87.3, 101.8), new Pose(100,87.3))
+                            new BezierLine(Poses.LAUNCH, Poses.PARK_CLOSE)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(46), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Poses.PARK_CLOSE.getHeading())
                     .build();
         }
     }
@@ -222,7 +245,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(123,127,Math.toRadians(180));
+    public static Pose startingPose = Paths.Poses.START;
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;
@@ -321,6 +344,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootSecondRowClose, true),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
@@ -334,6 +358,7 @@ public class Red12SortOverflowAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.hitGateFirst).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootFirstRowClose, true),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif))
 //                //Ramp cycle
