@@ -40,9 +40,8 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
-@Disabled
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 6 Sorted Far", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedFarAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
