@@ -44,8 +44,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Unsorted Overflow with Gate", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12OverflowGateAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow with Gate", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class Red12OverflowGateSortedAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -118,22 +118,10 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                     .setTangentHeadingInterpolation()
                     .build();
 
-            hitGateFirst = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(131, 85.6),
-                                    new Pose(109,67),
-                                    new Pose(131, 58)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
-                    .build();
-
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(131, 58), Poses.LAUNCH)
+                            new BezierLine(new Pose(131, 85.6), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
@@ -315,6 +303,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                 new InstantCommand(() -> { //setup
                     shooter.setTargetTicks(1140);
                     gate.down();
+                    spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
@@ -330,7 +319,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
                 setCount(3),
 
                 //Second row
@@ -341,10 +330,11 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                                 .withTimeout(3000),
                         intakeArtifacts()
                 ),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootSecondRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
@@ -354,10 +344,10 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                                 .withTimeout(3000),
                         intakeArtifacts()
                 ),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.hitGateFirst).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootFirstRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true))
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif))
 //                //Ramp cycle
 //                new FollowPathCommand(follower, paths.intakeRamp, false),
 //                intakeArtifacts().withTimeout(3000),
@@ -393,6 +383,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                         new WaitCommand(2000)
                                 .andThen(intakeArtifacts())
                 ),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
 
                 //shoot third row
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
@@ -412,6 +403,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                         new WaitCommand(2000)
                                 .andThen(intakeArtifacts())
                 ),
+                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
 
                 //move to end pos
                 new FollowPathCommand(follower, paths.parkAfter12Hold,true, 1.0).alongWith(new InstantCommand(() -> {gate.up();}))
