@@ -7,6 +7,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
+import com.seattlesolvers.solverslib.util.LUT;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -26,7 +27,7 @@ public class ShooterSubsystem extends SubsystemBase {
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
-    InterpLUT lut;
+    LUT<Integer, Integer> lut;
     int speedMax;
     int speedMin;
     int distMax;
@@ -46,18 +47,15 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.setRunMode(Motor.RunMode.RawPower);
         shooter.set(0);
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
-        lut = new InterpLUT(); //distance (in), linear speed (in/s);
+        lut = new LUT(); //distance (in), linear speed (in/s);
 //        lut.add(46.5, 435);
 //        lut.add(60, 450);
 //        lut.add(80, 490);
 //        lut.add(206, 540);
 //        lut.add(232.5, 570);
-        lut.add(42, 505);
-        lut.add(59, 505);
-        lut.add(74, 515);
-        lut.add(117, 610);
-        lut.add(134, 660);
-        lut.createLUT();
+        lut.add(66, 466);
+        lut.add(82,500);
+        lut.add(139,619);
 
 //        speedMax = 570;
 //        speedMin = 435;
@@ -125,8 +123,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        double clamped = MathUtils.clamp(distance, 42.1, 133.9);
-        return lut.get(clamped);
+        return lut.getClosest((int) distance);
     }
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1

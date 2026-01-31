@@ -75,8 +75,8 @@ public class RedTeleOp extends CommandOpMode {
     boolean firstLoop = true;
 
     private Pose holdPose = new Pose(); // Tracks where we want to stay
-    final Pose GOAL_RED = new Pose(141.5,141.5);
-    final Pose GOAL_BLUE = new Pose(2.5,141.5);
+    final Pose GOAL_RED = new Pose(144,144);
+    final Pose GOAL_BLUE = new Pose(0,144);
     final RobotConstants.BallColors[] PPG = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     final RobotConstants.BallColors[] GPP = {RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE};
     final RobotConstants.BallColors[] PGP = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE};
@@ -443,10 +443,17 @@ public class RedTeleOp extends CommandOpMode {
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
+            // Limelight autoalign
 //            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
 //                headingError = (double) limelight.detectGoalTy(result);
 //            }
-            headingError = follower.getHeading() - Math.atan2(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX());
+            //Pinpoint autoalign
+//            double targetHeading = Math.atan2(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX());
+            //SOTM
+            Vector targetVector = calculateTargetVector2(follower, follower.getPose(), GOAL_RED, shooter);
+            double targetHeading = targetVector.getTheta();
+            shooter.setTargetLinearSpeed(targetVector.getMagnitude());
+            headingError = follower.getHeading() - targetHeading;
 
             rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, 0), -1, 1);
 
@@ -506,6 +513,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", alignerHeadingPID.calculate());
+        telemetry.addData("Distance to red goal", Math.hypot(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX()));
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
