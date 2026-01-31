@@ -92,7 +92,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
             hitGateSecond = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136.5, 54), new Pose(131, 54))
+                            new BezierLine(new Pose(136.5, 54), new Pose(134.5, 56))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
@@ -101,7 +101,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131, 54),
+                                    new Pose(131, 56),
                                     new Pose(87.6, 43),
                                     Poses.LAUNCH
                             )
@@ -124,7 +124,7 @@ public class Red12OverflowGateAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(131, 85.6),
                                     new Pose(109,67),
-                                    new Pose(131, 58)
+                                    new Pose(134.5, 56)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
