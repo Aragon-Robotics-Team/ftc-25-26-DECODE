@@ -19,6 +19,7 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelDeadlineGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -56,7 +57,7 @@ public class RedFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(84.41,21.35, 1.128);
+            public static final Pose LAUNCH = new Pose(84.41,21.35, Math.toRadians(60));
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
         }
 
@@ -92,7 +93,7 @@ public class RedFarAuto extends CommandOpMode {
             intakeHp1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(136, 6.17))
+                            new BezierLine(Poses.LAUNCH, new Pose(136, 8))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .build();
@@ -100,7 +101,7 @@ public class RedFarAuto extends CommandOpMode {
             intakeHpBack = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136, 6.17), new Pose(126,6.17))
+                            new BezierLine(new Pose(136, 8), new Pose(121,8))
                     )
                     .setTangentHeadingInterpolation()
                     .setReversed()
@@ -109,7 +110,7 @@ public class RedFarAuto extends CommandOpMode {
             intakeHp2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126,6.17), new Pose(136, 6.17))
+                            new BezierLine(new Pose(121,8), new Pose(136, 8))
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -117,7 +118,11 @@ public class RedFarAuto extends CommandOpMode {
             shootHpFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(136, 6.17))
+                            new BezierCurve(
+                                    new Pose(136, 8),
+                                    new Pose(118.5,30),
+                                    Poses.LAUNCH
+                            )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0),Poses.LAUNCH.getHeading())
                     .build();
@@ -251,7 +256,7 @@ public class RedFarAuto extends CommandOpMode {
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootFarPreload, false)
+                        new FollowPathCommand(follower, paths.shootFarPreload, true)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new InstantCommand(this::scanMotif)
                 ).alongWith(new ParallelCommandGroup(
@@ -275,28 +280,35 @@ public class RedFarAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootThirdRowFar, false),
+                new FollowPathCommand(follower, paths.shootThirdRowFar, true),
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
 
                 //HP row
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
-                new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeHp1)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        intakeArtifacts()
-                ),
-                new FollowPathCommand(follower, paths.intakeHpBack)
-                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                        .withTimeout(3000),
-                new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeHp2)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        intakeArtifacts()
+                new ParallelRaceGroup(
+                        new SequentialCommandGroup(
+                                new FollowPathCommand(follower, paths.intakeHp1)
+                                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                        .withTimeout(3000),
+
+                                new FollowPathCommand(follower, paths.intakeHpBack),
+                                new FollowPathCommand(follower, paths.intakeHp2)
+                                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                        .withTimeout(3000)
+                        ),
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                                new WaitForColorCommand(colorsensor),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(100),
+                                new WaitForColorCommand(colorsensor),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(100),
+                                new WaitForColorCommand(colorsensor)
+                        )
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootHpFar, false),
+                new FollowPathCommand(follower, paths.shootHpFar, true),
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
 
                 //Overflow
@@ -307,7 +319,7 @@ public class RedFarAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootOverflow, false),
+                new FollowPathCommand(follower, paths.shootOverflow, true),
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
 
                 //move to end pos
