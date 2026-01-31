@@ -53,9 +53,13 @@ public class ShooterSubsystem extends SubsystemBase {
 //        lut.add(80, 490);
 //        lut.add(206, 540);
 //        lut.add(232.5, 570);
+        lut.add(59,470);
         lut.add(66, 466);
         lut.add(82,500);
-        lut.add(139,619);
+        lut.add(122,585);
+        lut.add(132,590);
+        lut.add(134,610);
+        lut.add(141,620);
 
 //        speedMax = 570;
 //        speedMin = 435;
