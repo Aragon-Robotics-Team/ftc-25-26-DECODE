@@ -49,43 +49,106 @@ public class RedFarAuto extends CommandOpMode {
         public PathChain shootFarPreload;
         public PathChain intakeThirdRowFar;
         public PathChain shootThirdRowFar;
+        public PathChain intakeHp1;
+        public PathChain intakeHpBack;
+        public PathChain intakeHp2;
+        public PathChain shootHpFar;
+        public PathChain intakeOverflow;
+        public PathChain shootOverflow;
         public PathChain parkFar;
+        public static class Poses {
+            public static final Pose LAUNCH = new Pose(84.41,21.35, 1.128);
+            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
+        }
 
         public Paths(Follower follower) {
             shootFarPreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(78, 15), new Pose(83.5, 20))
+                            new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(65))
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeThirdRowFar = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(83.5, 20),
-                                    new Pose(80.3, 34),
-                                    new Pose(129.3, 43.6)
+                                    Poses.LAUNCH,
+                                    new Pose(85, 36.6),
+                                    new Pose(126.13, 33.82)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setTangentHeadingInterpolation()
                     .build();
 
             shootThirdRowFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(131.7, 21.6), new Pose(83.5, 20))
+                            new BezierLine(new Pose(126.13, 33.82), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
+                    .build();
+
+            intakeHp1 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(136, 6.17))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .build();
+
+            intakeHpBack = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(136, 6.17), new Pose(126,6.17))
+                    )
+                    .setTangentHeadingInterpolation()
+                    .setReversed()
+                    .build();
+
+            intakeHp2 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(126,6.17), new Pose(136, 6.17))
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            shootHpFar = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(136, 6.17))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0),Poses.LAUNCH.getHeading())
+                    .build();
+
+            intakeOverflow = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    Poses.LAUNCH,
+                                    new Pose(145, -10),
+                                    new Pose(130,45)
+                            )
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            shootOverflow = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(130,45),Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
 
             parkFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(83.5, 20), new Pose(105, 20))
+                            new BezierLine(Poses.LAUNCH, new Pose(110, 8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(65), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(-90))
                     .build();
         }
     }
@@ -117,7 +180,7 @@ public class RedFarAuto extends CommandOpMode {
     private Follower follower;
 
     //update starting pose
-    public static Pose startingPose = new Pose(78,15,Math.toRadians(90));;
+    public static Pose startingPose = Paths.Poses.START;
     private IntakeSubsystem intake;
     private ShooterSubsystem shooter;
     private SpindexerSubsystem spindexer;
@@ -186,7 +249,6 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> { //setup
                     shooter.setTargetTicks(1400);
                     gate.down();
-                    spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
@@ -202,7 +264,7 @@ public class RedFarAuto extends CommandOpMode {
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
-                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
                 setCount(3),
 
                 //Third row
@@ -213,10 +275,41 @@ public class RedFarAuto extends CommandOpMode {
                                 .withTimeout(3000),
                         intakeArtifacts()
                 ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowFar, false),
-                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+
+                //HP row
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeHp1)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
+                        intakeArtifacts()
+                ),
+                new FollowPathCommand(follower, paths.intakeHpBack)
+                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                        .withTimeout(3000),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeHp2)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
+                        intakeArtifacts()
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootHpFar, false),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+
+                //Overflow
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeOverflow)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                        intakeArtifacts()
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootOverflow, false),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
 
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
