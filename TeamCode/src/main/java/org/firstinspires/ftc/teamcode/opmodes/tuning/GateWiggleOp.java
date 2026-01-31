@@ -29,38 +29,38 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.tuning;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.GateSubsystem;
 
 /*
  * Demonstrates an empty iterative OpMode
  */
-@TeleOp(name = "temp climb test", group = "tuning")
-@Config
-public class ClimbTempTuningOp extends OpMode {
+@TeleOp(name = "🦐🥴😵‍💫👽wiggly wobbly", group = "tuning")
+public class GateWiggleOp extends OpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
-    Servo climb1;
-    Servo climb2;
-    Follower follower;
-
+    private com.seattlesolvers.solverslib.hardware.servos.ServoEx gate;
+    private GateSubsystem gateSubsystem;
+    double high;
+    double low;
+    double frequency = 6;
     /**
      * This method will be called once, when the INIT button is pressed.
      */
     @Override
     public void init() {
-        follower = Constants.createFollower(hardwareMap);
-        follower.startTeleOpDrive(true);
+        gate = new ServoEx(hardwareMap, "gate");
+        gateSubsystem = new GateSubsystem(hardwareMap);
+        gate.setInverted(true);
+        high = gateSubsystem.UP;
+        low = gateSubsystem.DOWN;
+
         telemetry.addData("Status", "Initialized");
-        climb1=hardwareMap.get(Servo.class, "climb1");
-        climb2=hardwareMap.get(Servo.class, "climb2");
     }
 
     /**
@@ -84,26 +84,11 @@ public class ClimbTempTuningOp extends OpMode {
      * This method will be called repeatedly during the period between when
      * the START button is pressed and when the OpMode is stopped.
      */
-    public static double climb1pos = 0.5;
-    public static double climb2pos = 0.5;
     @Override
     public void loop() {
-        climb1.setPosition(climb1pos);
-        climb2.setPosition(climb2pos);
-        if (gamepad1.a) { //up
-            climb1pos = 0.52;
-            climb2pos = 0.5;
-        }
-        if (gamepad1.b) { //down
-            climb1pos = 1.0;
-            climb2pos = 0.11;
-        }
-        double x = -gamepad1.left_stick_x;
-        double y = gamepad1.left_stick_y;
-        double rx = -gamepad1.right_stick_x;
-        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-        follower.setTeleOpDrive(y / denominator, x / denominator, rx / denominator, true);
-        follower.update();
+        frequency = (2 + (double) (8 - 2) / 2.0 * (Math.sin(runtime.seconds() * 0.2) + 1));
+        gate.set(low + (high - low)/2 * (Math.sin(runtime.seconds() * frequency) + 1));
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
 
     /**

@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes.tuning;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
-
-import java.util.Locale;
 
 @Config
 @TeleOp(name = "Intake Test", group = "Tuning")
@@ -25,11 +20,11 @@ public class IntakeTestOpmode extends OpMode {
     @Override
     public void loop() {
         if (gamepad1.a) {
-            intake.set(IntakeSubsystem.IntakeState.INTAKING);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSOUT);
         } else if (gamepad1.b) {
-            intake.set(IntakeSubsystem.IntakeState.REVERSE);
+            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
         } else {
-            intake.set(IntakeSubsystem.IntakeState.STILL);
+            intake.set(IntakeSubsystem.IntakeState.INTAKESTILL_ROLLERSIN);
         }
     }
 

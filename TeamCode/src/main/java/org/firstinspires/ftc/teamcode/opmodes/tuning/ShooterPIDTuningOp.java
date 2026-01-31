@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 
 @Config
-@TeleOp(name = "Shooter PID Tuning", group = "Tuning")
+@TeleOp(group = "Tuning")
 public class ShooterPIDTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
@@ -63,7 +63,7 @@ public class ShooterPIDTuningOp extends OpMode {
 
         // 4. Telemetry for Graphing
         double target = shooterSubsystem.getTargetTicks();
-        double actual = shooterSubsystem.getActualVelocity();
+        double actual = shooterSubsystem.getVelocityTicks();
 
         telemetry.addData("Target (Ticks/Sec)", target);
         telemetry.addData("Actual (Ticks/Sec)", actual);

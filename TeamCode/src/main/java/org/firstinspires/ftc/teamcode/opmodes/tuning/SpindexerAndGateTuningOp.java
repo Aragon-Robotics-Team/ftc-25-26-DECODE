@@ -7,17 +7,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.seattlesolvers.solverslib.hardware.ServoEx;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Spindexe and Gate r Tuner", group = "Tuning")
+@TeleOp(group = "Tuning")
 public class SpindexerAndGateTuningOp extends LinearOpMode {
 
     private SpindexerSubsystem spindexer;
     private AnalogInput absoluteEncoder;
-    private ServoEx gate;
+    private com.seattlesolvers.solverslib.hardware.servos.ServoEx gate;
 
 
     // DASHBOARD VARIABLES (Edit these in the browser)

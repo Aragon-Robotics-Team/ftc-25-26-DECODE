@@ -68,8 +68,8 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-    implementation "org.solverslib:core:SNAPSHOT-7cdcc66"
-    implementation "org.solverslib:pedroPathing:SNAPSHOT-7cdcc66"
+    implementation "org.solverslib:core:0.3.3"
+    implementation "org.solverslib:pedroPathing:0.3.3"
 
     // REMOVE any dashboard line like this if still uncommented:
     // implementation "com.acmerobotics.dashboard:dashboard:0.5.0"

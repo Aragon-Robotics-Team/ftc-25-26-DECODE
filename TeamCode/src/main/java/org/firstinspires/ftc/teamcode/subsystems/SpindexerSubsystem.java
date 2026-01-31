@@ -20,14 +20,14 @@ public class SpindexerSubsystem extends SubsystemBase {
     private BallColors[] balls = { NONE, NONE, NONE };
 
     // PID (tune these)
-    private final double kPOriginal = 0.0159;
-    private double kP = 0.0159;
+    private final double kPOriginal = 0.01;
+    private double kP = 0.01;
     public void updatePIDVoltage(double voltage) {
         double compensation = 13.5 / voltage;
         kP = compensation * kPOriginal;
     }
     private double kI = 0;
-    private double kD = 0.0000114;
+    private double kD = 0.0;
 
     private final PIDController pid;
 
@@ -134,7 +134,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
-        return error < 5;
+        return error < 7.5;
     }
 
     /**
@@ -143,6 +143,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     public boolean isLowVelocity() {
         return spindexer.getVelocity() < 20;
     }
+    public boolean availableToSenseColor() {return isNearTargetPosition() && isLowVelocity();}
 
     /**
      * @param balls the ball array
@@ -160,10 +161,11 @@ public class SpindexerSubsystem extends SubsystemBase {
     }
 
     /**
-     * @param n number of balls
+     * @param m number of balls
      * @return shifts the array of balls (colors) based on when/if the balls enter/leave the robot
      */
-    public void shiftBallsArrayBy(int n) {
+    public void shiftBallsArrayBy(int m) {
+        int n = -m;
         n = ((n % 3) + 3) % 3;
         if (n == 0) return;
 
@@ -185,11 +187,11 @@ public class SpindexerSubsystem extends SubsystemBase {
                 balls[0] = PURPLE;
             }
 
-            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
-                balls[1] = GREEN;
-            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
-                balls[1] = PURPLE;
-            }
+//            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
+//                balls[1] = GREEN;
+//            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
+//                balls[1] = PURPLE;
+//            }
     }
 
     /**

@@ -5,8 +5,12 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.gamepad.GamepadEx;
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.LEDSubsystem;
 
 import java.util.Locale;
 
@@ -15,10 +19,15 @@ import java.util.Locale;
 public class ColorSensorTuning extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
+    private LEDSubsystem ledSubsystem;
+    public GamepadEx driver1;
+    float value = 17.0f;
 
     @Override
     public void init() {
         colorSubsystem = new ColorSensorsSubsystem(hardwareMap);
+        ledSubsystem = new LEDSubsystem(hardwareMap);
+        driver1 = new GamepadEx(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Ready to tune color sensors.");
         telemetry.update();
@@ -29,14 +38,40 @@ public class ColorSensorTuning extends OpMode {
         // 1. READ DATA (Manually update each sensor)
         colorSubsystem.updateSensor1();
         colorSubsystem.updateSensor2();
-        colorSubsystem.updateBack();
+        // colorSubsystem.updateBack();
 
         // 2. GET HSV VALUES (Convert raw result to HSV for display)
         float[] hsv1 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor1Result());
         float[] hsv2 = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getIntakeSensor2Result());
-        float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
+        //float[] hsvBack = ColorSensorsSubsystem.rgbToHsv(colorSubsystem.getBackResult());
+
+        // get and set gain
+        if (gamepad1.dpad_up) {
+            value++;
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+        }
+        if (gamepad1.dpad_down) {
+            value--;
+            if (value < 1.0f) {value = 1.0f;}
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
+            colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
+
+        }
+
+        //LED display
+        if (ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor2Result()) == true || ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor1Result()) == true) {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.VIOLET);
+        }
+        else if (ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor2Result()) == true || ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor1Result()) == true) {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.GREEN);
+        }
+        else {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.WHITE);
+        }
 
         // 3. DISPLAY DATA
+        telemetry.addData("Current Gain", value);
 
         // --- INTAKE SENSOR 1 ---
         telemetry.addLine("--- INTAKE SENSOR 1 ---");
@@ -53,10 +88,10 @@ public class ColorSensorTuning extends OpMode {
         telemetry.addLine();
 
         // --- BACK SENSOR ---
-        telemetry.addLine("--- BACK SENSOR ---");
-        telemetry.addData("HSV", formatHSV(hsvBack));
-        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenBack(colorSubsystem.getBackResult()));
-        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleBack(colorSubsystem.getBackResult()));
+//        telemetry.addLine("--- BACK SENSOR ---");
+//        telemetry.addData("HSV", formatHSV(hsvBack));
+//        telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenBack(colorSubsystem.getBackResult()));
+//        telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleBack(colorSubsystem.getBackResult()));
 
         telemetry.update();
     }
