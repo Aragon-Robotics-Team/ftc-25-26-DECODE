@@ -75,8 +75,8 @@ public class RedTeleOp extends CommandOpMode {
     boolean firstLoop = true;
 
     private Pose holdPose = new Pose(); // Tracks where we want to stay
-    final Pose GOAL_RED = new Pose(135,141.5);
-    final Pose GOAL_BLUE = new Pose(9,141.5);
+    final Pose GOAL_RED = new Pose(141.5,141.5);
+    final Pose GOAL_BLUE = new Pose(2.5,141.5);
     final RobotConstants.BallColors[] PPG = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     final RobotConstants.BallColors[] GPP = {RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE};
     final RobotConstants.BallColors[] PGP = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE};
