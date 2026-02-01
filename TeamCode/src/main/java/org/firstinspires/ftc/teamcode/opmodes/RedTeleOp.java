@@ -12,6 +12,10 @@ import android.annotation.SuppressLint;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.field.FieldManager;
+import com.bylazar.field.PanelsField;
+import com.bylazar.panels.Panels;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
@@ -26,6 +30,8 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SelectCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.controller.SquIDFController;
@@ -61,6 +67,8 @@ public class RedTeleOp extends CommandOpMode {
     public enum IntakeState {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
+    PanelsField panelsField = PanelsField.INSTANCE;
+    String image = panelsField.getRED();
 
     int speedMin;
     int speedMax;
@@ -72,6 +80,7 @@ public class RedTeleOp extends CommandOpMode {
     boolean isHoldingPoint = false;
     int snapshots = 0;
     double headingError;
+    double headingOffset;
     int spindexerAutomoveCount = 0;
     boolean firstLoop = true;
 
@@ -136,6 +145,8 @@ public class RedTeleOp extends CommandOpMode {
         initializeSystems();
         snapshotTimer = new ElapsedTime();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        panelsField.getField().setOffsets(panelsField.getPresets().getPEDRO_PATHING());
+        panelsField.getField().setStyle("transparent", "black", 1.0);
         createBinds();
         speedMax = shooter.getSpeedMax();
         speedMin = shooter.getSpeedMin();
@@ -167,6 +178,7 @@ public class RedTeleOp extends CommandOpMode {
         handleLED();
         handleVoltageCompensation();
         handleBallsArrayUpdate();
+        handlePanelsDrawing();
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -258,6 +270,12 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
                 new ParallelCommandGroup(
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 3, true, false),
+                        new InstantCommand(() -> spindexerAutomoveCount = 0)
+                )
+        );
+        driver1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                         new InstantCommand(() -> spindexerAutomoveCount = 0)
                 )
@@ -266,7 +284,7 @@ public class RedTeleOp extends CommandOpMode {
                 new ParallelCommandGroup(
                     new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
                     new InstantCommand(() -> {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
+                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
                         new SelectCommand(this::getIntakeCommand).schedule();
                     }),
                     new InstantCommand(() -> spindexerAutomoveCount = 0)
@@ -336,11 +354,13 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    follower.setPose(follower.getPose().setHeading(alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    double targetZero = alliance == Alliance.RED ? 0 : Math.toRadians(180);
+                    headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
+                    gamepad1.rumbleBlips(1);
                 }));
         driver2.getGamepadButton(RIGHT_STICK_BUTTON) //toggle gate
-                .toggleWhenPressed(new InstantCommand(gate::up).alongWith(new InstantCommand(() -> {gamepad1.rumbleBlips(5);})), new InstantCommand(gate::down));
+                .toggleWhenPressed(new InstantCommand(gate::up).alongWith(new InstantCommand(() -> {gamepad1.rumbleBlips(5);gamepad2.rumbleBlips(5);})), new InstantCommand(gate::down));
         driver2.getGamepadButton(RIGHT_BUMPER).whenActive(  //shooter close
                 new InstantCommand(() -> {
                     shooter.setTargetLinearSpeed(closeShooterTarget);
@@ -406,8 +426,13 @@ public class RedTeleOp extends CommandOpMode {
                         spindexerAutomoveCount < 2
         ).whenActive(
                 new ParallelCommandGroup(
-                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false),
-                        new InstantCommand(() -> spindexerAutomoveCount++)));
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
+                                .withTimeout(200),
+                        new InstantCommand(() -> {
+                            spindexerAutomoveCount++;
+                            if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
+                        }
+                        )));
 
     }
     void handleTeleopDrive() {
@@ -419,33 +444,40 @@ public class RedTeleOp extends CommandOpMode {
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
+            // 1. Calculate the heading we want the controls to be based on
+            double controlHeading = follower.getHeading() - headingOffset;
+
+            // 2. Rotate the input vector (Manual Field Centric)
+            // We rotate the input vector by negative controlHeading to convert Field -> Robot
+            double cos = Math.cos(-controlHeading);
+            double sin = Math.sin(-controlHeading);
+
+            double x_rotated = x * cos - y * sin;
+            double y_rotated = x * sin + y * cos;
+
+            // 3. Normalize for denominator
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            double magnitude = Math.abs(x) + Math.abs(y) + Math.abs(rx);
-//            if (magnitude> 0.1) {
-//                holdPose = follower.getPose();
-//                if (isHoldingPoint && follower.getVelocity().getMagnitude() < 4) { //in/s, random nubmer
-//                    follower.startTeleopDrive();
-//                    isHoldingPoint = false;
-//                }
-//
-//            } else {
-//                if (!isHoldingPoint) {
-//                    holdPose = follower.getPose(); //occurs on falling edge of holding point
-//                    isHoldingPoint = true;
-//                    follower.holdPoint(holdPose);
-//                }
-//            }
-            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+
+            // 4. Pass the Rotated Vectors to Pedro with fieldCentric = false
+            follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
         } else {
             // --- AUTO AIM MODE ---
             if (gamepad1.touchpad_finger_1) {
                 manualControl = true;
+                shooter.setTargetTicks(0);
                 gamepad1.rumbleBlips(1);
             }
 
             double x = driver1.getLeftX();
             double y = driver1.getLeftY();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
+
+            double controlHeading = follower.getHeading() - headingOffset;
+            double cos = Math.cos(-controlHeading);
+            double sin = Math.sin(-controlHeading);
+            double x_rotated = x * cos - y * sin;
+            double y_rotated = x * sin + y * cos;
+
             // Limelight autoalign
 //            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
 //                headingError = (double) limelight.detectGoalTy(result);
@@ -461,7 +493,7 @@ public class RedTeleOp extends CommandOpMode {
             rx += MathUtils.clamp(headingPIDOutput, -1, 1);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+            follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
         }
     }
     void handleLED() {
@@ -571,6 +603,35 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
 
+    }
+    void handlePanelsDrawing() {
+        FieldManager panels = panelsField.getField();
+        panels.moveCursor(GOAL_RED.getX(), GOAL_RED.getY());
+        panels.setStyle("red", "black", 1.0);
+        panels.circle(4.0); // Draw a 4 inch circle at the goal
+
+        // 2. Draw the Robot (Moving position)
+        Pose currentPose = follower.getPose();
+        panels.moveCursor(currentPose.getX(), currentPose.getY());
+
+        // Change color based on alignment status
+        if (Math.abs(headingError) < Math.toRadians(5)) {
+            panels.setStyle("green", "black", 2.0); // Green if aligned
+        } else {
+            panels.setStyle("yellow", "black", 2.0); // Yellow if not
+        }
+        panels.circle(9.0); // Draw robot (approx 18 inch width / 2)
+
+        // 3. Draw a line from Robot to Goal (Visualizing the shot)
+        // Move cursor back to robot center
+        panels.moveCursor(currentPose.getX(), currentPose.getY());
+        // Set line style
+        panels.setStyle("transparent", "white", 1.0);
+        // Draw line to goal
+        panels.line(GOAL_RED.getX(), GOAL_RED.getY());
+
+        // 4. Send the update
+        panels.update();
     }
     /**
      * Calculate the target vector for the shooter with velocity compensation.
