@@ -95,7 +95,7 @@ public class ClimbTempTuningOp extends OpMode {
             climb2pos = 0.5;
         }
         if (gamepad1.b) { //down
-            climb1pos = 1.0;
+            climb1pos = 0.9;
             climb2pos = 0.11;
         }
         double x = -gamepad1.left_stick_x;

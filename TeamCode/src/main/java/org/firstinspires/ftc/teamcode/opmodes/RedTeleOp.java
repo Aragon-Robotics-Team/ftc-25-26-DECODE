@@ -28,6 +28,7 @@ import com.seattlesolvers.solverslib.command.SelectCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.controller.SquIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
@@ -114,9 +115,10 @@ public class RedTeleOp extends CommandOpMode {
     private Supplier<PathChain> pathChainSupplier;
     //Auto aligner
     public static double alignerHeadingkP = 0.5;
-    public static double alignerHeadingkD = 0.01;
-    public static double alignerHeadingkF = 0.0;
+    public static double alignerHeadingkD = 0.06;
+    public static double alignerHeadingkF = 0.001;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
+    double headingPIDOutput = 0;
     double lastSeenX;
     double headingVector;
     int spOffset = 0;
@@ -195,6 +197,7 @@ public class RedTeleOp extends CommandOpMode {
             startingPose = new Pose(0,0,alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
         }
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(0,0,0));
         follower.setPose(startingPose);
         follower.setMaxPower(1.0);
         follower.update();
@@ -408,7 +411,7 @@ public class RedTeleOp extends CommandOpMode {
 
     }
     void handleTeleopDrive() {
-        LLResult result = limelight.getResult();
+//        LLResult result = limelight.getResult();
 
         //Drivetrain code
         if (manualControl) {
@@ -454,8 +457,8 @@ public class RedTeleOp extends CommandOpMode {
             double targetHeading = targetVector.getTheta();
             shooter.setTargetLinearSpeed(targetVector.getMagnitude());
             headingError = follower.getHeading() - targetHeading;
-
-            rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, 0), -1, 1);
+            headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+            rx += MathUtils.clamp(headingPIDOutput, -1, 1);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
@@ -512,7 +515,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
-        telemetry.addData("heading pid output", alignerHeadingPID.calculate());
+        telemetry.addData("heading pid output", headingPIDOutput);
         telemetry.addData("Distance to red goal", Math.hypot(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX()));
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
@@ -603,7 +606,7 @@ public class RedTeleOp extends CommandOpMode {
         // If your hood moves, calculate this based on hood position.
         // For fixed hoods, 45-60 degrees is common.
         double launchAngle = SHOOTER_ANGLE;
-        double latency = 0.015+0.16;
+        double latency = 0.5; //Determine empirically
 
         // --- 1. GATHER CURRENT STATE ---
         Pose currentPose = robotPose;
