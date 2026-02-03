@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.LEDSubsystem;
 
 import java.util.Locale;
 
@@ -18,12 +19,14 @@ import java.util.Locale;
 public class ColorSensorTuning extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
+    private LEDSubsystem ledSubsystem;
     public GamepadEx driver1;
     float value = 17.0f;
 
     @Override
     public void init() {
         colorSubsystem = new ColorSensorsSubsystem(hardwareMap);
+        ledSubsystem = new LEDSubsystem(hardwareMap);
         driver1 = new GamepadEx(gamepad1);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Ready to tune color sensors.");
@@ -54,6 +57,17 @@ public class ColorSensorTuning extends OpMode {
             colorSubsystem.setGain(colorSubsystem.getIntakeSensor1(), value);
             colorSubsystem.setGain(colorSubsystem.getIntakeSensor2(), value);
 
+        }
+
+        //LED display
+        if (ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor2Result()) == true || ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor1Result()) == true) {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.VIOLET);
+        }
+        else if (ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor2Result()) == true || ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor1Result()) == true) {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.GREEN);
+        }
+        else {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.WHITE);
         }
 
         // 3. DISPLAY DATA

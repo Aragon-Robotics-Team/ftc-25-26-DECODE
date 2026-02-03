@@ -41,7 +41,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         shooterSubsystem = new ShooterSubsystem(hardwareMap);
         spindexerSubsystem = new SpindexerSubsystem(hardwareMap);
         intake = new IntakeSubsystem(hardwareMap);
-        spindexerSubsystem.set(75);
+        spindexerSubsystem.set(115);
 
         telemetry.addLine("Initialized.");
         telemetry.addLine("1. Open Dashboard.");

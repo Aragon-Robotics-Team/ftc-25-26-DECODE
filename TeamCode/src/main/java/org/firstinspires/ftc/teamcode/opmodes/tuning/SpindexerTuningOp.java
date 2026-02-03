@@ -10,21 +10,20 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Spindexer Tuner", group = "Tuning")
+@TeleOp(group = "Tuning")
 public class SpindexerTuningOp extends LinearOpMode {
 
     private SpindexerSubsystem spindexer;
     private AnalogInput absoluteEncoder;
-
 
     // DASHBOARD VARIABLES (Edit these in the browser)
     // ------------------------------------------------
     public static double TARGET_POS = 0; // Target in degrees
 
     // Default PID (Matches your subsystem defaults)
-    public static double p = 0.0159;
+    public static double p = 0.01;
     public static double i = 0;
-    public static double d = 0.0000114;
+    public static double d = 0.0000;
     public static double f = 0;
 
     // Use this to check your voltage scaling
@@ -37,7 +36,7 @@ public class SpindexerTuningOp extends LinearOpMode {
         RUN        // PID is active
     }
 
-    Mode currentMode = Mode.CALIBRATE;
+    Mode currentMode = Mode.RUN;
     boolean lastA = false;
 
     @Override

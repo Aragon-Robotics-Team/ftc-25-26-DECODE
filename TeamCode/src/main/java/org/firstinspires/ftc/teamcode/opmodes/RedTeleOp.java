@@ -25,6 +25,7 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SelectCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
@@ -33,6 +34,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
+import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -57,6 +59,7 @@ public class RedTeleOp extends CommandOpMode {
     public enum IntakeState {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
+
     int speedMin;
     int speedMax;
     int distMin;
@@ -67,6 +70,8 @@ public class RedTeleOp extends CommandOpMode {
     boolean isHoldingPoint = false;
     int snapshots = 0;
     double headingError;
+    int spindexerAutomoveCount = 0;
+
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(135,141.5);
     final Pose GOAL_BLUE = new Pose(9,141.5);
@@ -234,7 +239,10 @@ public class RedTeleOp extends CommandOpMode {
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
+                new ParallelCommandGroup(
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                        new InstantCommand(() -> spindexerAutomoveCount = 0)
+                )
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
@@ -242,7 +250,8 @@ public class RedTeleOp extends CommandOpMode {
                     new InstantCommand(() -> {
                         intakeState = IntakeState.INTAKEOUT_ROLLERSIN;
                         new SelectCommand(this::getIntakeCommand).schedule();
-                    })
+                    }),
+                    new InstantCommand(() -> spindexerAutomoveCount = 0)
                 )
         );
         new Trigger( //Auto aim
@@ -383,6 +392,18 @@ public class RedTeleOp extends CommandOpMode {
                 })
         );
 
+        //Auto spindexer
+        new Trigger(
+                () ->
+                        intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
+                        colorSensors.doesLastResultHaveBall() &&
+                        (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
+                        spindexerAutomoveCount < 2
+        ).whenActive(
+                new ParallelCommandGroup(
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false),
+                        new InstantCommand(() -> spindexerAutomoveCount++)));
+
     }
     void handleTeleopDrive() {
         LLResult result = limelight.getResult();
@@ -480,7 +501,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleBallsArrayUpdate() {
         //spindexer and array logic
-        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
+        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 40)) {
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
         }
     }
@@ -488,10 +509,11 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
-        telemetry.addData("pid output", alignerHeadingPID.calculate());
+        telemetry.addData("heading pid output", alignerHeadingPID.calculate());
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
+        telemetry.addData("spindexer automove count", spindexerAutomoveCount);
 
         telemetry.addLine("--Spindexer--");
         telemetry.addData("PID output", spindexer.getOutput());

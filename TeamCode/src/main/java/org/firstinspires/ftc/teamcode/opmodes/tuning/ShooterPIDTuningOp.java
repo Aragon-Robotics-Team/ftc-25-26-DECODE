@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 
 @Config
-@TeleOp(name = "Shooter PID Tuning", group = "Tuning")
+@TeleOp(group = "Tuning")
 public class ShooterPIDTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
