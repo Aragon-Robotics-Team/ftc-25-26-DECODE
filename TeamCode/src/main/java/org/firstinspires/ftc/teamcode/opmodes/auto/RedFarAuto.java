@@ -57,7 +57,7 @@ public class RedFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(84.41,21.35, Math.toRadians(60));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(60));
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
         }
 
@@ -251,9 +251,12 @@ public class RedFarAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup far_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1400);
+                    shooter.setTargetTicks(1450);
+                    gate.down();
                     gate.down();
                 }),
+                new WaitCommand(1),
+                new InstantCommand(() -> gate.down()), //bruh
                 //Preload
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, paths.shootFarPreload, true)
@@ -268,7 +271,7 @@ public class RedFarAuto extends CommandOpMode {
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
                 setCount(3),
 
                 //Third row
@@ -281,7 +284,8 @@ public class RedFarAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowFar, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new WaitCommand(300), //to prevent moving while shooting
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //HP row
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
@@ -300,16 +304,17 @@ public class RedFarAuto extends CommandOpMode {
                                 new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
                                 new WaitForColorCommand(colorsensor),
                                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                                new WaitCommand(100),
+                                new WaitCommand(400),
                                 new WaitForColorCommand(colorsensor),
                                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                                new WaitCommand(100),
+                                new WaitCommand(400),
                                 new WaitForColorCommand(colorsensor)
                         )
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootHpFar, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new WaitCommand(300), //to prevent moving while shooting
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //Overflow
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
@@ -320,7 +325,8 @@ public class RedFarAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootOverflow, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, true)),
+                new WaitCommand(300), //to prevent moving while shooting
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
