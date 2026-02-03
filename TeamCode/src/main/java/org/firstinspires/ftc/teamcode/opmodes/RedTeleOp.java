@@ -469,15 +469,18 @@ public class RedTeleOp extends CommandOpMode {
             led.setPosition(position);
         }
 
-        int ledBallCount = Math.toIntExact(Arrays.stream(spindexer.getBalls()).filter(ball -> !ball.equals(RobotConstants.BallColors.NONE)).count());
-        if (ledBallCount == 1) {
+        //int ledBallCount = Math.toIntExact(Arrays.stream(spindexer.getBalls()).filter(ball -> !ball.equals(RobotConstants.BallColors.NONE)).count());
+
+        if (spindexerAutomoveCount == 0) {
             led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RED);
-        } else if (ledBallCount == 2) {
-            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
-        } else if (ledBallCount == 3) {
+        } else if (spindexerAutomoveCount == 1) {
             led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        } else if (spindexerAutomoveCount == 2) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        } else if (spindexerAutomoveCount == 2 && colorSensors.doesLastResultHaveBall()) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.BLUE);
         } else {
-            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
         }
 
     }
