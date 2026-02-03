@@ -57,7 +57,7 @@ public class RedFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(60));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(60.5));
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
         }
 
@@ -75,7 +75,7 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(85, 36.6),
+                                    new Pose(85, 32.6),
                                     new Pose(126.13, 33.82)
                             )
                     )
@@ -132,8 +132,10 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(145, -10),
-                                    new Pose(130,45)
+                                    new Pose(144, 0),
+                                    new Pose(144, 0),
+                                    new Pose(130, 20),
+                                    new Pose(136.3,54)
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -152,7 +154,7 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.LAUNCH, new Pose(110, 8))
                     )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(-90))
+                    .setTangentHeadingInterpolation()
                     .build();
         }
     }
@@ -171,7 +173,17 @@ public class RedFarAuto extends CommandOpMode {
                 new WaitForColorCommand(colorsensor).withTimeout(500)
         );
     }
-
+    private SequentialCommandGroup shootFourTimesWithDelay() {
+        return new SequentialCommandGroup(
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                new WaitCommand(100),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                new WaitCommand(300),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                new WaitCommand(100),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
+        );
+    }
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
 
@@ -262,16 +274,11 @@ public class RedFarAuto extends CommandOpMode {
                         new FollowPathCommand(follower, paths.shootFarPreload, true)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new InstantCommand(this::scanMotif)
-                ).alongWith(new ParallelCommandGroup(
-                        new WaitCommand(100),
-                        new InstantCommand(gate::up),
-                        new WaitCommand(100),
-                        new InstantCommand(gate::down)
-                )),
+                ),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                shootFourTimesWithDelay(),
                 setCount(3),
 
                 //Third row
@@ -285,7 +292,7 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowFar, true),
                 new WaitCommand(300), //to prevent moving while shooting
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                shootFourTimesWithDelay(),
 
                 //HP row
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
@@ -314,7 +321,7 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootHpFar, true),
                 new WaitCommand(300), //to prevent moving while shooting
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                shootFourTimesWithDelay(),
 
                 //Overflow
                 new InstantCommand(() -> follower.setMaxPower(0.8)),
@@ -326,7 +333,19 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootOverflow, true),
                 new WaitCommand(300), //to prevent moving while shooting
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                shootFourTimesWithDelay(),
+
+                //Overflow x2
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeOverflow)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                        intakeArtifacts()
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootOverflow, true),
+                new WaitCommand(300), //to prevent moving while shooting
+                shootFourTimesWithDelay(),
 
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
