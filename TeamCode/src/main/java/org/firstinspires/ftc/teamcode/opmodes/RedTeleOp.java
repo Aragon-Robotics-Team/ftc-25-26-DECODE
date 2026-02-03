@@ -16,6 +16,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -32,6 +33,9 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.RobotConstants;
+import org.firstinspires.ftc.teamcode.RobotConstants.Motifs;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -489,6 +493,21 @@ public class RedTeleOp extends CommandOpMode {
             double position = midpoint + amplitude * Math.sin(2 * Math.PI * speed * t);
             led.setPosition(position);
         }
+
+        //int ledBallCount = Math.toIntExact(Arrays.stream(spindexer.getBalls()).filter(ball -> !ball.equals(RobotConstants.BallColors.NONE)).count());
+
+        if (spindexerAutomoveCount == 0) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RED);
+        } else if (spindexerAutomoveCount == 1) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        } else if (spindexerAutomoveCount == 2) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        } else if (spindexerAutomoveCount == 2 && colorSensors.doesLastResultHaveBall()) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        } else {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+        }
+
     }
     void handleVoltageCompensation() {
         //Voltage compensation code
