@@ -264,7 +264,7 @@ public class RedTeleOp extends CommandOpMode {
                 .whileActiveContinuous(new InstantCommand(() -> slowMode = true))
                 .whenInactive(new InstantCommand(() -> slowMode = false));
 
-        driver1.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenPressed(
+        driver1.getGamepadButton(LEFT_BUMPER).whenPressed(
                 new ParallelCommandGroup(
                         new InstantCommand(() -> isHoldingPoint = true),
                         new InstantCommand(() -> follower.holdPoint(follower.getPose()))
@@ -272,7 +272,7 @@ public class RedTeleOp extends CommandOpMode {
 
 
         );
-        driver1.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenReleased(
+        driver1.getGamepadButton(LEFT_BUMPER).whenReleased(
                 new ParallelCommandGroup(
                         new InstantCommand(() -> isHoldingPoint = false),
                         new InstantCommand(() -> follower.startTeleOpDrive()),
