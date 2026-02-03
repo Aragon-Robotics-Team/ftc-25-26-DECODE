@@ -264,6 +264,25 @@ public class RedTeleOp extends CommandOpMode {
                 .whileActiveContinuous(new InstantCommand(() -> slowMode = true))
                 .whenInactive(new InstantCommand(() -> slowMode = false));
 
+        driver1.getGamepadButton(LEFT_BUMPER).whenPressed(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> isHoldingPoint = true),
+                        new InstantCommand(() -> follower.holdPoint(follower.getPose()))
+                )
+
+
+        );
+        driver1.getGamepadButton(LEFT_BUMPER).whenReleased(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> isHoldingPoint = false),
+                        new InstantCommand(() -> follower.startTeleOpDrive()),
+                        new InstantCommand(() -> follower.breakFollowing())
+                )
+        );
+
+
+
+
         //Driver 2
 //        driver2.getGamepadButton(DPAD_UP).whenPressed(
 //                new InstantCommand(() -> {
@@ -411,7 +430,10 @@ public class RedTeleOp extends CommandOpMode {
 //                    follower.holdPoint(holdPose);
 //                }
 //            }
-            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+            if (!isHoldingPoint) {
+                follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+            }
+
         } else {
             // --- AUTO AIM MODE ---
             if (gamepad1.touchpad_finger_1) {
@@ -430,7 +452,10 @@ public class RedTeleOp extends CommandOpMode {
             rx += MathUtils.clamp(alignerHeadingPID.calculate(headingError, spOffset), -0.3, 0.3);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+            if (!isHoldingPoint) {
+                follower.setTeleOpDrive(x / denominator, y / denominator, rx / denominator, false);
+            }
+            
         }
     }
     void handleLED() {
