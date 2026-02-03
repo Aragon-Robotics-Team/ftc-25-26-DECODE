@@ -441,8 +441,8 @@ public class RedTeleOp extends CommandOpMode {
         //Drivetrain code
         if (manualControl) {
             //shooter.setTargetLinearSpeed(50);
-            double x = driver1.getLeftX();
-            double y = driver1.getLeftY();
+            double x = -driver1.getLeftY();
+            double y = -driver1.getLeftX();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
             // 1. Calculate the heading we want the controls to be based on
             double controlHeading = follower.getHeading() - headingOffset;
@@ -468,8 +468,8 @@ public class RedTeleOp extends CommandOpMode {
                 gamepad1.rumbleBlips(1);
             }
 
-            double x = driver1.getLeftX();
-            double y = driver1.getLeftY();
+            double x = -driver1.getLeftY();
+            double y = -driver1.getLeftX();
             double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
 
             double controlHeading = follower.getHeading() - headingOffset;
