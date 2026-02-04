@@ -63,7 +63,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         double abs = getAbsolutePosition360();
-
+        
         if (Double.isNaN(lastAbs)) {
             lastAbs = abs;
             continuousPosition = abs;
@@ -134,7 +134,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
-        return error < 7.5;
+        return error < 9;
     }
 
     /**

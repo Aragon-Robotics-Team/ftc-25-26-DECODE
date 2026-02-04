@@ -213,6 +213,8 @@ public class RedTeleOp extends CommandOpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0,0,0));
         follower.setPose(startingPose);
+        double targetZero = alliance == Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
+        headingOffset = follower.getHeading() - targetZero;
         follower.setMaxPower(1.0);
         follower.update();
         intake = new IntakeSubsystem(hardwareMap);
@@ -375,7 +377,7 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double targetZero = alliance == Alliance.RED ? 0 : Math.toRadians(180);
+                    double targetZero = alliance == Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
                     headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -457,8 +459,8 @@ public class RedTeleOp extends CommandOpMode {
 
     }
     void handleTeleopDrive() {
-        double x = -driver1.getLeftY();
-        double y = -driver1.getLeftX();
+        double y = driver1.getLeftY();
+        double x = driver1.getLeftX();
         double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
 
         double controlHeading = follower.getHeading() - headingOffset;
@@ -472,7 +474,7 @@ public class RedTeleOp extends CommandOpMode {
         if (manualControl) {
             //MANUAL
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
+            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
         } else {
             //AUTO AIM MODE
             if (gamepad1.touchpad_finger_1) {
@@ -492,7 +494,7 @@ public class RedTeleOp extends CommandOpMode {
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
 
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
+            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
         }
     }
     void handleLED() {
