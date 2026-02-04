@@ -436,63 +436,43 @@ public class RedTeleOp extends CommandOpMode {
 
     }
     void handleTeleopDrive() {
-//        LLResult result = limelight.getResult();
+        double x = -driver1.getLeftY();
+        double y = -driver1.getLeftX();
+        double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
 
-        //Drivetrain code
+        double controlHeading = follower.getHeading() - headingOffset;
+
+        double cos = Math.cos(-controlHeading);
+        double sin = Math.sin(-controlHeading);
+
+        double x_rotated = x * cos - y * sin;
+        double y_rotated = x * sin + y * cos;
+
         if (manualControl) {
-            //shooter.setTargetLinearSpeed(50);
-            double x = -driver1.getLeftY();
-            double y = -driver1.getLeftX();
-            double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
-            // 1. Calculate the heading we want the controls to be based on
-            double controlHeading = follower.getHeading() - headingOffset;
-
-            // 2. Rotate the input vector (Manual Field Centric)
-            // We rotate the input vector by negative controlHeading to convert Field -> Robot
-            double cos = Math.cos(-controlHeading);
-            double sin = Math.sin(-controlHeading);
-
-            double x_rotated = x * cos - y * sin;
-            double y_rotated = x * sin + y * cos;
-
-            // 3. Normalize for denominator
+            //MANUAL
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
 
-            // 4. Pass the Rotated Vectors to Pedro with fieldCentric = false
             follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
+
         } else {
-            // --- AUTO AIM MODE ---
+            //AUTO AIM MODE
             if (gamepad1.touchpad_finger_1) {
                 manualControl = true;
                 shooter.setTargetTicks(0);
                 gamepad1.rumbleBlips(1);
             }
 
-            double x = -driver1.getLeftY();
-            double y = -driver1.getLeftX();
-            double rx = -driver1.getRightX() * (slowMode ? 0.3 : 1.2);
-
-            double controlHeading = follower.getHeading() - headingOffset;
-            double cos = Math.cos(-controlHeading);
-            double sin = Math.sin(-controlHeading);
-            double x_rotated = x * cos - y * sin;
-            double y_rotated = x * sin + y * cos;
-
-            // Limelight autoalign
-//            if (result != null && result.isValid() && result.getTy() != 0 && limelight.detectGoalTy(result) != null) {
-//                headingError = (double) limelight.detectGoalTy(result);
-//            }
-            //Pinpoint autoalign
-//            double targetHeading = Math.atan2(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX());
-            //SOTM
             Vector targetVector = calculateTargetVector2(follower, follower.getPose(), GOAL_RED, shooter);
             double targetHeading = targetVector.getTheta();
             shooter.setTargetLinearSpeed(targetVector.getMagnitude());
+
             headingError = follower.getHeading() - targetHeading;
             headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+
             rx += MathUtils.clamp(headingPIDOutput, -1, 1);
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+
             follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
         }
     }
