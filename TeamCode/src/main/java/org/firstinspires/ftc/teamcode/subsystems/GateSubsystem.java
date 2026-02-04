@@ -17,11 +17,12 @@ public class GateSubsystem extends SubsystemBase {
         gate = new ServoEx(hMap, "gate");
         gateEncoder = hMap.get(AnalogInput.class, "gateEncoder");
         gate.setInverted(true);
+        gate.set(DOWN);
     }
     public enum GateState {
         UP, DOWN;
     }
-    public GateState gateState;
+    public GateState gateState = GateState.DOWN;
     public void up() {
         gate.set(UP);
         gateState = GateState.UP;

@@ -20,6 +20,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -41,6 +42,7 @@ import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
+import org.firstinspires.ftc.teamcode.RobotConstants.*;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -300,6 +302,25 @@ public class RedTeleOp extends CommandOpMode {
                 .whileActiveContinuous(new InstantCommand(() -> slowMode = true))
                 .whenInactive(new InstantCommand(() -> slowMode = false));
 
+        driver1.getGamepadButton(LEFT_BUMPER).whenPressed(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> isHoldingPoint = true),
+                        new InstantCommand(() -> follower.holdPoint(follower.getPose()))
+                )
+
+
+        );
+        driver1.getGamepadButton(LEFT_BUMPER).whenReleased(
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> isHoldingPoint = false),
+                        new InstantCommand(() -> follower.startTeleOpDrive()),
+                        new InstantCommand(() -> follower.breakFollowing())
+                )
+        );
+
+
+
+
         //Driver 2
 //        driver2.getGamepadButton(DPAD_UP).whenPressed(
 //                new InstantCommand(() -> {
@@ -451,9 +472,7 @@ public class RedTeleOp extends CommandOpMode {
         if (manualControl) {
             //MANUAL
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-
-            follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
-
+            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
         } else {
             //AUTO AIM MODE
             if (gamepad1.touchpad_finger_1) {
@@ -473,7 +492,7 @@ public class RedTeleOp extends CommandOpMode {
 
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
 
-            follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
+            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, false);
         }
     }
     void handleLED() {
@@ -507,6 +526,21 @@ public class RedTeleOp extends CommandOpMode {
             double position = midpoint + amplitude * Math.sin(2 * Math.PI * speed * t);
             led.setPosition(position);
         }
+
+        //int ledBallCount = Math.toIntExact(Arrays.stream(spindexer.getBalls()).filter(ball -> !ball.equals(RobotConstants.BallColors.NONE)).count());
+
+        if (spindexerAutomoveCount == 0) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.RED);
+        } else if (spindexerAutomoveCount == 1) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        } else if (spindexerAutomoveCount == 2) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        } else if (spindexerAutomoveCount == 2 && colorSensors.doesLastResultHaveBall()) {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+        } else {
+            led.setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern.ORANGE);
+        }
+
     }
     void handleVoltageCompensation() {
         //Voltage compensation code

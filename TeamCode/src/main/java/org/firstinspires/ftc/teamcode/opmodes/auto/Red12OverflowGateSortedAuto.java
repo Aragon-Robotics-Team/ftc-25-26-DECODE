@@ -309,7 +309,8 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, paths.shootClosePreload, true)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
-                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif))
+                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif)),
+                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(new InstantCommand(this::scanMotif))
                 ),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
