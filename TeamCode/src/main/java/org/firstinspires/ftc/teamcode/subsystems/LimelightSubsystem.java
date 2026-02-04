@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.pedropathing.geometry.Pose; // Import Pedro Pose
@@ -10,10 +13,13 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 public class LimelightSubsystem extends SubsystemBase {
-    public Limelight3A limelight;
+    private Limelight3A limelight;
     private static final List<Integer> MOTIF_TAG_IDS = Arrays.asList(21, 22, 23);
     private static final List<Integer> GOAL_TAG_IDS = Arrays.asList(20, 24);
 
@@ -59,27 +65,72 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     /**
-     * Gets the robot's field position using MegaTag2.
+     * Gets the robot's field position using MegaTag1.
      * @param result The latest LLResult
      * @return A PedroPathing Pose in INCHES, or null if invalid.
      */
-    public Pose getMegaTagPose(LLResult result) {
+    public Pose getMegaTag1Pose(LLResult result) {
         if (result != null && result.isValid()) {
-            // MegaTag2 is robust because it uses our IMU heading
             Pose3D botpose_mt1 = result.getBotpose();
 
             if (botpose_mt1 != null) {
-                // Convert Meters (Limelight) to Inches (Pedro)
-                double x = botpose_mt1.getPosition().x;
-                double y = botpose_mt1.getPosition().y;
+                // 1. Convert Meters (Limelight) to Inches
+                double xInches = botpose_mt1.getPosition().x * 39.3701;
+                double yInches = botpose_mt1.getPosition().y * 39.3701;
 
-                // MT2 returns heading in degrees, convert back to radians for Pedro
-                double heading_rad = Math.toRadians(botpose_mt1.getOrientation().getYaw());
+                // 2. Create a Pose2D containing the converted units and the Yaw (Heading)
+                // Note: We use the Vision Heading here because MT1 calculates it from the tag.
+                Pose2D rawPose = new Pose2D(
+                        DistanceUnit.INCH,
+                        xInches,
+                        yInches,
+                        AngleUnit.DEGREES,
+                        botpose_mt1.getOrientation().getYaw()
+                );
 
-                return new Pose(x, y);
+                // 3. Convert Coordinate Systems (Limelight Center -> Pedro Corner)
+                Pose ftcStandard = PoseConverter.pose2DToPose(rawPose, InvertedFTCCoordinates.INSTANCE);
+                return ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the robot's position and converts it to Pedro Pathing Coordinates.
+     * @param result The latest LLResult
+     * @return A valid Pose in Inches (Corner-Zero), or null if invalid.
+     */
+    public Pose getMegaTagGeminiPose(LLResult result) {
+        // 1. Safety Checks (Paranoid Check to prevent Crashes)
+        if (result == null || !result.isValid()) {
+            return null;
+        }
+
+        // 2. Get the MT2 Botpose (or MT1 if you prefer)
+        Pose3D botpose = result.getBotpose_MT2();
+        if (botpose == null) {
+            return null;
+        }
+
+        // 3. Extract Data (Limelight returns METERS from CENTER (0,0))
+        double xMeters = botpose.getPosition().x;
+        double yMeters = botpose.getPosition().y;
+        double yawDegrees = botpose.getOrientation().getYaw();
+
+        // 4. Convert to Inches
+        double xInches = xMeters * 39.3701;
+        double yInches = yMeters * 39.3701;
+
+        // 5. Convert Coordinate System (Center -> Corner)
+        // Pedro (0,0) is the corner. Center is (72, 72).
+        // Note: You might need to swap X and Y depending on your camera mount rotation.
+        // Assuming standard mounting (Camera Forward = Robot Forward):
+        double pedroX = xInches + 72.0;
+        double pedroY = yInches + 72.0;
+
+        // 6. Return the Pose (Convert Yaw to Radians)
+        return new Pose(pedroX, pedroY, Math.toRadians(yawDegrees));
     }
 
     public Integer detectMotif(LLResult result) {
@@ -122,18 +173,20 @@ public class LimelightSubsystem extends SubsystemBase {
         return null;
     }
 
-    //TODO claire: we might need these in pedro's coordinate system.
     /**
      * @param result limelight detection
-     * @return robot's position in FTC coordinate system as a set of coordinate points or null if nothing is found
+     * @return megatag2 pose or null
      * */
-    public Object detectRobotPosition(LLResult result) {
+    public Pose getMegaTag2Pose(LLResult result) {
         if (result != null && result.isValid()) {
             Pose3D botpose_mt2 = result.getBotpose_MT2();
+
             if (botpose_mt2 != null) {
-                double x = botpose_mt2.getPosition().x;
-                double y = botpose_mt2.getPosition().y;
-                return new double[]{x,y};
+                Pose2D botpose_mt2_2d = new Pose2D(DistanceUnit.INCH, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, 0);
+
+                Pose ftcStandard = PoseConverter.pose2DToPose(botpose_mt2_2d, InvertedFTCCoordinates.INSTANCE);
+                Pose pedroStandard = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+                return pedroStandard;
             }
         }
         return null;

@@ -63,7 +63,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         double abs = getAbsolutePosition360();
-        
+
         if (Double.isNaN(lastAbs)) {
             lastAbs = abs;
             continuousPosition = abs;

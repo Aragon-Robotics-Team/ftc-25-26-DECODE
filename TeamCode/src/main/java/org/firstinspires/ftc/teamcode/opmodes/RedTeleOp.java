@@ -14,14 +14,12 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
-import com.bylazar.panels.Panels;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -30,21 +28,15 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SelectCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.controller.SquIDFController;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
-import org.firstinspires.ftc.teamcode.RobotConstants.*;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
-import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -185,6 +177,9 @@ public class RedTeleOp extends CommandOpMode {
         //Update color sensors
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
+
+        //Update limelight
+        limelight.updateRobotOrientation(follower.getHeading());
 
         handleTelemetry();
 
@@ -433,10 +428,40 @@ public class RedTeleOp extends CommandOpMode {
                     }
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+        driver2.getGamepadButton(GamepadKeys.Button.PS).whenPressed(
                 new InstantCommand(() -> {
                     follower.setPose(new Pose(7, 7, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
                     gamepad2.rumbleBlips(1);
+                })
+        );
+        driver2.getGamepadButton(GamepadKeys.Button.TOUCHPAD).whenPressed(
+                new InstantCommand(() -> {
+                    try {
+                        LLResult result = limelight.getResult();
+
+                        // Check if result exists before passing it
+                        if (result != null && result.isValid()) {
+                            Pose llPose = limelight.getMegaTagGeminiPose(result);
+
+                            if (llPose != null) {
+                                // Log the raw detection for debugging
+                                telemetry.addData("LL_Update", "Setting Pose to: " + llPose.getX() + ", " + llPose.getY());
+                                telemetry.update();
+
+                                // Update Pedro Pathing
+                                follower.setPose(llPose);
+
+                                // Feedback
+                                gamepad1.rumbleBlips(1);
+                                gamepad2.rumbleBlips(1);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // This catches the "Silent Crash" and shows you why it happened
+                        telemetry.addData("CRASH_FIX", "Error: " + e.getMessage());
+                        telemetry.update();
+                        e.printStackTrace();
+                    }
                 })
         );
 
