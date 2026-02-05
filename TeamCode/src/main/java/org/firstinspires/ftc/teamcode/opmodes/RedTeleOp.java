@@ -482,18 +482,7 @@ public class RedTeleOp extends CommandOpMode {
                 shooter.setTargetTicks(0);
                 gamepad1.rumbleBlips(1);
             }
-
-            Vector targetVector = calculateTargetVector2(follower, follower.getPose(), GOAL_RED, shooter);
-            double targetHeading = targetVector.getTheta();
-            shooter.setTargetLinearSpeed(targetVector.getMagnitude());
-
-            headingError = follower.getHeading() - targetHeading;
-            headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
-
-            rx += MathUtils.clamp(headingPIDOutput, -1, 1);
-
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-
             if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
         }
     }
@@ -675,7 +664,7 @@ public class RedTeleOp extends CommandOpMode {
     }
 
     /**
-     * Calculate the target vector for the ball with velocity and acceleration compensation, as well as latency in the shooter.
+     * Calculate the target vector for the ball with velocity compensation, as well as latency in the shooter.
      * @param follower Pedro follower object
      * @param targetPose Target coordinate in Pedro system to shoot at.
      * @param shooter shooter subsystem
@@ -703,8 +692,8 @@ public class RedTeleOp extends CommandOpMode {
         double futureHeading = currentPose.getHeading() + (angularVel * latency);
 
         // Position Prediction
-        double predX = currentPose.getX() + (v_robot.getXComponent() * latency) + (0.5 * a_robot.getXComponent() * latency * latency);
-        double predY = currentPose.getY() + (v_robot.getYComponent() * latency) + (0.5 * a_robot.getYComponent() * latency * latency);
+        double predX = currentPose.getX() + (v_robot.getXComponent() * latency);
+        double predY = currentPose.getY() + (v_robot.getYComponent() * latency);
 
         // --- 3. CALCULATE ROBOT VELOCITY AT MUZZLE (Standard Rigid Body) ---
         double futureVx = v_robot.getXComponent() + (a_robot.getXComponent() * latency);
