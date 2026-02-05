@@ -479,7 +479,6 @@ public class RedTeleOp extends CommandOpMode {
             //AUTO AIM MODE
             if (gamepad1.touchpad_finger_1) {
                 manualControl = true;
-                shooter.setTargetTicks(600);
                 gamepad1.rumbleBlips(2);
                 gamepad2.rumbleBlips(2);
             } else {
@@ -759,6 +758,9 @@ public class RedTeleOp extends CommandOpMode {
         //    Total = Horizontal / cos(theta)
         double finalHorizontalSpeed = v_ball_horizontal.getMagnitude();
         double finalTotalSpeed = finalHorizontalSpeed / Math.cos(launchAngle);
+        if (dist > 110) {
+            finalTotalSpeed = 620;
+        }
 
         // Return a Vector with the NEW Total Speed and the CORRECTED heading
         return new Vector(finalTotalSpeed, v_ball_horizontal.getTheta());
