@@ -72,10 +72,10 @@ public class RedTeleOp extends CommandOpMode {
     PanelsField panelsField = PanelsField.INSTANCE;
     String image = panelsField.getRED();
 
-    int speedMin;
-    int speedMax;
-    int distMin;
-    int distMax;
+    double speedMin;
+    double speedMax;
+    double distMin;
+    double distMax;
     int closeShooterTarget;
     int farShooterTarget;
     boolean isAdjustingFar = false;

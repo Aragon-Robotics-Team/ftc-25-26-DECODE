@@ -11,9 +11,6 @@ import com.seattlesolvers.solverslib.util.LUT;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 public class ShooterSubsystem extends SubsystemBase {
-    //Note: I changed the motor type from 312 rpm to bare (6k i think).
-    // We might have to redo PID and find new velocities.
-    // TODO: Delete this once done :)
     private Motor shooter1;
     private Motor shooter2;
     private MotorGroup shooter;
@@ -27,11 +24,11 @@ public class ShooterSubsystem extends SubsystemBase {
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
-    LUT<Integer, Integer> lut;
-    int speedMax;
-    int speedMin;
-    int distMax;
-    int distMin;
+    InterpLUT lut;
+    double speedMax;
+    double speedMin;
+    double distMax;
+    double distMin;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.BARE);
@@ -46,8 +43,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
         shooter.setRunMode(Motor.RunMode.RawPower);
         shooter.set(0);
+
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
-        lut = new LUT(); //distance (in), linear speed (in/s);
+        lut = new InterpLUT(); //distance (in), linear speed (in/s);
 //        lut.add(46.5, 435);
 //        lut.add(60, 450);
 //        lut.add(80, 490);
@@ -61,38 +59,34 @@ public class ShooterSubsystem extends SubsystemBase {
 //        lut.add(132,590);
 //        lut.add(134,610);
 //        lut.add(141,620);
-        lut.add(60,474);
-        lut.add(65,474);
-        lut.add(70,474);
-        lut.add(75,483);
-        lut.add(80,483);
-        lut.add(85,517);
-        lut.add(90,517);
-        lut.add(100,525);
-        lut.add(135,576);
-        lut.add(142,593);
-        lut.add(150,602);
-        lut.add(157,650);
-
-//        speedMax = 570;
-//        speedMin = 435;
-//        distMax = 132;
-//        distMin = 47;
-        speedMax = 650;
-        speedMin = 474;
-        distMax = 157;
-        distMin = 60;
+        lut.add(60.0,474.0);
+        lut.add(65.0,474.0);
+        lut.add(70.0,474.0);
+        lut.add(75.0,483.0);
+        lut.add(80.0,483.0);
+        lut.add(85.0,517.0);
+        lut.add(90.0,517.0);
+        lut.add(100.0,525.0);
+        lut.add(135.0,576.0);
+        lut.add(142.0,593.0);
+        lut.add(150.0,602.0);
+        lut.add(157.0,650.0);
+        lut.createLUT();
+        speedMax = 650.0;
+        speedMin = 474.0;
+        distMax = 157.0;
+        distMin = 60.0;
     }
-    public int getSpeedMax() {
+    public double getSpeedMax() {
         return speedMax;
     }
-    public int getSpeedMin() {
+    public double getSpeedMin() {
         return speedMin;
     }
-    public int getDistMax() {
+    public double getDistMax() {
         return distMax;
     }
-    public int getDistMin() {
+    public double getDistMin() {
         return distMin;
     }
     public void setPIDF(double p, double i, double d, double f) {
@@ -140,7 +134,9 @@ public class ShooterSubsystem extends SubsystemBase {
         return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        return lut.getClosest((int) distance);
+        double clampedDistance = MathUtils.clamp(distance, distMin, distMax);
+        Double result =  lut.get(clampedDistance);
+        return (result != null) ? result : speedMin;
     }
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
