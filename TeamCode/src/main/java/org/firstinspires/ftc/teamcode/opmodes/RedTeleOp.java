@@ -479,8 +479,18 @@ public class RedTeleOp extends CommandOpMode {
             //AUTO AIM MODE
             if (gamepad1.touchpad_finger_1) {
                 manualControl = true;
-                shooter.setTargetTicks(0);
-                gamepad1.rumbleBlips(1);
+                shooter.setTargetTicks(600);
+                gamepad1.rumbleBlips(2);
+                gamepad2.rumbleBlips(2);
+            } else {
+                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), GOAL_RED, shooter);
+                double targetHeading = targetVector.getTheta();
+                shooter.setTargetLinearSpeed(targetVector.getMagnitude());
+
+                headingError = follower.getHeading() - targetHeading;
+                headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+
+                rx += MathUtils.clamp(headingPIDOutput, -1, 1);
             }
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
