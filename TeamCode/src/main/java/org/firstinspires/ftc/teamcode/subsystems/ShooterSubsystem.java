@@ -53,22 +53,35 @@ public class ShooterSubsystem extends SubsystemBase {
 //        lut.add(80, 490);
 //        lut.add(206, 540);
 //        lut.add(232.5, 570);
-        lut.add(59,470);
-        lut.add(66, 466);
-        lut.add(82,500);
-        lut.add(122,585);
-        lut.add(132,590);
-        lut.add(134,610);
-        lut.add(141,620);
+
+//        lut.add(59,470);
+//        lut.add(66, 466);
+//        lut.add(82,500);
+//        lut.add(122,585);
+//        lut.add(132,590);
+//        lut.add(134,610);
+//        lut.add(141,620);
+        lut.add(60,474);
+        lut.add(65,474);
+        lut.add(70,474);
+        lut.add(75,483);
+        lut.add(80,483);
+        lut.add(85,517);
+        lut.add(90,517);
+        lut.add(100,525);
+        lut.add(135,576);
+        lut.add(142,593);
+        lut.add(150,602);
+        lut.add(157,650);
 
 //        speedMax = 570;
 //        speedMin = 435;
 //        distMax = 132;
 //        distMin = 47;
-        speedMax = 660;
-        speedMin = 505;
-        distMax = 134;
-        distMin = 42;
+        speedMax = 650;
+        speedMin = 474;
+        distMax = 157;
+        distMin = 60;
     }
     public int getSpeedMax() {
         return speedMax;
