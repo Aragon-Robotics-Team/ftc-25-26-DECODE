@@ -5,14 +5,17 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.util.InterpLUT;
 import com.seattlesolvers.solverslib.util.LUT;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class ShooterSubsystem extends SubsystemBase {
-    private Motor shooter1;
-    private Motor shooter2;
+    private MotorEx shooter1;
+    private MotorEx shooter2;
     private MotorGroup shooter;
     public double getVelocityTicks() {
         return shooter1.getCorrectedVelocity();
@@ -31,8 +34,8 @@ public class ShooterSubsystem extends SubsystemBase {
     double distMin;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
-        shooter1 = new Motor(hMap, "shooter1", Motor.GoBILDA.BARE);
-        shooter2 = new Motor(hMap, "shooter2", Motor.GoBILDA.BARE);
+        shooter1 = new MotorEx(hMap, "shooter1", Motor.GoBILDA.BARE);
+        shooter2 = new MotorEx(hMap, "shooter2", Motor.GoBILDA.BARE);
 
         shooter1.setInverted(true); //one has to be backwards
         shooter2.setInverted(false);
@@ -144,6 +147,15 @@ public class ShooterSubsystem extends SubsystemBase {
         kP = compensation * kPOriginal;
         kF = compensation * kFOriginal;
     }
+
+    public double getShooter1CurrentAmps() {
+        return shooter1.getCurrent(CurrentUnit.AMPS);
+    }
+
+    public double getShooter2CurrentAmps() {
+        return shooter2.getCurrent(CurrentUnit.AMPS);
+    }
+
     @Override
     public void periodic() {
         flywheelController.setF(kF);

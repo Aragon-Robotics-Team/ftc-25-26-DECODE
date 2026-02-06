@@ -637,6 +637,11 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
+        
+        telemetry.addData("Spindexer Current Amps: ", spindexer.getSpindexerCurrentAmps());
+        telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
+        telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
+        telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
 
     }
     void handlePanelsDrawing() {

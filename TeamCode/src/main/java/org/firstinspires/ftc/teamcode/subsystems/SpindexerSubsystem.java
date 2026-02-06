@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class SpindexerSubsystem extends SubsystemBase {
 
     private final DcMotorEx spindexer;
@@ -89,6 +91,10 @@ public class SpindexerSubsystem extends SubsystemBase {
     /** Converts analog voltage to 0–360° */
     private double getAbsolutePosition360() {
         return (absoluteEncoder.getVoltage() / 3.2 * 360) % 360;
+    }
+
+    public double getSpindexerCurrentAmps() {
+        return spindexer.getCurrent(CurrentUnit.AMPS);
     }
 
     /**
