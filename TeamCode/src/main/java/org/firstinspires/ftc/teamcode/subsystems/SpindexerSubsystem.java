@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.controller.PIDController;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class SpindexerSubsystem extends SubsystemBase {
 
     private final DcMotorEx spindexer;
@@ -63,7 +65,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         double abs = getAbsolutePosition360();
-
+        
         if (Double.isNaN(lastAbs)) {
             lastAbs = abs;
             continuousPosition = abs;
@@ -89,6 +91,10 @@ public class SpindexerSubsystem extends SubsystemBase {
     /** Converts analog voltage to 0–360° */
     private double getAbsolutePosition360() {
         return (absoluteEncoder.getVoltage() / 3.2 * 360) % 360;
+    }
+
+    public double getSpindexerCurrentAmps() {
+        return spindexer.getCurrent(CurrentUnit.AMPS);
     }
 
     /**
@@ -134,7 +140,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
-        return error < 7.5;
+        return error < 9;
     }
 
     /**

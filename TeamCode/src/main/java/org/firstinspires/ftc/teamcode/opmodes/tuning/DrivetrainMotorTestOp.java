@@ -29,38 +29,32 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.tuning;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 /*
  * Demonstrates an empty iterative OpMode
  */
-@TeleOp(name = "temp climb test", group = "tuning")
-@Config
-public class ClimbTempTuningOp extends OpMode {
+@TeleOp(group = "tuning")
+public class DrivetrainMotorTestOp extends OpMode {
 
+    boolean forward = false;
+    DcMotor leftFront, leftBack, rightFront, rightBack;
     private ElapsedTime runtime = new ElapsedTime();
-    Servo climb1;
-    Servo climb2;
-    Follower follower;
 
     /**
      * This method will be called once, when the INIT button is pressed.
      */
     @Override
     public void init() {
-        follower = Constants.createFollower(hardwareMap);
-        follower.startTeleOpDrive(true);
+        leftFront = hardwareMap.dcMotor.get("leftFront");
+        leftBack = hardwareMap.dcMotor.get("leftRear");
+        rightFront = hardwareMap.dcMotor.get("rightFront");
+        rightBack = hardwareMap.dcMotor.get("rightRear");
         telemetry.addData("Status", "Initialized");
-        climb1=hardwareMap.get(Servo.class, "climb1");
-        climb2=hardwareMap.get(Servo.class, "climb2");
     }
 
     /**
@@ -84,26 +78,38 @@ public class ClimbTempTuningOp extends OpMode {
      * This method will be called repeatedly during the period between when
      * the START button is pressed and when the OpMode is stopped.
      */
-    public static double climb1pos = 0.5;
-    public static double climb2pos = 0.5;
     @Override
     public void loop() {
-        climb1.setPosition(climb1pos);
-        climb2.setPosition(climb2pos);
-        if (gamepad1.a) { //up
-            climb1pos = 0.52;
-            climb2pos = 0.5;
+        if (gamepad1.dpadDownWasPressed()) {
+            forward = true;
         }
-        if (gamepad1.b) { //down
-            climb1pos = 0.9;
-            climb2pos = 0.11;
+        if (gamepad1.dpadUpWasPressed()) {
+            forward = false;
         }
-        double x = -gamepad1.left_stick_x;
-        double y = gamepad1.left_stick_y;
-        double rx = -gamepad1.right_stick_x;
-        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-        follower.setTeleOpDrive(y / denominator, x / denominator, rx / denominator, true);
-        follower.update();
+        double power = forward ? 1 : -1;
+        if (gamepad1.a) {
+            leftFront.setPower(power);
+        } else {
+            leftFront.setPower(0);
+        }
+        if (gamepad1.b) {
+            leftBack.setPower(power);
+        } else {
+            leftBack.setPower(0);
+        }
+        if (gamepad1.x) {
+            rightFront.setPower(power);
+        } else {
+            rightFront.setPower(0);
+        }
+        if (gamepad1.y) {
+            rightBack.setPower(power);
+        } else {
+            rightBack.setPower(0);
+        }
+
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("foward", forward);
     }
 
     /**
