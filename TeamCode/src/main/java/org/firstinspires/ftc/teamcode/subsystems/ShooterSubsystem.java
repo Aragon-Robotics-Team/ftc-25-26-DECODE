@@ -23,7 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.012; //although the coefficients are negative it is fine because it works;
+    double kPOriginal = -0.011; //although the coefficients are negative it is fine because it works;
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
