@@ -232,7 +232,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         led = new LEDSubsystem(hardwareMap);
         gate = new GateSubsystem(hardwareMap);
         limelight = new LimelightSubsystem(hardwareMap);
-        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
+        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_AND_RAMP);
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
@@ -491,10 +491,13 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
                 gamepad2.rumbleBlips(2);
             } else {
                 limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_AND_RAMP);
-                headingError = limelight.getResult().getTy();
+                headingError = -limelight.getResult().getTy();
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
-                rx += MathUtils.clamp(headingPIDOutput, -1, 1);
+                if (Math.abs(headingError) > 5) {
+                    rx += MathUtils.clamp(headingPIDOutput, -0.3, 0.3);
+                }
+
             }
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
