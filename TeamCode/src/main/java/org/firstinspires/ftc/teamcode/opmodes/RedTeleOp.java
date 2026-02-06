@@ -693,6 +693,15 @@ public class RedTeleOp extends CommandOpMode {
         double angularVel = follower.getAngularVelocity();
         Vector a_robot = follower.getAcceleration();
 
+        //Position deadzone
+        if (v_robot.getMagnitude() < 2.0) { // If moving less than 2 in/s
+            v_robot = new Vector(0,0);
+        }
+        //Angle deadzone
+        if (Math.abs(angularVel) < Math.toRadians(5)) { // If rotating less than 5 deg/s
+            angularVel = 0;
+        }
+
         // Offsets (Distance in inches from center of robot to shooter)
         double shooterOffsetX = 5.0;
         double shooterOffsetY = 0.0;
