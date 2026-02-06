@@ -44,8 +44,8 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow with Gate", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12OverflowGateSortedAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class Red12OverflowSortedAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -64,7 +64,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
         public PathChain parkAfterShoot;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(46));
+            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45));
             public static final Pose START = new Pose(129,115,Math.toRadians(180));
             public static final Pose PARK_CLOSE = new Pose(106,75.3, Math.toRadians(-90));
         }
@@ -101,12 +101,12 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(131, 54),
+                                    new Pose(126.13, 54),
                                     new Pose(87.6, 43),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(-90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeFirstRowClose = follower
@@ -123,7 +123,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(new Pose(120.63, 85.6), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeThirdRowClose = follower
@@ -132,7 +132,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(99, 12.75),
-                                    new Pose(135.3, 31.6)
+                                    new Pose(132.13, 31.6)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -141,7 +141,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(135.3, 31.6), Poses.LAUNCH)
+                            new BezierLine(new Pose(132.13, 31.6), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
                     .build();
@@ -384,8 +384,8 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                 //shoot third row
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowClose, true),
-                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
-
+//                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
+                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
                 //move to end pos
                 new FollowPathCommand(follower, paths.parkAfter12Overflow)
         );
