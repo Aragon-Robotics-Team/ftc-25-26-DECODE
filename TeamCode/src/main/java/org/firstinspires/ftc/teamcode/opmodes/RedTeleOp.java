@@ -299,7 +299,7 @@ public class RedTeleOp extends CommandOpMode {
         driver1.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                        new InstantCommand(() -> spindexerAutomoveCount = 0)
+                        new InstantCommand(() -> spindexerAutomoveCount += 1)
                 )
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
