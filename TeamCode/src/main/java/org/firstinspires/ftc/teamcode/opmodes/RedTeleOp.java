@@ -89,7 +89,7 @@ public class RedTeleOp extends CommandOpMode {
     boolean firstLoop = true;
 
     //Bulk read
-    List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+    List<LynxModule> allHubs;
 
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(144,144);
@@ -218,6 +218,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void initializeSystems() {
         //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
