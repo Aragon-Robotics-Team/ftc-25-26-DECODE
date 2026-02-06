@@ -83,19 +83,19 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(136.5, 54)
+                                    new Pose(126.13, 54)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .build();
 
-            hitGateSecond = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(136.5, 54), new Pose(134.5, 54))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
-                    .build();
+//            hitGateSecond = follower
+//                    .pathBuilder()
+//                    .addPath(
+//                            new BezierLine(new Pose(126.13, 54), new Pose(126.13, 64))
+//                    )
+//                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+//                    .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
@@ -112,7 +112,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
             intakeFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(131, 85.6))
+                            new BezierLine(Poses.LAUNCH, new Pose(120.63, 85.6))
                     )
 //                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .setTangentHeadingInterpolation()
@@ -121,7 +121,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(131, 85.6), Poses.LAUNCH)
+                            new BezierLine(new Pose(120.63, 85.6), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
@@ -328,7 +328,7 @@ public class Red12OverflowGateSortedAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
+//                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootSecondRowClose, true),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
