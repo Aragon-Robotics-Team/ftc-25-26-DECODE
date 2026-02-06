@@ -705,8 +705,8 @@ public class RedTeleOp extends CommandOpMode {
         double predY = currentPose.getY() + (v_robot.getYComponent() * latency);
 
         // --- 3. CALCULATE ROBOT VELOCITY AT MUZZLE (Standard Rigid Body) ---
-        double futureVx = v_robot.getXComponent() + (a_robot.getXComponent() * latency);
-        double futureVy = v_robot.getYComponent() + (a_robot.getYComponent() * latency);
+        double futureVx = v_robot.getXComponent();
+        double futureVy = v_robot.getYComponent();
 
         double cosH = Math.cos(futureHeading);
         double sinH = Math.sin(futureHeading);
