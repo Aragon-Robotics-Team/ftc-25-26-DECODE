@@ -20,6 +20,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -56,6 +57,7 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 @Config
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
@@ -85,6 +87,9 @@ public class RedTeleOp extends CommandOpMode {
     double headingOffset;
     int spindexerAutomoveCount = 0;
     boolean firstLoop = true;
+
+    //Bulk read
+    List<LynxModule> allHubs;
 
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(144,144);
@@ -204,8 +209,20 @@ public class RedTeleOp extends CommandOpMode {
             limelight.takeSnapshot();
             snapshotTimer.reset();
         }
+
+        //LEAVE THIS AT THE END
+
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
     }
     void initializeSystems() {
+        //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
         startingPose = AutoPoseSaver.lastPose;
         if (startingPose == null) {
             startingPose = new Pose(0,0,alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
@@ -620,6 +637,11 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
+        
+        telemetry.addData("Spindexer Current Amps: ", spindexer.getSpindexerCurrentAmps());
+        telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
+        telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
+        telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
 
     }
     void handlePanelsDrawing() {
