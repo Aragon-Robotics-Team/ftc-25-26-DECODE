@@ -71,8 +71,6 @@ public class RedTeleOp extends CommandOpMode {
     public enum IntakeState {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
-    PanelsField panelsField = PanelsField.INSTANCE;
-    String image = panelsField.getRED();
 
     double speedMin;
     double speedMax;
@@ -94,6 +92,7 @@ public class RedTeleOp extends CommandOpMode {
     private Pose holdPose = new Pose(); // Tracks where we want to stay
     final Pose GOAL_RED = new Pose(144,144);
     final Pose GOAL_BLUE = new Pose(0,144);
+
     final RobotConstants.BallColors[] PPG = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     final RobotConstants.BallColors[] GPP = {RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE};
     final RobotConstants.BallColors[] PGP = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE};
@@ -110,6 +109,8 @@ public class RedTeleOp extends CommandOpMode {
     boolean manualControl = true;
     boolean slowMode = false;
     private double gateAdjustment;
+    PanelsField panelsField = PanelsField.INSTANCE;
+    String image = alliance == Alliance.RED ? panelsField.getRED() : panelsField.getBLUE();
 
     //subsystems
     private IntakeSubsystem intake;
@@ -379,7 +380,6 @@ public class RedTeleOp extends CommandOpMode {
                 new InstantCommand(() -> {
                     shooter.setTargetLinearSpeed(0);
                     gamepad2.rumbleBlips(1);
-                    selectedMotif = allMotifs[index];
                 })
         );
         driver2.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(
@@ -452,7 +452,10 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
                 new InstantCommand(() -> {
-                    follower.setPose(new Pose(7, 7, alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    Pose resetPose = alliance == Alliance.RED ?
+                            new Pose(7, 7, Math.toRadians(0)) :
+                            new Pose(144-7, 7, Math.toRadians(180));
+                    follower.setPose(resetPose);
                     gamepad2.rumbleBlips(1);
                 })
         );
@@ -499,7 +502,7 @@ public class RedTeleOp extends CommandOpMode {
                 gamepad1.rumbleBlips(2);
                 gamepad2.rumbleBlips(2);
             } else {
-                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), GOAL_RED, shooter);
+                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
                 double targetHeading = targetVector.getTheta();
                 shooter.setTargetLinearSpeed(targetVector.getMagnitude());
 
@@ -583,7 +586,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
-        telemetry.addData("Distance to red goal", Math.hypot(GOAL_RED.getY() - follower.getPose().getY(), GOAL_RED.getX() - follower.getPose().getX()));
+        telemetry.addData(String.format("Distance to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - follower.getPose().getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - follower.getPose().getX()));
         telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
@@ -646,7 +649,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handlePanelsDrawing() {
         FieldManager panels = panelsField.getField();
-        panels.moveCursor(GOAL_RED.getX(), GOAL_RED.getY());
+        panels.moveCursor((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY());
         panels.setStyle("red", "black", 1.0);
         panels.circle(4.0); // Draw a 4 inch circle at the goal
 
@@ -668,7 +671,7 @@ public class RedTeleOp extends CommandOpMode {
         // Set line style
         panels.setStyle("transparent", "white", 1.0);
         // Draw line to goal
-        panels.line(GOAL_RED.getX(), GOAL_RED.getY());
+        panels.line((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY());
 
         // 4. Send the update
         panels.update();
