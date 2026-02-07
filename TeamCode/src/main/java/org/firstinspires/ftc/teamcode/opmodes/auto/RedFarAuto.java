@@ -96,7 +96,7 @@ public class RedFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.LAUNCH, new Pose(136, 8))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setTangentHeadingInterpolation()
                     .build();
 
             intakeHpBack = follower
@@ -136,7 +136,7 @@ public class RedFarAuto extends CommandOpMode {
                                     new Pose(144, 0),
                                     new Pose(144, 0),
                                     new Pose(130, 20),
-                                    new Pose(136.3,54)
+                                    new Pose(136.3,45)
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -145,7 +145,7 @@ public class RedFarAuto extends CommandOpMode {
             shootOverflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(130,45),Poses.LAUNCH)
+                            new BezierLine(new Pose(136.3,45),Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
@@ -182,11 +182,12 @@ public class RedFarAuto extends CommandOpMode {
                 new WaitCommand(300),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new WaitCommand(100),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                new WaitCommand(100)
         );
     }
     public Pose currentPose;
-    public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
+    public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE,PURPLE,PURPLE};
 
     //voltage compensation
     public VoltageSensor voltageSensor;
@@ -228,6 +229,13 @@ public class RedFarAuto extends CommandOpMode {
             }
         }
     }
+    SequentialCommandGroup pulseIntakeOut() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSIN)),
+                new WaitCommand(600),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))
+        );
+    }
     @Override
     public void initialize() {
         timer = new ElapsedTime();
@@ -262,9 +270,9 @@ public class RedFarAuto extends CommandOpMode {
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
         spindexer.set(115);
-        SequentialCommandGroup far_sorted = new SequentialCommandGroup(
+        SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1450);
+                    shooter.setTargetTicks(1500);
                     gate.down();
                     gate.down();
                 }),
@@ -273,8 +281,7 @@ public class RedFarAuto extends CommandOpMode {
                 //Preload
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, paths.shootFarPreload, true)
-                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
-                        new InstantCommand(this::scanMotif)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))))
                 ),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
@@ -320,44 +327,49 @@ public class RedFarAuto extends CommandOpMode {
                         )
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootHpFar, true),
+                new FollowPathCommand(follower, paths.shootHpFar, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new InstantCommand(() -> follower.setMaxPower(1)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootOverflow, true),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow x2
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new InstantCommand(() -> follower.setMaxPower(1)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootOverflow, true),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.parkFar).withTimeout(3000)
+                new FollowPathCommand(follower, paths.parkFar)
         );
 
         schedule(
                 new RunCommand(() -> follower.update())
         );
         schedule(new SequentialCommandGroup(
-                    far_sorted
+                    far_volume
             ));
 
 
