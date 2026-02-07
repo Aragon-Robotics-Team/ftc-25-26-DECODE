@@ -133,7 +133,7 @@ public class RedTeleOp extends CommandOpMode {
     //Auto aligner
     public static double alignerHeadingkP = 0.5;
     public static double alignerHeadingkD = 0.06;
-    public static double alignerHeadingkF = 0.001;
+    public static double alignerHeadingkF = -0.05;
     PIDFController alignerHeadingPID = new PIDFController(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
     double headingPIDOutput = 0;
     double lastSeenX;
@@ -508,6 +508,13 @@ public class RedTeleOp extends CommandOpMode {
 
                 headingError = follower.getHeading() - targetHeading;
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+
+                //MANUAL FF- NORMAL DOES NOT WORK BC SP = 0
+                if (Math.abs(headingError) > Math.toRadians(0.8)) { //deadzone
+                    // Apply kF in the direction of the PID output (to help it push)
+                    double feedforward = Math.signum(headingError) * alignerHeadingkF;
+                    headingPIDOutput += feedforward;
+                }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
             }
