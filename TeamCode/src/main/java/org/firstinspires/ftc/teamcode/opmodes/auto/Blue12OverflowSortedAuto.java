@@ -44,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD35 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "🔵 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class Blue12OverflowSortedAuto extends CommandOpMode {
     public static class Paths {
         //close autos
@@ -64,9 +64,9 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
         public PathChain parkAfterShoot;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(144-93.3, 89.8, Math.toRadians(180-45));
-            public static final Pose START = new Pose(144-129,115,Math.toRadians(180-180));
-            public static final Pose PARK_CLOSE = new Pose(144-106,75.3, Math.toRadians(180+90));
+            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45)).mirror();
+            public static final Pose START = new Pose(129,115,Math.toRadians(180)).mirror();
+            public static final Pose PARK_CLOSE = new Pose(106,75.3, Math.toRadians(-90)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -82,8 +82,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144-87.6, 43),
-                                    new Pose(144-126.13, 54)
+                                    new Pose(87.6, 43).mirror(),
+                                    new Pose(126.13, 54).mirror()
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
@@ -101,8 +101,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(144-126.13, 54),
-                                    new Pose(144-87.6, 43),
+                                    new Pose(126.13, 54).mirror(),
+                                    new Pose(87.6, 43).mirror(),
                                     Poses.LAUNCH
                             )
                     )
@@ -112,7 +112,7 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
             intakeFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(144-120.63, 85.6))
+                            new BezierLine(Poses.LAUNCH, new Pose(120.63, 85.6).mirror())
                     )
 //                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .setTangentHeadingInterpolation()
@@ -121,7 +121,7 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-120.63, 85.6), Poses.LAUNCH)
+                            new BezierLine(new Pose(120.63, 85.6).mirror(), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
@@ -131,8 +131,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144-99, 12.75),
-                                    new Pose(144-132.13, 31.6)
+                                    new Pose(99, 12.75).mirror(),
+                                    new Pose(132.13, 31.6).mirror()
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
@@ -141,7 +141,7 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-132.13, 31.6), Poses.LAUNCH)
+                            new BezierLine(new Pose(132.13, 31.6).mirror(), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
@@ -151,8 +151,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144-86.4, 45.6),
-                                    new Pose(144-139, 51.7)
+                                    new Pose(86.4, 45.6).mirror(),
+                                    new Pose(139, 51.7).mirror()
                             )
                     )
                     .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(180-75))
@@ -162,8 +162,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(144-139, 51.7),
-                                    new Pose(144-86.4, 45.6),
+                                    new Pose(139, 51.7).mirror(),
+                                    new Pose(86.4, 45.6).mirror(),
                                     Poses.LAUNCH
                             )
                     )
@@ -182,8 +182,8 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .addPath(
 //                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 83))
                             new BezierCurve(
-                                    new Pose(144-135.3, 36.6),
-                                    new Pose(144-95, 35),
+                                    new Pose(135.3, 36.6).mirror(),
+                                    new Pose(95, 35).mirror(),
                                     Poses.PARK_CLOSE
                             )
                     )
@@ -476,7 +476,9 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
         telemetry.addData("current heading", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
-        currentPose = follower.getPose();
+        currentPose = follower.getPose().plus(
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*. BLUE = INVERTED
+        ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();

@@ -12,7 +12,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -28,9 +27,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
-import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -42,8 +39,9 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
+
 @Configurable
-@Autonomous(name = "\uD83D\uDD35 Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "🔵 Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class BlueFarAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
@@ -58,8 +56,8 @@ public class BlueFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(144-89.4,18.5, Math.toRadians(180-60.5));
-            public static final Pose START = new Pose(144-102.5, 8, Math.toRadians(180-90));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(64.5)).mirror(); //DIFFERENT THAN RED
+            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -76,8 +74,8 @@ public class BlueFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144-85, 32.6),
-                                    new Pose(144-126.13, 33.82)
+                                    new Pose(85, 32.6).mirror(),
+                                    new Pose(126.13, 33.82).mirror()
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -86,7 +84,7 @@ public class BlueFarAuto extends CommandOpMode {
             shootThirdRowFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-126.13, 33.82), Poses.LAUNCH)
+                            new BezierLine(new Pose(126.13, 33.82).mirror(), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
@@ -94,15 +92,15 @@ public class BlueFarAuto extends CommandOpMode {
             intakeHp1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(144-136, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(136, 8).mirror())
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
+                    .setTangentHeadingInterpolation()
                     .build();
 
             intakeHpBack = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-136, 8), new Pose(144-121,8))
+                            new BezierLine(new Pose(136, 8).mirror(), new Pose(121,8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .setReversed()
@@ -111,7 +109,7 @@ public class BlueFarAuto extends CommandOpMode {
             intakeHp2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-121,8), new Pose(144-136, 8))
+                            new BezierLine(new Pose(121,8).mirror(), new Pose(136, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -120,12 +118,12 @@ public class BlueFarAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(144-136, 8),
-                                    new Pose(144-118.5,30),
+                                    new Pose(136, 8).mirror(),
+                                    new Pose(118.5,30).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180-0),Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeOverflow = follower
@@ -133,10 +131,10 @@ public class BlueFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144-144, 0),
-                                    new Pose(144-144, 0),
-                                    new Pose(144-130, 20),
-                                    new Pose(144-136.3,54)
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(130, 20).mirror(),
+                                    new Pose(136.3,45).mirror()
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -145,7 +143,7 @@ public class BlueFarAuto extends CommandOpMode {
             shootOverflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(144-130,45),Poses.LAUNCH)
+                            new BezierLine(new Pose(136.3,45).mirror(), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-90), Poses.LAUNCH.getHeading())
                     .build();
@@ -153,7 +151,7 @@ public class BlueFarAuto extends CommandOpMode {
             parkFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(144-110, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(110, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -182,11 +180,12 @@ public class BlueFarAuto extends CommandOpMode {
                 new WaitCommand(300),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new WaitCommand(100),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                new WaitCommand(100)
         );
     }
     public Pose currentPose;
-    public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
+    public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE,PURPLE,PURPLE};
 
     //voltage compensation
     public VoltageSensor voltageSensor;
@@ -228,6 +227,13 @@ public class BlueFarAuto extends CommandOpMode {
             }
         }
     }
+    SequentialCommandGroup pulseIntakeOut() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEOUT_ROLLERSIN)),
+                new WaitCommand(600),
+                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))
+        );
+    }
     @Override
     public void initialize() {
         timer = new ElapsedTime();
@@ -262,9 +268,9 @@ public class BlueFarAuto extends CommandOpMode {
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
         spindexer.set(115);
-        SequentialCommandGroup far_sorted = new SequentialCommandGroup(
+        SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1450);
+                    shooter.setTargetTicks(1500);
                     gate.down();
                     gate.down();
                 }),
@@ -273,8 +279,7 @@ public class BlueFarAuto extends CommandOpMode {
                 //Preload
                 new ParallelDeadlineGroup(
                         new FollowPathCommand(follower, paths.shootFarPreload, true)
-                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
-                        new InstantCommand(this::scanMotif)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))))
                 ),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
@@ -320,45 +325,50 @@ public class BlueFarAuto extends CommandOpMode {
                         )
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootHpFar, true),
+                new FollowPathCommand(follower, paths.shootHpFar, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new InstantCommand(() -> follower.setMaxPower(1)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootOverflow, true),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow x2
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new InstantCommand(() -> follower.setMaxPower(1)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootOverflow, true),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(pulseIntakeOut())),
                 new WaitCommand(300), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.parkFar).withTimeout(3000)
+                new FollowPathCommand(follower, paths.parkFar)
         );
 
         schedule(
                 new RunCommand(() -> follower.update())
         );
         schedule(new SequentialCommandGroup(
-                far_sorted
-        ));
+                    far_volume
+            ));
 
 
     }
@@ -410,7 +420,9 @@ public class BlueFarAuto extends CommandOpMode {
         telemetry.addData("current heading", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",null);
-        currentPose = follower.getPose();
+        currentPose = follower.getPose().plus(
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY* Blue = inverted
+        ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();
