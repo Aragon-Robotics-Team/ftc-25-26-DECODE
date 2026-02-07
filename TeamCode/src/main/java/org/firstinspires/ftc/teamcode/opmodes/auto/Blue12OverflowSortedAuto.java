@@ -175,7 +175,7 @@ public class Blue12OverflowSortedAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.LAUNCH, Poses.PARK_CLOSE)
                     )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Poses.PARK_CLOSE.getHeading())
+                    .setConstantHeadingInterpolation(Poses.LAUNCH.getHeading())
                     .build();
             parkAfter12Hold = follower
                     .pathBuilder()

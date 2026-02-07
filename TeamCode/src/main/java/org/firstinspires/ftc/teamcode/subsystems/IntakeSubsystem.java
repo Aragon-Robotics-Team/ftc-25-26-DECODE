@@ -19,6 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public IntakeSubsystem(final HardwareMap hMap) {
         intakeWheels = hMap.get(DcMotorEx.class, "intake");
         intakeWheels.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        intakeWheels.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         sideWheel = hMap.get(CRServo.class, "intakeSide1");
         sideWheel2 = hMap.get(CRServo.class, "intakeSide2");
     }
