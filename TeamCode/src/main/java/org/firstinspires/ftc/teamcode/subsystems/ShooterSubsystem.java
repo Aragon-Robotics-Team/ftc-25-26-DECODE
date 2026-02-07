@@ -18,7 +18,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private MotorEx shooter2;
     private MotorGroup shooter;
     public double getVelocityTicks() {
-        return shooter1.getCorrectedVelocity();
+        return -shooter2.getCorrectedVelocity();
     }
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
@@ -134,7 +134,7 @@ public class ShooterSubsystem extends SubsystemBase {
         double ticksPerRev = 28.0;
         double flywheelDiameter = 2.83465; //72 mm to inches
         double gearRatio = 32.0 / 24.0;
-        return -shooter1.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
+        return shooter2.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
         double clampedDistance = MathUtils.clamp(distance, distMin, distMax);
@@ -160,7 +160,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
         flywheelController.setF(kF);
         flywheelController.setP(kP);
-        shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? shooter1.getCorrectedVelocity() : 0));
+        shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? -shooter2.getCorrectedVelocity() : 0));
     }
 
 }
