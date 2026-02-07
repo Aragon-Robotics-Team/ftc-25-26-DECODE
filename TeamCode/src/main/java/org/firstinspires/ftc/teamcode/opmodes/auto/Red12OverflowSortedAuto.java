@@ -476,7 +476,7 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         telemetry.addData("current heading", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
-        currentPose = follower.getPose();
+        currentPose = follower.getPose().plus(new Pose(0,0)); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();
