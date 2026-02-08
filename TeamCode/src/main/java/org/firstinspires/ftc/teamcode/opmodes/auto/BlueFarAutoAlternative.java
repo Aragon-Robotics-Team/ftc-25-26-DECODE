@@ -12,6 +12,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -41,6 +42,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
+@Disabled
 @Autonomous(name = "🔵 Far Alternative", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class BlueFarAutoAlternative extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake

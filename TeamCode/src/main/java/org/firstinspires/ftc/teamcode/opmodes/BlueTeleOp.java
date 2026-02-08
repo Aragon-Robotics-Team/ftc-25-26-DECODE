@@ -386,7 +386,7 @@ public class BlueTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double targetZero = alliance == Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
+                    double targetZero = Math.toRadians(90);
                     headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -442,7 +442,7 @@ public class BlueTeleOp extends CommandOpMode {
                     }
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+        driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {
                     Pose resetPose = alliance == Alliance.RED ?
                             new Pose(7, 7, Math.toRadians(0)) :

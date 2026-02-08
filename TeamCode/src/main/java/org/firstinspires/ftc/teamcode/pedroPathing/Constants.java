@@ -39,7 +39,7 @@ public class Constants {
             .maxPower(1.0);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-4.3) //we measured using ruler and taking length and width and dividing by two
+            .forwardPodY(-4.3)
             .strafePodX(-3.1)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
@@ -59,7 +59,7 @@ public class Constants {
             0.99,
             100,
             1,
-            2);
+            3);
 
 
     //Add custom localizers or drivetrains here

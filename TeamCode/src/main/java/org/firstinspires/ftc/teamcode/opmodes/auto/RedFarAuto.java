@@ -58,7 +58,7 @@ public class RedFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(60.5));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63));
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
         }
 
@@ -136,7 +136,7 @@ public class RedFarAuto extends CommandOpMode {
                                     new Pose(144, 0),
                                     new Pose(144, 0),
                                     new Pose(130, 20),
-                                    new Pose(136.3,45)
+                                    new Pose(136.3,33)
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -145,7 +145,7 @@ public class RedFarAuto extends CommandOpMode {
             shootOverflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136.3,45),Poses.LAUNCH)
+                            new BezierLine(new Pose(136.3,33),Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
                     .build();
@@ -272,7 +272,7 @@ public class RedFarAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1500);
+                    shooter.setTargetTicks(1450);
                     gate.down();
                     gate.down();
                 }),
@@ -285,6 +285,7 @@ public class RedFarAuto extends CommandOpMode {
                 ),
                 setCount(1),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
+                new WaitCommand(500),
                 setCount(2),
                 shootFourTimesWithDelay(),
                 setCount(3),
@@ -299,7 +300,7 @@ public class RedFarAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowFar, true),
-                new WaitCommand(300), //to prevent moving while shooting
+                new WaitCommand(500), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //HP row
@@ -329,7 +330,7 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootHpFar, true)
                         .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
-                new WaitCommand(300), //to prevent moving while shooting
+                new WaitCommand(500), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow
@@ -343,7 +344,7 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootOverflow, true)
                         .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
-                new WaitCommand(300), //to prevent moving while shooting
+                new WaitCommand(500), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //Overflow x2
@@ -357,7 +358,7 @@ public class RedFarAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootOverflow, true)
                         .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(pulseIntakeOut())),
-                new WaitCommand(300), //to prevent moving while shooting
+                new WaitCommand(500), //to prevent moving while shooting
                 shootFourTimesWithDelay(),
 
                 //move to end pos

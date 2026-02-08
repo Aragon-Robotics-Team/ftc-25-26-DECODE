@@ -56,7 +56,7 @@ public class BlueFarAuto extends CommandOpMode {
         public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(64.5)).mirror(); //DIFFERENT THAN RED
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(65.5)).mirror(); //DIFFERENT THAN RED
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
         }
 
@@ -66,7 +66,7 @@ public class BlueFarAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading() + Math.toRadians(2))
                     .build();
 
             intakeThirdRowFar = follower
@@ -134,7 +134,7 @@ public class BlueFarAuto extends CommandOpMode {
                                     new Pose(144, 0).mirror(),
                                     new Pose(144, 0).mirror(),
                                     new Pose(130, 20).mirror(),
-                                    new Pose(136.3,45).mirror()
+                                    new Pose(136.3,33).mirror()
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -143,7 +143,7 @@ public class BlueFarAuto extends CommandOpMode {
             shootOverflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136.3,45).mirror(), Poses.LAUNCH)
+                            new BezierLine(new Pose(136.3,33).mirror(), Poses.LAUNCH)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-90), Poses.LAUNCH.getHeading())
                     .build();
@@ -270,7 +270,7 @@ public class BlueFarAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1500);
+                    shooter.setTargetTicks(1475);
                     gate.down();
                     gate.down();
                 }),
@@ -282,6 +282,7 @@ public class BlueFarAuto extends CommandOpMode {
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))))
                 ),
                 setCount(1),
+                new WaitCommand(200),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
                 setCount(2),
                 shootFourTimesWithDelay(),
