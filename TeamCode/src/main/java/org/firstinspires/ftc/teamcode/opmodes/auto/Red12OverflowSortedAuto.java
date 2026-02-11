@@ -66,7 +66,8 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         public static class Poses {
             public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45));
             public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose PARK_CLOSE = new Pose(106,75.3, Math.toRadians(-90));
+            public static final Pose GATE = new Pose(121, 67, Math.toRadians(90));
+            public static final Pose PARK_CLOSE = new Pose(106,75.3, Math.toRadians(45));
         }
 
         public Paths(Follower follower) {
@@ -89,13 +90,13 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .build();
 
-//            hitGateSecond = follower
-//                    .pathBuilder()
-//                    .addPath(
-//                            new BezierLine(new Pose(126.13, 54), new Pose(126.13, 64))
-//                    )
-//                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
-//                    .build();
+            hitGateSecond = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(126.13, 54), Poses.GATE)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.GATE.getHeading())
+                    .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
@@ -116,6 +117,14 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
                     )
 //                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
                     .setTangentHeadingInterpolation()
+                    .build();
+
+            hitGateFirst = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(120.63, 8.6), Poses.GATE)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.GATE.getHeading())
                     .build();
 
             shootFirstRowClose = follower
