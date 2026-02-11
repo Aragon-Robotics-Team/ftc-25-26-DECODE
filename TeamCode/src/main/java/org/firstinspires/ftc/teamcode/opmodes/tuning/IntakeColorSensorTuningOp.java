@@ -5,9 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LEDSubsystem;
@@ -15,8 +13,8 @@ import org.firstinspires.ftc.teamcode.subsystems.LEDSubsystem;
 import java.util.Locale;
 
 @Config
-@TeleOp(name = "Color Sensor Tuning", group = "Tuning")
-public class ColorSensorTuning extends OpMode {
+@TeleOp(group = "Tuning")
+public class IntakeColorSensorTuningOp extends OpMode {
 
     private ColorSensorsSubsystem colorSubsystem;
     private LEDSubsystem ledSubsystem;
