@@ -65,7 +65,7 @@ public class ColorSensorsSubsystem extends SubsystemBase {
         intakeSensor2Result = intakeSensor2.getNormalizedColors();
     }
     public void updateBack() {
-//        backResult = backSensor.getNormalizedColors();
+        backResult = backSensor.getNormalizedColors();
     }
     public static boolean colorIsGreenIntake(NormalizedRGBA color) {
         return colorInRange(rgbToHsv(color), intakeGreenLowerHSV, intakeGreenHigherHSV);

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.auto;
+package org.firstinspires.ftc.teamcode.opmodes.auto.lm4archive;
 
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.GREEN;
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.PURPLE;

@@ -9,9 +9,6 @@ public class LEDSubsystem extends SubsystemBase {
     private Servo led;
     private RevBlinkinLedDriver blinkinLights;
     private RevBlinkinLedDriver.BlinkinPattern blinkinPattern;
- /*   public enum blinkinState {
-        OFF, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, WHITE, RAINBOW;
-    }*/
     public enum LEDState {
         OFF, RED, ORANGE, YELLOW, SAGE, GREEN, AZURE, BLUE, INDIGO, VIOLET, WHITE;
     }
@@ -26,7 +23,6 @@ public class LEDSubsystem extends SubsystemBase {
     }
 
     public void setBlinkinLights(RevBlinkinLedDriver.BlinkinPattern pattern) {
-        // blinkinPattern = RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
         blinkinPattern = pattern;
         blinkinLights.setPattern(blinkinPattern);
     }
