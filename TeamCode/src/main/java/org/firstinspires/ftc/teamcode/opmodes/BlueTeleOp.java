@@ -35,7 +35,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
-import org.firstinspires.ftc.teamcode.RobotConstants;
+import org.firstinspires.ftc.teamcode.RobotConstants.BallColors;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
@@ -50,9 +50,10 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD34 Teleop Field Centric (no SoTM)", group = "!")
-public class RedTeleOpNoSoTM extends CommandOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "🐟 Teleop Field Centric", group = "!")
+public class BlueTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
@@ -84,18 +85,18 @@ public class RedTeleOpNoSoTM extends CommandOpMode {
     final Pose GOAL_RED = new Pose(144,144);
     final Pose GOAL_BLUE = new Pose(0,144);
 
-    final RobotConstants.BallColors[] PPG = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
-    final RobotConstants.BallColors[] GPP = {RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE};
-    final RobotConstants.BallColors[] PGP = {RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN, RobotConstants.BallColors.PURPLE};
-    final RobotConstants.BallColors[] XXX = {RobotConstants.BallColors.UNKNOWN, RobotConstants.BallColors.UNKNOWN, RobotConstants.BallColors.UNKNOWN};
+    final BallColors[] PPG = {BallColors.PURPLE, BallColors.PURPLE, BallColors.GREEN};
+    final BallColors[] GPP = {BallColors.GREEN, BallColors.PURPLE, BallColors.PURPLE};
+    final BallColors[] PGP = {BallColors.PURPLE, BallColors.GREEN, BallColors.PURPLE};
+    final BallColors[] XXX = {BallColors.UNKNOWN, BallColors.UNKNOWN, BallColors.UNKNOWN};
 
     // 2. Create a master list of all cycleable options
-    final RobotConstants.BallColors[][] allMotifs = {PPG, GPP, PGP};
+    final BallColors[][] allMotifs = {PPG, GPP, PGP};
     int index = 0;
 
     //State variables
-    Alliance alliance = Alliance.RED;
-    RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
+    Alliance alliance = Alliance.BLUE;
+    BallColors[] selectedMotif = new BallColors[]{BallColors.PURPLE, BallColors.PURPLE, BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
     boolean slowMode = false;
@@ -217,7 +218,7 @@ public class RedTeleOpNoSoTM extends CommandOpMode {
 
         startingPose = AutoPoseSaver.lastPose;
         if (startingPose == null) {
-            startingPose = new Pose(0,0,alliance==Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
+            startingPose = new Pose(0,0,alliance== Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
         }
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0,0,0));
@@ -493,14 +494,9 @@ public class RedTeleOpNoSoTM extends CommandOpMode {
                 gamepad1.rumbleBlips(2);
                 gamepad2.rumbleBlips(2);
             } else {
-                Pose targetPose = alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE;
-                double delta_x = targetPose.getX() - follower.getPose().getX();
-                double delta_y = targetPose.getY() - follower.getPose().getY();
-                double targetHeading = Math.atan2(delta_y, delta_x);
-                double distanceToGoal = Math.hypot(delta_x, delta_y);
-                double targetSpeed = shooter.findSpeedFromDistance(distanceToGoal);
-
-                shooter.setTargetLinearSpeed(targetSpeed);
+                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
+                double targetHeading = targetVector.getTheta();
+                shooter.setTargetLinearSpeed(targetVector.getMagnitude());
 
                 headingError = follower.getHeading() - targetHeading;
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);

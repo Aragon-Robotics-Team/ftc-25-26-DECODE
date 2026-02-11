@@ -95,9 +95,9 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
     int index = 0;
 
     //State variables
-    RedTeleOpNoSoTM.Alliance alliance = RedTeleOpNoSoTM.Alliance.RED;
+    RedTeleOp.Alliance alliance = RedTeleOp.Alliance.RED;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
-    RedTeleOpNoSoTM.IntakeState intakeState = RedTeleOpNoSoTM.IntakeState.INTAKESTILL_ROLLERSIN;
+    RedTeleOp.IntakeState intakeState = RedTeleOp.IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
     boolean slowMode = false;
     private double gateAdjustment;
@@ -189,7 +189,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         telemetry.update();
         alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
 
-        if (intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSIN) {
+        if (intakeState == RedTeleOp.IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == RedTeleOp.IntakeState.INTAKEOUT_ROLLERSIN) {
             gamepad1.rumbleBlips(1);
         }
 
@@ -216,12 +216,12 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
 
         startingPose = AutoPoseSaver.lastPose;
         if (startingPose == null) {
-            startingPose = new Pose(0,0,alliance== RedTeleOpNoSoTM.Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
+            startingPose = new Pose(0,0,alliance== RedTeleOp.Alliance.RED ? Math.toRadians(0) : Math.toRadians(180));
         }
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0,0,0));
         follower.setPose(startingPose);
-        double targetZero = alliance == RedTeleOpNoSoTM.Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
+        double targetZero = alliance == RedTeleOp.Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
         headingOffset = follower.getHeading() - targetZero;
         follower.setMaxPower(1.0);
         follower.update();
@@ -262,20 +262,20 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         //Driver 1
         driver1.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEIN_ROLLERSIN) intakeState = RedTeleOpNoSoTM.IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == RedTeleOp.IntakeState.INTAKEIN_ROLLERSIN) intakeState = RedTeleOp.IntakeState.INTAKESTILL_ROLLERSIN;
                     else {
-                        intakeState = RedTeleOpNoSoTM.IntakeState.INTAKEIN_ROLLERSIN;
+                        intakeState = RedTeleOp.IntakeState.INTAKEIN_ROLLERSIN;
                     }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
         );
         driver1.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new InstantCommand(() -> {
-                    if (intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSIN || intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSOUT) {
-                        intakeState = RedTeleOpNoSoTM.IntakeState.INTAKESTILL_ROLLERSIN;
+                    if (intakeState == RedTeleOp.IntakeState.INTAKEOUT_ROLLERSIN || intakeState == RedTeleOp.IntakeState.INTAKEOUT_ROLLERSOUT) {
+                        intakeState = RedTeleOp.IntakeState.INTAKESTILL_ROLLERSIN;
                     }
                     else {
-                        intakeState = RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSIN;
+                        intakeState = RedTeleOp.IntakeState.INTAKEOUT_ROLLERSIN;
                     }
                     new SelectCommand(this::getIntakeCommand).schedule();
                 })
@@ -296,7 +296,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
                         new InstantCommand(() -> {
-                            intakeState = RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSOUT;
+                            intakeState = RedTeleOp.IntakeState.INTAKEOUT_ROLLERSOUT;
                             new SelectCommand(this::getIntakeCommand).schedule();
                         }),
                         new InstantCommand(() -> spindexerAutomoveCount = 0)
@@ -385,7 +385,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double targetZero = alliance == RedTeleOpNoSoTM.Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
+                    double targetZero = alliance == RedTeleOp.Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
                     headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -443,7 +443,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
                 new InstantCommand(() -> {
-                    follower.setPose(new Pose(7, 7, alliance== RedTeleOpNoSoTM.Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
+                    follower.setPose(new Pose(7, 7, alliance== RedTeleOp.Alliance.RED ? Math.toRadians(0) : Math.toRadians(180)));
                     gamepad2.rumbleBlips(1);
                 })
         );
@@ -451,7 +451,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         //Auto spindexer
         new Trigger(
                 () ->
-                        intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEIN_ROLLERSIN &&
+                        intakeState == RedTeleOp.IntakeState.INTAKEIN_ROLLERSIN &&
                                 colorSensors.doesLastResultHaveBall() &&
                                 (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
                                 spindexerAutomoveCount < 2
@@ -505,10 +505,10 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
     }
     void handleLED() {
         //LED Code
-        if (intakeState == RedTeleOpNoSoTM.IntakeState.INTAKESTILL_ROLLERSIN) {
+        if (intakeState == RedTeleOp.IntakeState.INTAKESTILL_ROLLERSIN) {
             led.setColor(LEDSubsystem.LEDState.WHITE);
         }
-        else if (intakeState == RedTeleOpNoSoTM.IntakeState.INTAKEOUT_ROLLERSIN) {
+        else if (intakeState == RedTeleOp.IntakeState.INTAKEOUT_ROLLERSIN) {
             led.setColor(LEDSubsystem.LEDState.YELLOW);
         }
         else if (shooter.getVelocityTicks() > 300) { //shooting mode
@@ -570,7 +570,7 @@ public class FunnyNeuralNetworkTeleop extends CommandOpMode {
         }
     }
     void handleTelemetry() {
-        telemetry.addLine(alliance == RedTeleOpNoSoTM.Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+        telemetry.addLine(alliance == RedTeleOp.Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
