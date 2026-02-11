@@ -49,19 +49,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
-//        lut.add(46.5, 435);
-//        lut.add(60, 450);
-//        lut.add(80, 490);
-//        lut.add(206, 540);
-//        lut.add(232.5, 570);
-
-//        lut.add(59,470);
-//        lut.add(66, 466);
-//        lut.add(82,500);
-//        lut.add(122,585);
-//        lut.add(132,590);
-//        lut.add(134,610);
-//        lut.add(141,620);
         lut.add(60.0,474.0);
         lut.add(65.0,474.0);
         lut.add(70.0,474.0);
