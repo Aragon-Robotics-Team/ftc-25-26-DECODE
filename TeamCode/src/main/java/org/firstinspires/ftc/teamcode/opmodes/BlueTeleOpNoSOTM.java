@@ -52,8 +52,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "🐟 Teleop Field Centric (SoTM)", group = "!")
-public class BlueTeleOp extends CommandOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "🐟 Teleop Field Centric (no SoTM)", group = "!")
+public class BlueTeleOpNoSOTM extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
@@ -296,12 +296,12 @@ public class BlueTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
-                        new InstantCommand(() -> {
-                            intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
-                            new SelectCommand(this::getIntakeCommand).schedule();
-                        }),
-                        new InstantCommand(() -> spindexerAutomoveCount = 0)
+                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
+                    new InstantCommand(() -> {
+                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
+                        new SelectCommand(this::getIntakeCommand).schedule();
+                    }),
+                    new InstantCommand(() -> spindexerAutomoveCount = 0)
                 )
         );
         new Trigger( //Auto aim
@@ -386,7 +386,7 @@ public class BlueTeleOp extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double targetZero = alliance == Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
+                    double targetZero = Math.toRadians(90);
                     headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -442,7 +442,7 @@ public class BlueTeleOp extends CommandOpMode {
                     }
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+        driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {
                     Pose resetPose = alliance == Alliance.RED ?
                             new Pose(7, 7, Math.toRadians(0)) :
@@ -456,9 +456,9 @@ public class BlueTeleOp extends CommandOpMode {
         new Trigger(
                 () ->
                         intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
-                                colorSensors.doesLastResultHaveBall() &&
-                                (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
-                                spindexerAutomoveCount < 2
+                        colorSensors.doesLastResultHaveBall() &&
+                        (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
+                        spindexerAutomoveCount < 2
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
@@ -494,9 +494,14 @@ public class BlueTeleOp extends CommandOpMode {
                 gamepad1.rumbleBlips(2);
                 gamepad2.rumbleBlips(2);
             } else {
-                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
-                double targetHeading = targetVector.getTheta();
-                shooter.setTargetLinearSpeed(targetVector.getMagnitude());
+                Pose targetPose = alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE;
+                double delta_x = targetPose.getX() - follower.getPose().getX();
+                double delta_y = targetPose.getY() - follower.getPose().getY();
+                double targetHeading = Math.atan2(delta_y, delta_x);
+                double distanceToGoal = Math.hypot(delta_x, delta_y);
+                double targetSpeed = shooter.findSpeedFromDistance(distanceToGoal);
+
+                shooter.setTargetLinearSpeed(targetSpeed);
 
                 headingError = follower.getHeading() - targetHeading;
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
@@ -639,7 +644,7 @@ public class BlueTeleOp extends CommandOpMode {
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
-
+        
         telemetry.addData("Spindexer Current Amps: ", spindexer.getSpindexerCurrentAmps());
         telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
         telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
