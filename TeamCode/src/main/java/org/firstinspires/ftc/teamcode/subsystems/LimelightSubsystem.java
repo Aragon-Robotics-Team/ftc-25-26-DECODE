@@ -9,6 +9,7 @@ import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -117,23 +118,6 @@ public class LimelightSubsystem extends SubsystemBase {
                 if (GOAL_TAG_IDS.contains(id)) {
                     return result.getTy();
                 }
-            }
-        }
-        return null;
-    }
-
-    //TODO claire: we might need these in pedro's coordinate system.
-    /**
-     * @param result limelight detection
-     * @return robot's position in FTC coordinate system as a set of coordinate points or null if nothing is found
-     * */
-    public Object detectRobotPosition(LLResult result) {
-        if (result != null && result.isValid()) {
-            Pose3D botpose_mt2 = result.getBotpose_MT2();
-            if (botpose_mt2 != null) {
-                double x = botpose_mt2.getPosition().x;
-                double y = botpose_mt2.getPosition().y;
-                return new double[]{x,y};
             }
         }
         return null;
