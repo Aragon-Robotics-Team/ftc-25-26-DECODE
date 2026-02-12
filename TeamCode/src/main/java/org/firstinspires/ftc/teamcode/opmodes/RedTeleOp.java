@@ -185,7 +185,7 @@ public class RedTeleOp extends CommandOpMode {
         handleLED();
         handleVoltageCompensation();
         handleBallsArrayUpdate();
-        handlePanelsDrawing();
+//        handlePanelsDrawing();
 
         //Update color sensors
         colorSensors.updateSensor1();
