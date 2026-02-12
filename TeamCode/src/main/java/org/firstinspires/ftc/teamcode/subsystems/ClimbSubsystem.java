@@ -21,8 +21,8 @@ public class ClimbSubsystem extends SubsystemBase {
     }
 
     public void climbDown() {
-        climb1Right.setPosition(0.52);
-        climb2Left.setPosition(0.5);
+        climb1Right.setPosition(0.42);
+        climb2Left.setPosition(0.57);
     }
 
 
