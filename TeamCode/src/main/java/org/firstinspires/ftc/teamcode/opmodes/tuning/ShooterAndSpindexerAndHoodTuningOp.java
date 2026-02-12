@@ -12,17 +12,20 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 @Config
-@TeleOp(name = "Lucas Berliner Test Mode OK", group = "Tuning")
-public class ShooterAndSpindexerTuningOp extends OpMode {
+@TeleOp(name = "Shooter, spindexer, and hood tuning", group = "Tuning")
+public class ShooterAndSpindexerAndHoodTuningOp extends OpMode {
 
     private ShooterSubsystem shooterSubsystem;
     private SpindexerSubsystem spindexerSubsystem;
+    private HoodSubsystem hoodSubsystem;
     private IntakeSubsystem intake;
     // --- DASHBOARD VARIABLES ---
     public static double p = 0.00004;
     public static double i = 0.0;
     public static double d = 0.0;
     public static double f = 0.00045;
+
+    private static double newAngle;
 
     public enum Mode {
         RAW_TICKS,    // Tune pure motor physics
@@ -41,6 +44,8 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         shooterSubsystem = new ShooterSubsystem(hardwareMap);
         spindexerSubsystem = new SpindexerSubsystem(hardwareMap);
+        hoodSubsystem = new HoodSubsystem(hardwareMap);
+
         intake = new IntakeSubsystem(hardwareMap);
         spindexerSubsystem.set(115);
 
@@ -66,6 +71,7 @@ public class ShooterAndSpindexerTuningOp extends OpMode {
         }
         // 1. Update PIDF from Dashboard
         shooterSubsystem.setPIDF(p, i, d, f);
+        hoodSubsystem.setHoodAngle(newAngle); //there will be logic for this later
 
         // 2. Set Target based on Mode
         switch (tuningMode) {
