@@ -54,7 +54,6 @@ public class SpindexerTuningOp extends LinearOpMode {
         // For this example, we assume we can set power to 0 in the loop.
 
         telemetry.addLine("Ready to tune.");
-        telemetry.addLine("Press A to toggle between CALIBRATE (Manual spin) and RUN (PID).");
         telemetry.update();
 
         waitForStart();
