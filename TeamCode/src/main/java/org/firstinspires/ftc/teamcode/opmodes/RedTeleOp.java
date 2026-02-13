@@ -177,6 +177,12 @@ public class RedTeleOp extends CommandOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void run() {
+
+        //LEAVE THIS AT THE END
+
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
         if (firstLoop) {
             onStart();
             firstLoop = false;
@@ -208,12 +214,6 @@ public class RedTeleOp extends CommandOpMode {
             snapshots++;
             limelight.takeSnapshot();
             snapshotTimer.reset();
-        }
-
-        //LEAVE THIS AT THE END
-
-        for (LynxModule hub : allHubs) {
-            hub.clearBulkCache();
         }
     }
     void initializeSystems() {
