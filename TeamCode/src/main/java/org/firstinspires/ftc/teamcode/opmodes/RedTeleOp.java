@@ -574,7 +574,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleVoltageCompensation() {
         //Voltage compensation code
-        if (lastVoltageCheck.milliseconds() > 500) { //check every 500ms
+        if (lastVoltageCheck.milliseconds() > 30) { //check every 30ms
             currentVoltage = voltageSensor.getVoltage();
             spindexer.updatePIDVoltage(currentVoltage);
             shooter.updatePIDVoltage(currentVoltage);
