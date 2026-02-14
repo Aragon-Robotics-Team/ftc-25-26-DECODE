@@ -459,6 +459,30 @@ public class RedTeleOp extends CommandOpMode {
                 })
         );
 
+        driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenPressed(
+                new InstantCommand(() -> {
+                    //selected motif == ppg
+                    spindexer.setBalls(PPG);
+                })
+        );
+
+        driver2.getGamepadButton(RIGHT_STICK_BUTTON).whenPressed(
+                new InstantCommand(() -> {
+                    //selected motif = gpp
+                    spindexer.setBalls(GPP);
+                })
+        );
+
+        //is this cooked
+        new Trigger(() -> driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).get() && driver2.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).get()
+        ).whenActive(new InstantCommand(() -> {
+            //selected motif pgp
+            spindexer.setBalls(PGP);
+        }
+        ));
+
+
+
         //Auto spindexer
         new Trigger(
                 () ->
