@@ -193,7 +193,9 @@ public class SpindexerSubsystem extends SubsystemBase {
                 balls[0] = PURPLE;
             }
 
-//            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) {
+
+
+//            if (ColorSensorsSubsystem.colorIsGreenBack(backSensor)) { //could add a verification method to reupdate but sounds like too many hardware calls
 //                balls[1] = GREEN;
 //            } else if (ColorSensorsSubsystem.colorIsPurpleBack(backSensor)) {
 //                balls[1] = PURPLE;

@@ -184,12 +184,12 @@ public class RedTeleOp extends CommandOpMode {
         handleTeleopDrive();
         handleLED();
         handleVoltageCompensation();
-        handleBallsArrayUpdate();
         handlePanelsDrawing();
 
         //Update color sensors
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
+        handleBallsArrayUpdate(); //might work
 
         handleTelemetry();
 
@@ -583,7 +583,11 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleBallsArrayUpdate() {
         //spindexer and array logic
-        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 40)) {
+        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 40) && colorSensors.doesLastResultHaveBall()) { //might be useful
+            //might help?
+            /*colorSensors.updateSensor1();
+            colorSensors.updateSensor2();
+            colorSensors.updateBack();*/
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
         }
     }
