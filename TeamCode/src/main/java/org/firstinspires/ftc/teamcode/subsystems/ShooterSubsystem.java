@@ -124,7 +124,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return shooter2.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        double clampedDistance = MathUtils.clamp(distance, distMin, distMax);
+        double clampedDistance = MathUtils.clamp(distance, distMin + 0.1, distMax - 0.1);
         Double result =  lut.get(clampedDistance);
         return (result != null) ? result : speedMin;
     }
