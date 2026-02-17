@@ -71,10 +71,6 @@ public class RedTeleOp extends CommandOpMode {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
 
-    double speedMin;
-    double speedMax;
-    double distMin;
-    double distMax;
     int closeShooterTarget;
     int farShooterTarget;
     boolean isAdjustingFar = false;
@@ -155,10 +151,6 @@ public class RedTeleOp extends CommandOpMode {
         panelsField.getField().setOffsets(panelsField.getPresets().getPEDRO_PATHING());
         panelsField.getField().setStyle("transparent", "black", 1.0);
         createBinds();
-        speedMax = shooter.getSpeedMax();
-        speedMin = shooter.getSpeedMin();
-        distMax = shooter.getDistMax();
-        distMin = shooter.getDistMin();
         closeShooterTarget = 505; //450;
         farShooterTarget = 620; //540;
         gateAdjustment = 0.0;
@@ -780,8 +772,7 @@ public class RedTeleOp extends CommandOpMode {
         // === THE FIX STARTS HERE ===
 
         // A. Get the Total Exit Speed required for this distance (from your lookup table/regression)
-        double clampedDist = clamp(dist, distMin+1, distMax-1);
-        double totalSpeedRequired = shooter.findSpeedFromDistance(clampedDist);
+        double totalSpeedRequired = shooter.findSpeedFromDistance(dist);
 
         // B. "Flatten" this speed to the 2D floor plane
         //    We only want the horizontal component for vector math
