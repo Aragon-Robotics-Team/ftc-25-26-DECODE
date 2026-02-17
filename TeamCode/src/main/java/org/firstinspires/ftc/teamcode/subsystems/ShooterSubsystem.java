@@ -7,8 +7,8 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
-import com.seattlesolvers.solverslib.util.LUT;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -17,17 +17,20 @@ public class ShooterSubsystem extends SubsystemBase {
     private MotorEx shooter1;
     private MotorEx shooter2;
     private MotorGroup shooter;
+    private ServoEx hood;
     public double getVelocityTicks() {
         return -shooter2.getCorrectedVelocity();
     }
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.0080; //although the coefficients are negative it is fine because it works;
-    double kFOriginal = -0.00052;
+    public double kPOriginal = -0.0080; //although the coefficients are negative it is fine because it works;
+    public double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
-    InterpLUT lut;
+    InterpLUT distance_v_speed;
+    InterpLUT speed_v_hood;
+
     double speedMax;
     double speedMin;
     double distMax;
@@ -36,6 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new MotorEx(hMap, "shooter1", Motor.GoBILDA.BARE);
         shooter2 = new MotorEx(hMap, "shooter2", Motor.GoBILDA.BARE);
+        hood = new ServoEx(hMap, "hood");
 
         shooter1.setInverted(true); //one has to be backwards
         shooter2.setInverted(false);
@@ -48,20 +52,28 @@ public class ShooterSubsystem extends SubsystemBase {
         shooter.set(0);
 
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
-        lut = new InterpLUT(); //distance (in), linear speed (in/s);
-        lut.add(60.0,474.0);
-        lut.add(65.0,474.0);
-        lut.add(70.0,474.0);
-        lut.add(75.0,483.0);
-        lut.add(80.0,483.0);
-        lut.add(85.0,517.0);
-        lut.add(90.0,517.0);
-        lut.add(100.0,525.0);
-        lut.add(135.0,576.0);
-        lut.add(142.0,593.0);
-        lut.add(150.0,602.0);
-        lut.add(157.0,650.0);
-        lut.createLUT();
+        distance_v_speed = new InterpLUT(); //distance (in), linear speed (in/s);
+        distance_v_speed.add(60.0,474.0);
+        distance_v_speed.add(65.0,474.0);
+        distance_v_speed.add(70.0,474.0);
+        distance_v_speed.add(75.0,483.0);
+        distance_v_speed.add(80.0,483.0);
+        distance_v_speed.add(85.0,517.0);
+        distance_v_speed.add(90.0,517.0);
+        distance_v_speed.add(100.0,525.0);
+        distance_v_speed.add(135.0,576.0);
+        distance_v_speed.add(142.0,593.0);
+        distance_v_speed.add(150.0,602.0);
+        distance_v_speed.add(157.0,650.0);
+        distance_v_speed.createLUT();
+
+        speed_v_hood = new InterpLUT(); //linear speed (in/s), hood angle (pos) (PLEASE PLEASE DONT SKIP);
+        speed_v_hood.add(474.0,0.01);
+        speed_v_hood.add(474.0,0.02);
+        speed_v_hood.add(517.0,0.03);
+        speed_v_hood.createLUT();
+
+
         speedMax = 650.0;
         speedMin = 474.0;
         distMax = 157.0;
@@ -87,6 +99,9 @@ public class ShooterSubsystem extends SubsystemBase {
         // Temporarily apply directly to current kP/kF in case voltage comp isn't running
         this.kP = p;
         this.kF = f;
+    }
+    public void setHoodPos(double pos) {
+        hood.set(pos);
     }
 
     /**
@@ -125,7 +140,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     public double findSpeedFromDistance(double distance) {
         double clampedDistance = MathUtils.clamp(distance, distMin, distMax);
-        Double result =  lut.get(clampedDistance);
+        Double result =  distance_v_speed.get(clampedDistance);
         return (result != null) ? result : speedMin;
     }
     public void updatePIDVoltage(double voltage) {
@@ -148,6 +163,7 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelController.setF(kF);
         flywheelController.setP(kP);
         shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? -shooter2.getCorrectedVelocity() : 0));
+//        hood.set(speed_v_hood.get(getFlywheelLinearSpeed()));
     }
 
 }

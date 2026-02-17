@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
 @Config
 @TeleOp(name = "Intake Test", group = "Tuning")
-public class IntakeTestOpmode extends OpMode {
+public class IntakeTestOp extends OpMode {
 
     private IntakeSubsystem intake;
 
