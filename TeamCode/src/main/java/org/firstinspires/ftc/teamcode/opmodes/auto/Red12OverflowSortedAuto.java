@@ -464,6 +464,8 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
 //        telemetry.addData("spindexer setpoint", spindexer.getPIDSetpoint());
 //        telemetry.addData("spindexer pos", spindexer.getCurrentPosition());
         telemetry.addData("spindexer's balls", Arrays.toString(spindexer.getBalls()));
+        telemetry.addData("PID output", spindexer.getOutput());
+        telemetry.addData("PID setpoint", spindexer.getPIDSetpoint());
 
         telemetry.addData("------------------",0);
 
