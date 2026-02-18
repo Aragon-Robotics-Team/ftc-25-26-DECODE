@@ -80,6 +80,7 @@ public class RedTeleOp extends CommandOpMode {
     double headingError;
     double headingOffset;
     int spindexerAutomoveCount = 0;
+    ElapsedTime spindexerAutomoveTimeSinceLastMove = new ElapsedTime();
     boolean firstLoop = true;
 
     //Bulk read
@@ -458,12 +459,14 @@ public class RedTeleOp extends CommandOpMode {
                         intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
                         colorSensors.doesLastResultHaveBall() &&
                         (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
-                        spindexerAutomoveCount < 2
+                        spindexerAutomoveCount < 2 &&
+                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
                                 .withTimeout(200),
                         new InstantCommand(() -> {
+                            spindexerAutomoveTimeSinceLastMove.reset();
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
