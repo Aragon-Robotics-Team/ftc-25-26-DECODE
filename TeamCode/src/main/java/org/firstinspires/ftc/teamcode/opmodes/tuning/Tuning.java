@@ -64,13 +64,13 @@ public class Tuning extends SelectableOpMode {
                 a.add("Lateral Zero Power Acceleration Tuner", LateralZeroPowerAccelerationTuner::new);
             });
             s.folder("Manual", p -> {
-                p.add("Translational Tuner", TranslationalTuner::new);
-                p.add("Heading Tuner", HeadingTuner::new);
-                p.add("Drive Tuner", DriveTuner::new);
-                p.add("Centripetal Tuner", CentripetalTuner::new);
+                p.add("Translational Tuner (<20hz)", TranslationalTuner::new);
+                p.add("Heading Tuner (<20hz)", HeadingTuner::new);
+                p.add("Drive Tuner (<20hz)", DriveTuner::new);
+                p.add("Centripetal Tuner (<20hz)", CentripetalTuner::new);
             });
             s.folder("Tests", p -> {
-                p.add("Line", Line::new);
+                p.add("Line (<20hz)", Line::new);
                 p.add("Triangle", Triangle::new);
                 p.add("Circle", Circle::new);
             });
@@ -777,6 +777,11 @@ class TranslationalTuner extends OpMode {
                 follower.followPath(forwards);
             }
         }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         telemetryM.debug("Push the robot laterally to test the Translational PIDF(s).");
         telemetryM.update(telemetry);
@@ -848,6 +853,11 @@ class HeadingTuner extends OpMode {
             }
         }
 
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         telemetryM.debug("Turn the robot manually to test the Heading PIDF(s).");
         telemetryM.update(telemetry);
     }
@@ -915,6 +925,11 @@ class DriveTuner extends OpMode {
         follower.update();
         drawCurrentAndHistory();
 
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if (!follower.isBusy()) {
             if (forward) {
                 forward = false;
@@ -985,6 +1000,11 @@ class Line extends OpMode {
                 forward = true;
                 follower.followPath(forwards);
             }
+        }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         telemetryM.debug("Driving Forward?: " + forward);
@@ -1059,6 +1079,11 @@ class CentripetalTuner extends OpMode {
             }
         }
 
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         telemetryM.debug("Driving away from the origin along the curve?: " + forward);
         telemetryM.update(telemetry);
     }

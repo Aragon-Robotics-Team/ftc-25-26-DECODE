@@ -23,6 +23,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -61,7 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
+@TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
 public class RedTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
@@ -83,6 +84,7 @@ public class RedTeleOp extends CommandOpMode {
     double headingError;
     double headingOffset;
     int spindexerAutomoveCount = 0;
+    ElapsedTime spindexerAutomoveTimeSinceLastMove = new ElapsedTime();
     boolean firstLoop = true;
 
     //Bulk read
@@ -479,12 +481,14 @@ public class RedTeleOp extends CommandOpMode {
                         intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
                         colorSensors.doesLastResultHaveBall() &&
                         (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
-                        spindexerAutomoveCount < 2
+                        spindexerAutomoveCount < 2 &&
+                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
                                 .withTimeout(200),
                         new InstantCommand(() -> {
+                            spindexerAutomoveTimeSinceLastMove.reset();
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
@@ -608,6 +612,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+        telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);

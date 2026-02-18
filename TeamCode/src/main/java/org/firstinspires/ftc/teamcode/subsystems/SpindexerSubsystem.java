@@ -22,8 +22,8 @@ public class SpindexerSubsystem extends SubsystemBase {
     private BallColors[] balls = { NONE, NONE, NONE };
 
     // PID (tune these)
-    private final double kPOriginal = 0.005;
-    private double kP = 0.005;
+    private final double kPOriginal = 0.010;
+    private double kP = 0.010;
     public void updatePIDVoltage(double voltage) {
         double compensation = 1;
         kP = compensation * kPOriginal;

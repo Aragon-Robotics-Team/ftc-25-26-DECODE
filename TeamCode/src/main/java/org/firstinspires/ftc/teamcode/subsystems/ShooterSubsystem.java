@@ -56,7 +56,7 @@ public class ShooterSubsystem extends SubsystemBase {
         lut.add(135.0,576.0);
         lut.add(142.0,593.0);
         lut.add(150.0,602.0);
-        lut.add(157.0,650.0);
+        lut.add(157.0,670.0);
         lut.createLUT();
     }
     public void setPIDF(double p, double i, double d, double f) {
