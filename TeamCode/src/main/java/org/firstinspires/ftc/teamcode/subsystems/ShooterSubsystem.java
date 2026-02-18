@@ -9,7 +9,6 @@ import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.util.InterpLUT;
-import com.seattlesolvers.solverslib.util.MathUtils;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -29,7 +28,7 @@ public class ShooterSubsystem extends SubsystemBase {
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT distance_v_speed;
-    InterpLUT speed_v_hood;
+    InterpLUT angle_v_hoodPos;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new MotorEx(hMap, "shooter1", Motor.GoBILDA.BARE);
@@ -62,11 +61,10 @@ public class ShooterSubsystem extends SubsystemBase {
         distance_v_speed.add(157.0,650.0);
         distance_v_speed.createLUT();
 
-        speed_v_hood = new InterpLUT(); //linear speed (in/s), hood angle (pos) (PLEASE PLEASE DONT SKIP);
-        speed_v_hood.add(474.0,0.01);
-        speed_v_hood.add(474.0,0.02);
-        speed_v_hood.add(517.0,0.03);
-        speed_v_hood.createLUT();
+        angle_v_hoodPos = new InterpLUT(); //launch angle v. hood servo pos.
+        angle_v_hoodPos.add(45,0.01);
+        angle_v_hoodPos.add(90,1);
+        angle_v_hoodPos.createLUT();
     }
     public void setPIDF(double p, double i, double d, double f) {
         this.kPOriginal = p;
@@ -118,6 +116,60 @@ public class ShooterSubsystem extends SubsystemBase {
     public double findSpeedFromDistance(double distance) {
         return distance_v_speed.get(distance);
     }
+    public void updateHoodPosition(double flywheelLinearSpeed, double distance) {
+        final double DISTANCE_OFFSET = 2; //2 inches
+        final double GOAL_HEIGHT = 39;
+        final double LAUNCH_HEIGHT = 10;
+        final double GRAVITY = 386.22; //in/s^2
+        final double MIN_ANGLE = 30;
+        final double MAX_ANGLE = 75;
+
+        double targetDistance = distance + DISTANCE_OFFSET; //Aim slightly deep to clear the lip
+        double deltaY = GOAL_HEIGHT - LAUNCH_HEIGHT;
+        double v = flywheelLinearSpeed;
+        double g = GRAVITY;
+
+        //Define coefficients for quadratic: A*tan²(θ) - x*tan(θ) + (A + Δy) = 0
+        //Where A = (g * x²) / (2 * v²)
+        double A = (g * Math.pow(targetDistance, 2)) / (2 * Math.pow(v, 2));
+
+        double a_quad = A;
+        double b_quad = -targetDistance;
+        double c_quad = A + deltaY;
+
+        //Solve Quadratic Formula: tan(θ) = (-b ± √(b² - 4ac)) / 2a
+        double discriminant = Math.pow(b_quad, 2) - 4 * a_quad * c_quad;
+
+        if (discriminant >= 0) {
+            // We have valid solutions.
+            // root1 corresponds to the higher arc (lob).
+            // root2 corresponds to the lower arc (direct shot).
+            double tanTheta1 = (-b_quad + Math.sqrt(discriminant)) / (2 * a_quad);
+            double tanTheta2 = (-b_quad - Math.sqrt(discriminant)) / (2 * a_quad);
+
+            double angle1 = Math.toDegrees(Math.atan(tanTheta1));
+            double angle2 = Math.toDegrees(Math.atan(tanTheta2));
+
+            // Select the best angle.
+            // Usually, the lower angle (angle2) is preferred for faster travel time,
+            // but we must ensure it is physically possible for the hood (e.g., > 0).
+            // If the shot is impossible (too far/slow), we might need the higher arc.
+            double optimalAngle = angle2;
+
+            // Fallback to high arc if low arc is invalid (negative or too flat to clear obstacles)
+            // However, with deltaY > 0, angle2 should always be positive.
+
+            // Clamp angle to physical hood limits
+            optimalAngle = Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, optimalAngle));
+
+            hood.set(angle_v_hoodPos.get(optimalAngle));
+        } else {
+            // No solution exists (speed is too low for this distance).
+            // Default to a known "safe" angle (like 45) or max power position.
+            hood.set(angle_v_hoodPos.get(45));
+        }
+    }
+
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
         double compensation = 1;
@@ -138,7 +190,6 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelController.setF(kF);
         flywheelController.setP(kP);
         shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? -shooter2.getCorrectedVelocity() : 0));
-//        hood.set(speed_v_hood.get(getFlywheelLinearSpeed()));
     }
 
 }
