@@ -582,6 +582,7 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+        telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
