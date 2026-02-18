@@ -30,6 +30,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SelectCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -40,6 +41,7 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.util.MathUtils;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.RobotConstants.*;
@@ -64,11 +66,13 @@ public class RedTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
-        RED,
-        BLUE
+        RED, BLUE
     }
     public enum IntakeState {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
+    }
+    public enum DriveMode{
+        MANUAL_CONTROL, ZERO_DEGREES, AUTO_AIM
     }
 
     int closeShooterTarget;
@@ -101,7 +105,7 @@ public class RedTeleOp extends CommandOpMode {
     Alliance alliance = Alliance.RED;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-    boolean manualControl = true;
+    DriveMode driveMode = DriveMode.MANUAL_CONTROL;
     boolean slowMode = false;
     private double gateAdjustment;
     PanelsField panelsField = PanelsField.INSTANCE;
@@ -306,7 +310,7 @@ public class RedTeleOp extends CommandOpMode {
         new Trigger( //Auto aim
                 () -> driver1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5)
                 .whileActiveContinuous(new InstantCommand(() -> {
-                            manualControl = false;
+                            driveMode = DriveMode.AUTO_AIM;
                         })
                 );
         new Trigger(() -> driver1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) //slowmode
@@ -318,8 +322,6 @@ public class RedTeleOp extends CommandOpMode {
                         new InstantCommand(() -> isHoldingPoint = true),
                         new InstantCommand(() -> follower.holdPoint(follower.getPose()))
                 )
-
-
         );
         driver1.getGamepadButton(LEFT_BUMPER).whenReleased(
                 new ParallelCommandGroup(
@@ -327,6 +329,16 @@ public class RedTeleOp extends CommandOpMode {
                         new InstantCommand(() -> follower.startTeleOpDrive()),
                         new InstantCommand(() -> follower.breakFollowing())
                 )
+        );
+        new Trigger(
+                () ->
+                        gamepad1.touchpad_finger_1
+        ).whenActive(
+                new InstantCommand(() -> {
+                    driveMode = DriveMode.MANUAL_CONTROL;
+                    gamepad1.rumbleBlips(2);
+                    gamepad2.rumbleBlips(2);
+                })
         );
 
 
@@ -450,6 +462,16 @@ public class RedTeleOp extends CommandOpMode {
                     gamepad2.rumbleBlips(1);
                 })
         );
+        new Trigger(
+                () ->
+                        gamepad2.touchpad_finger_2 && gamepad2.touchpad_finger_2_x < 0
+        ).whenActive(
+                new InstantCommand(() -> {
+                        driveMode = DriveMode.ZERO_DEGREES;
+                        gamepad1.rumbleBlips(2);
+                        gamepad2.rumbleBlips(2);
+                })
+        );
 
         //Auto spindexer
         new Trigger(
@@ -482,17 +504,21 @@ public class RedTeleOp extends CommandOpMode {
         double x_rotated = x * cos - y * sin;
         double y_rotated = x * sin + y * cos;
 
-        if (manualControl) {
-            //MANUAL
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
-        } else {
-            //AUTO AIM MODE
-            if (gamepad1.touchpad_finger_1) {
-                manualControl = true;
-                gamepad1.rumbleBlips(2);
-                gamepad2.rumbleBlips(2);
-            } else {
+        switch(driveMode) {
+            case MANUAL_CONTROL: {
+                double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+                if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
+                break;
+            }
+            case ZERO_DEGREES: {
+                headingError = follower.getHeading() - Math.toRadians(0);
+                headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+                rx += MathUtils.clamp(headingPIDOutput, -1, 1);
+                double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+                if (!isHoldingPoint) follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, rx / denominator, true);
+                break;
+            }
+            case AUTO_AIM: {
                 Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
                 double targetHeading = targetVector.getTheta();
                 shooter.setTargetLinearSpeed(targetVector.getMagnitude());
@@ -508,9 +534,10 @@ public class RedTeleOp extends CommandOpMode {
                 }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
+                double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+                if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
+                break;
             }
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
         }
     }
     void handleLED() {
@@ -585,7 +612,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
         telemetry.addData(String.format("Distance to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - follower.getPose().getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - follower.getPose().getX()));
-        telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
+        telemetry.addData("Mode: ", driveMode);
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
         telemetry.addData("spindexer automove count", spindexerAutomoveCount);
