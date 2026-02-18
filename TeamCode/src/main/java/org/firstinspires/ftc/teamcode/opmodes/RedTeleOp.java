@@ -180,6 +180,9 @@ public class RedTeleOp extends CommandOpMode {
         handleBallsArrayUpdate();
         handlePanelsDrawing();
 
+        //update ll orientation
+        limelight.updateRobotOrientation(follower.getHeading());
+
         //Update color sensors
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
@@ -644,6 +647,8 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
         telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
         telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
+
+        telemetry.addData("megaTagPose: ", limelight.getMegaTagPose(limelight.getResult()));
 
     }
     void handlePanelsDrawing() {

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.pedropathing.geometry.Pose; // Import Pedro Pose
@@ -11,6 +14,9 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 public class LimelightSubsystem extends SubsystemBase {
@@ -66,20 +72,21 @@ public class LimelightSubsystem extends SubsystemBase {
     public Pose getMegaTagPose(LLResult result) {
         if (result != null && result.isValid()) {
             // MegaTag2 is robust because it uses our IMU heading
-            Pose3D botpose_mt1 = result.getBotpose();
+            Pose3D botpose_mt2 = result.getBotpose_MT2();
 
-            if (botpose_mt1 != null) {
-                // Convert Meters (Limelight) to Inches (Pedro)
-                double x = botpose_mt1.getPosition().x;
-                double y = botpose_mt1.getPosition().y;
+            if (botpose_mt2 != null) {
+                //converting to 2D
+                //im 98 percent sure getYaw returns degrees by default so you have to specify
+                Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.RADIANS, botpose_mt2.getOrientation().getYaw(AngleUnit.RADIANS));
 
-                // MT2 returns heading in degrees, convert back to radians for Pedro
-                double heading_rad = Math.toRadians(botpose_mt1.getOrientation().getYaw());
+                //discord method
+                Pose ftcStandard = PoseConverter.pose2DToPose(mt1Conversion2D, InvertedFTCCoordinates.INSTANCE);
+                Pose pedroPose = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
-                return new Pose(x, y);
+                return pedroPose;
             }
         }
-        return null;
+        return null; //might want to replcae with robots last known pose as a failsafe
     }
 
     public Integer detectMotif(LLResult result) {
