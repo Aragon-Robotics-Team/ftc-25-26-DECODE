@@ -13,6 +13,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -42,6 +43,7 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 Red 12 Sorted Close", group = "angryBirds", preselectTeleOp = "RedTeleOp")
@@ -170,6 +172,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
         );
     }
 
+    List<LynxModule> allHubs;
     //Selectiopn
     private enum AUTOS {
         GATE_ONCE, INTAKE_GATE
@@ -245,6 +248,11 @@ public class RedSortedCloseAuto extends CommandOpMode {
         colorsensor.updateBack();
         lastVoltageCheck.reset();
         Paths paths = new Paths(follower);
+        //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
 
         // DO NOT REMOVE! Resetting FTCLib Command Scheduler
@@ -373,6 +381,9 @@ public class RedSortedCloseAuto extends CommandOpMode {
         timer.reset();
         telemetry.update();
         super.run();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
     }
 

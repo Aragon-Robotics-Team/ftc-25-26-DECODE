@@ -15,6 +15,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -42,6 +43,7 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 Red 15 Close (Third Spike)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
@@ -190,11 +192,11 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     private SequentialCommandGroup intakeArtifacts() {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
-                new WaitForColorCommand(colorsensor).withTimeout(3000),
+                new WaitForColorCommand(colorsensor).withTimeout(5000),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                new WaitCommand(100),
+                new WaitCommand(200),
                 new WaitForColorCommand(colorsensor).withTimeout(500),
-                new WaitCommand(100),
+                new WaitCommand(200),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new WaitForColorCommand(colorsensor).withTimeout(500)
         );
@@ -210,6 +212,8 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
 
     boolean sotm = false;
+    //Bulk read
+    List<LynxModule> allHubs;
 
     //voltage compensation
     public VoltageSensor voltageSensor;
@@ -256,7 +260,13 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         timer = new ElapsedTime();
         timer.reset();
 
+        //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
         //systems and pedro
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         follower.setPose(startingPose);
@@ -267,11 +277,12 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         spindexer = new SpindexerSubsystem(hardwareMap);
         colorsensor = new ColorSensorsSubsystem(hardwareMap);
         gate = new GateSubsystem(hardwareMap);
+//
+//        spindexer.setPIDCoefficients(0.010, 0.0054, 0.000054, 0);
         gate.down();
         led = new LEDSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         limelight = new LimelightSubsystem(hardwareMap);
-        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
         colorsensor.updateBack();
@@ -293,7 +304,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootClosePreload, true, 0.5)
+                        new FollowPathCommand(follower, paths.shootClosePreload, true, 0.7)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.55).andThen(new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false))
                 ),
@@ -309,11 +320,13 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                                 .withTimeout(3000),
                         intakeArtifacts()
                 ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
-                new FollowPathCommand(follower, paths.shootSecondRowClose, true),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
+                new FollowPathCommand(follower, paths.hitGateSecond)
+                        .withTimeout(1500),
+                new FollowPathCommand(follower, paths.shootSecondRowClose, true)
+                        .withTimeout(3000),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+                        .withTimeout(900),
 
                 //First row
                 new ParallelCommandGroup(
@@ -324,8 +337,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootFirstRowClose, true),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
+                new FollowPathCommand(follower, paths.shootFirstRowClose, true)
+                        .withTimeout(3000),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+                        .withTimeout(900),
 
                 //ramp
                 new ParallelCommandGroup(
@@ -338,6 +353,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 ),
                 new FollowPathCommand(follower, paths.shootRamp, true),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+                        .withTimeout(900)
         );
 
         SequentialCommandGroup intake_third_row = new SequentialCommandGroup(
@@ -353,6 +369,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowClose, true),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+                        .withTimeout(900)
         );
 
         SequentialCommandGroup second_ramp_cycle = new SequentialCommandGroup(
@@ -386,8 +403,6 @@ public class RedVolumeCloseAuto extends CommandOpMode {
             shooter.setTargetLinearSpeed(calculateTargetVector2(follower, follower.getPose(), new Pose(144, 144), shooter).getMagnitude());
         }
 
-        colorsensor.updateSensor1();
-        colorsensor.updateSensor2();
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
             spindexer.handleUpdateArray(colorsensor.getIntakeSensor1Result(), colorsensor.getIntakeSensor2Result(), colorsensor.getBackResult());
         }
@@ -428,6 +443,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         timer.reset();
         telemetry.update();
         super.run();
+
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
     }
 

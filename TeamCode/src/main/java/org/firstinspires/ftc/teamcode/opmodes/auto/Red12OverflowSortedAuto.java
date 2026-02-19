@@ -44,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow (LM4)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class Red12OverflowSortedAuto extends CommandOpMode {
     public static class Paths {
         //close autos
@@ -299,6 +299,7 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         colorsensor.updateBack();
         lastVoltageCheck.reset();
         Paths paths = new Paths(follower);
+
 
 
         // DO NOT REMOVE! Resetting FTCLib Command Scheduler

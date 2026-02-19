@@ -11,6 +11,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -42,6 +43,8 @@ import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
+import java.util.List;
+
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedFarAuto extends CommandOpMode {
@@ -189,6 +192,7 @@ public class RedFarAuto extends CommandOpMode {
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE,PURPLE,PURPLE};
 
+    List<LynxModule> allHubs;
     //voltage compensation
     public VoltageSensor voltageSensor;
     double currentVoltage = 14;
@@ -261,6 +265,11 @@ public class RedFarAuto extends CommandOpMode {
         colorsensor.updateBack();
         lastVoltageCheck.reset();
         Paths paths = new Paths(follower);
+        //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
 
         // DO NOT REMOVE! Resetting FTCLib Command Scheduler
@@ -430,6 +439,9 @@ public class RedFarAuto extends CommandOpMode {
         timer.reset();
         telemetry.update();
         super.run();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
     }
 
