@@ -117,6 +117,7 @@ public class SpindexerAndGateTuningOp extends LinearOpMode {
 
                 // Run the periodic loop (calculates PID and sets power)
                 spindexer.periodic();
+                Thread.sleep(50);
 
                 // Dashboard Graphing Data
                 telemetry.addData("Target", TARGET_POS);

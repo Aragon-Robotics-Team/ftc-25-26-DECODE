@@ -61,10 +61,10 @@ public class RedSortedCloseAuto extends CommandOpMode {
         public PathChain shootThirdRowClose;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585);
             public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose GATE = new Pose(132, 70);
-            public static final Pose PARK_LAUNCH = new Pose(85.5,110.8, Math.toRadians(30));
+            public static final Pose GATE = new Pose(132, 66);
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, 0.462404);
         }
 
         public Paths(Follower follower) {
@@ -81,7 +81,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(126.13, 60)
+                                    new Pose(126.13, 55)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -90,7 +90,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
             hitGateSecond = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126.13, 60), Poses.GATE)
+                            new BezierLine(new Pose(126.13, 55), Poses.GATE)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
@@ -112,17 +112,17 @@ public class RedSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(100,79.5),
-                                    new Pose(126, 84)
+                                    new Pose(100, 79.5),
+                                    new Pose(122, 84)
                             )
                     )
-                    .setTangentHeadingInterpolation()
+                    .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             hitGateFirst = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126, 84), Poses.GATE)
+                            new BezierLine(new Pose(116, 84), Poses.GATE)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
                     .build();
@@ -141,7 +141,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(83, 11),
-                                    new Pose(120, 36)
+                                    new Pose(128, 36)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -243,6 +243,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         limelight = new LimelightSubsystem(hardwareMap);
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
+        spindexer.setPIDCoefficients(0.0155, 0, 0.00055, 0);
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
         colorsensor.updateBack();
