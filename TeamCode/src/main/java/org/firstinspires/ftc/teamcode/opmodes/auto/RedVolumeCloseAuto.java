@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.auto;
 
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.GREEN;
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.PURPLE;
+import static org.firstinspires.ftc.teamcode.RobotConstants.SHOOTER_ANGLE;
 
 import android.annotation.SuppressLint;
 
@@ -12,6 +13,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -44,8 +46,12 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Ramp Volume Auto", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Red 15 Close", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedVolumeCloseAuto extends CommandOpMode {
+    //Rememeber, when changing to blue:
+    //Reverse poses + headings
+    //Pay attention to teleop saved pos offset at the bottom
+    //Reverse sotm goal pos
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -61,10 +67,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         public PathChain shootRamp;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45));
-            public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose GATE = new Pose(132, 70);
-            public static final Pose PARK_LAUNCH = new Pose(85.5,110.8, Math.toRadians(30));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732);
+            public static final Pose START = new Pose(121.48,123.623,0.79785);
+            public static final Pose GATE = new Pose(132, 68);
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, 0.497311);
         }
 
         public Paths(Follower follower) {
@@ -81,7 +87,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(126.13, 60)
+                                    new Pose(126.13, 55)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -90,7 +96,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
             hitGateSecond = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126.13, 60), Poses.GATE)
+                            new BezierLine(new Pose(126.13, 55), Poses.GATE)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
@@ -113,16 +119,16 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(100,79.5),
-                                    new Pose(126, 84)
+                                    new Pose(116, 84)
                             )
                     )
-                    .setTangentHeadingInterpolation()
+                    .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             hitGateFirst = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126, 84), Poses.GATE)
+                            new BezierLine(new Pose(116, 84), Poses.GATE)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
                     .build();
@@ -141,7 +147,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(83, 11),
-                                    new Pose(120, 36)
+                                    new Pose(126, 36)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -161,10 +167,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(108, 62),
-                                    new Pose(133, 60)
+                                    new Pose(133.7, 60.7)
                             )
                     )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(45))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(35))
                     .build();
 
             shootRamp = follower
@@ -173,10 +179,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     new Pose(133, 60),
                                     new Pose(108, 62),
-                                    Poses.PARK_LAUNCH
+                                    Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(45), Poses.PARK_LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(45), Poses.LAUNCH.getHeading())
                     .build();
         }
     }
@@ -196,14 +202,17 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         );
     }
 
-    //Selectiopn
-    private enum AUTOS {
+    //Selection
+    private enum AUTOS { //TODO: what is this ????
+        //If we do do a switcher, maybe make it: a. 1x gate + 3rd row, b. 2x gate
         GATE_ONCE, INTAKE_GATE
     }
     final AUTOS CURRENTAUTO = AUTOS.INTAKE_GATE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
+
+    boolean sotm = false;
 
     //voltage compensation
     public VoltageSensor voltageSensor;
@@ -280,27 +289,26 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         // Initialize subsystems
         register(intake, spindexer, shooter, colorsensor, led, gate);
         spindexer.set(115);
-        SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
+        SequentialCommandGroup auto = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1140);
+                    sotm = true;
                     gate.down();
-                    spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
                 //Preload
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootClosePreload, true)
+                        new FollowPathCommand(follower, paths.shootClosePreload, true, 0.5)
                                 .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
-                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif)),
-                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(new InstantCommand(this::scanMotif))
+                        new WaitUntilCommand(() -> follower.getPathCompletion() > 0.55).andThen(new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false))
                 ),
-                new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
-
                 //Second row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRowClose)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .alongWith(new InstantCommand(() -> {
+                                    intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                                    sotm=false;
+                                    shooter.setTargetTicks(1140);
+                                }
+                                ))
                                 .withTimeout(3000),
                         intakeArtifacts()
                 ),
@@ -308,10 +316,9 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
                 new FollowPathCommand(follower, paths.shootSecondRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
 
                 //First row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeFirstRowClose).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -319,25 +326,23 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
-
-                //first row
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootFirstRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
 
                 //ramp
                 new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeRamp).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        new WaitCommand(2000)
-                                .andThen(intakeArtifacts())
+                        new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                        new FollowPathCommand(follower, paths.intakeRamp)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.85)
+                                        .andThen(new InstantCommand(() -> follower.setMaxPower(0.4)))),
+                        new WaitCommand(3000)
+                                .andThen(intakeArtifacts()).withTimeout(5000)
                 ),
                 new FollowPathCommand(follower, paths.shootRamp, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
 
                 //intake third row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -348,16 +353,20 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.shootThirdRowClose, true),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false))
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
         );
 
         schedule(new RunCommand(() -> follower.update()));
-        schedule(new SequentialCommandGroup(nine_sorted));
+        schedule(new SequentialCommandGroup(auto));
 
     }
     @SuppressLint("DefaultLocale")
     @Override
     public void run() {
+        if (sotm) {
+            shooter.setTargetLinearSpeed(calculateTargetVector2(follower, follower.getPose(), new Pose(144, 144), shooter).getMagnitude());
+        }
+
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
@@ -371,13 +380,6 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         }
         else {
             led.setColor(LEDSubsystem.LEDState.GREEN);
-        }
-        //Voltage compensation code
-        if (lastVoltageCheck.milliseconds() > 500) { //check every 500ms
-            currentVoltage = voltageSensor.getVoltage();
-            spindexer.updatePIDVoltage(currentVoltage);
-            shooter.updatePIDVoltage(currentVoltage);
-            lastVoltageCheck.reset();
         }
 
 
@@ -402,9 +404,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         telemetry.addData("current heading", String.format("Heading: %.4f", follower.getPose().getHeading()));
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
-        currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
-        ); //Auto->teleop offset
+        currentPose = follower.getPose();
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();
@@ -416,5 +416,99 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     public void end() {
         AutoPoseSaver.lastPose = currentPose;
         super.end();
+    }
+    public Vector calculateTargetVector2(Follower follower, Pose robotPose, Pose targetPose, ShooterSubsystem shooter) {
+        // --- 0. CONFIGURATION ---
+        // You must estimate your shooter's launch angle relative to the floor.
+        // If your hood moves, calculate this based on hood position.
+        // For fixed hoods, 45-60 degrees is common.
+        double launchAngle = SHOOTER_ANGLE;
+        double latency = 0.5; //Determine empirically
+
+        // --- 1. GATHER CURRENT STATE ---
+        Pose currentPose = robotPose;
+        Vector v_robot = follower.getVelocity();
+        double angularVel = follower.getAngularVelocity();
+        Vector a_robot = follower.getAcceleration();
+
+        //Position deadzone
+        if (v_robot.getMagnitude() < 2.0) { // If moving less than 2 in/s
+            v_robot = new Vector(0,0);
+        }
+        //Angle deadzone
+        if (Math.abs(angularVel) < Math.toRadians(5)) { // If rotating less than 5 deg/s
+            angularVel = 0;
+        }
+
+        // Offsets (Distance in inches from center of robot to shooter)
+        double shooterOffsetX = 5.0;
+        double shooterOffsetY = 0.0;
+
+        // --- 2. PREDICT ROBOT POSE (Standard Kinematics) ---
+        double futureHeading = currentPose.getHeading() + (angularVel * latency);
+
+        // Position Prediction
+        double predX = currentPose.getX() + (v_robot.getXComponent() * latency);
+        double predY = currentPose.getY() + (v_robot.getYComponent() * latency);
+
+        // --- 3. CALCULATE ROBOT VELOCITY AT MUZZLE (Standard Rigid Body) ---
+        double futureVx = v_robot.getXComponent();
+        double futureVy = v_robot.getYComponent();
+
+        double cosH = Math.cos(futureHeading);
+        double sinH = Math.sin(futureHeading);
+
+        // Rotated offset
+        double fieldOffsetX = (shooterOffsetX * cosH) - (shooterOffsetY * sinH);
+        double fieldOffsetY = (shooterOffsetX * sinH) + (shooterOffsetY * cosH);
+
+        // Tangential velocity
+        double v_tangential_x = -angularVel * fieldOffsetY;
+        double v_tangential_y =  angularVel * fieldOffsetX;
+
+        // Total Robot Velocity Components (Cartesian)
+        double finalRobotVx = futureVx + v_tangential_x;
+        double finalRobotVy = futureVy + v_tangential_y;
+
+        // Convert to Polar for Pedro Vector
+        double robotVelMag = Math.hypot(finalRobotVx, finalRobotVy);
+        double robotVelAngle = Math.atan2(finalRobotVy, finalRobotVx);
+        Vector v_robot_total = new Vector(robotVelMag, robotVelAngle);
+
+        // --- 4. SOLVE FOR SHOOTING VECTOR ---
+        double shooterMsgX = predX + fieldOffsetX;
+        double shooterMsgY = predY + fieldOffsetY;
+
+        double dx = targetPose.getX() - shooterMsgX;
+        double dy = targetPose.getY() - shooterMsgY;
+        double dist = Math.hypot(dx, dy);
+        double idealHeading = Math.atan2(dy, dx);
+
+        // === THE FIX STARTS HERE ===
+
+        // A. Get the Total Exit Speed required for this distance (from your lookup table/regression)
+        double totalSpeedRequired = shooter.findSpeedFromDistance(dist);
+
+        // B. "Flatten" this speed to the 2D floor plane
+        //    We only want the horizontal component for vector math
+        double horizontalSpeed = totalSpeedRequired * Math.cos(launchAngle);
+
+        // C. Create the target vector using Horizontal Speed
+        Vector v_target_horizontal = new Vector(horizontalSpeed, idealHeading);
+
+        // D. Perform Vector Subtraction in the 2D plane
+        //    (Horizontal Target) - (Horizontal Robot Motion) = (Horizontal Ball Launch Vector)
+        Vector v_ball_horizontal = v_target_horizontal.minus(v_robot_total);
+
+        // E. Convert the result back to Total Exit Speed for the flywheel
+        //    Total = Horizontal / cos(theta)
+        double finalHorizontalSpeed = v_ball_horizontal.getMagnitude();
+        double finalTotalSpeed = finalHorizontalSpeed / Math.cos(launchAngle);
+        if (dist > 110) {
+            finalTotalSpeed = 620;
+        }
+
+        // Return a Vector with the NEW Total Speed and the CORRECTED heading
+        return new Vector(finalTotalSpeed, v_ball_horizontal.getTheta());
     }
 }

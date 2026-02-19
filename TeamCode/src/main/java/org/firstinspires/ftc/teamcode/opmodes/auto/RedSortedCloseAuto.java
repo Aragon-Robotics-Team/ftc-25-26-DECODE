@@ -44,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Close Autos", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Red 12 Sorted Close", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
