@@ -30,9 +30,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
-import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
-import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -46,7 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 import java.util.Arrays;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red 15 Close", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Red 15 Close (Third Spike)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedVolumeCloseAuto extends CommandOpMode {
     //Rememeber, when changing to blue:
     //Reverse poses + headings
@@ -203,11 +201,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     }
 
     //Selection
-    private enum AUTOS { //TODO: what is this ????
-        //If we do do a switcher, maybe make it: a. 1x gate + 3rd row, b. 2x gate
-        GATE_ONCE, INTAKE_GATE
+    private enum AUTOS {
+        GATE_INTAKE1_WITH_THIRD_SPIKE, GATE_INTAKE2_NO_THIRD_SPIKE
     }
-    final AUTOS CURRENTAUTO = AUTOS.INTAKE_GATE;
+    final AUTOS CURRENTAUTO = AUTOS.GATE_INTAKE1_WITH_THIRD_SPIKE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -340,8 +337,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                                 .andThen(intakeArtifacts()).withTimeout(5000)
                 ),
                 new FollowPathCommand(follower, paths.shootRamp, true),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+        );
 
+        SequentialCommandGroup intake_third_row = new SequentialCommandGroup(
                 //intake third row
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
@@ -356,8 +355,28 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
         );
 
+        SequentialCommandGroup second_ramp_cycle = new SequentialCommandGroup(
+                //ramp
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                        new FollowPathCommand(follower, paths.intakeRamp)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.85)
+                                        .andThen(new InstantCommand(() -> follower.setMaxPower(0.4)))),
+                        new WaitCommand(3000)
+                                .andThen(intakeArtifacts()).withTimeout(5000)
+                ),
+                new FollowPathCommand(follower, paths.shootRamp, true),
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+        );
+
         schedule(new RunCommand(() -> follower.update()));
-        schedule(new SequentialCommandGroup(auto));
+
+        if (CURRENTAUTO == AUTOS.GATE_INTAKE1_WITH_THIRD_SPIKE) {
+            schedule(new SequentialCommandGroup(auto, intake_third_row));
+        }
+        else if (CURRENTAUTO == AUTOS.GATE_INTAKE2_NO_THIRD_SPIKE) {
+            schedule(new SequentialCommandGroup(auto, second_ramp_cycle));
+        }
 
     }
     @SuppressLint("DefaultLocale")
