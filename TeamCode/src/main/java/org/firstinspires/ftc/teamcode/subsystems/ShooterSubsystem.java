@@ -28,10 +28,6 @@ public class ShooterSubsystem extends SubsystemBase {
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;
-    double speedMax;
-    double speedMin;
-    double distMax;
-    double distMin;
     private final PIDFController flywheelController = new PIDFController(kPOriginal, 0, 0, kFOriginal);
     public ShooterSubsystem(final HardwareMap hMap) {
         shooter1 = new MotorEx(hMap, "shooter1", Motor.GoBILDA.BARE);
@@ -60,24 +56,8 @@ public class ShooterSubsystem extends SubsystemBase {
         lut.add(135.0,576.0);
         lut.add(142.0,593.0);
         lut.add(150.0,602.0);
-        lut.add(157.0,650.0);
+        lut.add(157.0,670.0);
         lut.createLUT();
-        speedMax = 650.0;
-        speedMin = 474.0;
-        distMax = 157.0;
-        distMin = 60.0;
-    }
-    public double getSpeedMax() {
-        return speedMax;
-    }
-    public double getSpeedMin() {
-        return speedMin;
-    }
-    public double getDistMax() {
-        return distMax;
-    }
-    public double getDistMin() {
-        return distMin;
     }
     public void setPIDF(double p, double i, double d, double f) {
         this.kPOriginal = p;
@@ -124,9 +104,7 @@ public class ShooterSubsystem extends SubsystemBase {
         return shooter2.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        double clampedDistance = MathUtils.clamp(distance, distMin, distMax);
-        Double result =  lut.get(clampedDistance);
-        return (result != null) ? result : speedMin;
+        return lut.get(distance);
     }
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
