@@ -20,6 +20,8 @@ import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -51,7 +53,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 @Config
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "\uD83D\uDD34 Teleop Field Centric (no SoTM)", group = "!")
+@TeleOp(name = "\uD83D\uDD34 Teleop Field Centric (no sotm)", group = "!")
 public class RedTeleOpNoSOTM extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
@@ -63,10 +65,6 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
     }
 
-    double speedMin;
-    double speedMax;
-    double distMin;
-    double distMax;
     int closeShooterTarget;
     int farShooterTarget;
     boolean isAdjustingFar = false;
@@ -75,6 +73,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
     double headingError;
     double headingOffset;
     int spindexerAutomoveCount = 0;
+    ElapsedTime spindexerAutomoveTimeSinceLastMove = new ElapsedTime();
     boolean firstLoop = true;
 
     //Bulk read
@@ -147,10 +146,6 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         panelsField.getField().setOffsets(panelsField.getPresets().getPEDRO_PATHING());
         panelsField.getField().setStyle("transparent", "black", 1.0);
         createBinds();
-        speedMax = shooter.getSpeedMax();
-        speedMin = shooter.getSpeedMin();
-        distMax = shooter.getDistMax();
-        distMin = shooter.getDistMin();
         closeShooterTarget = 505; //450;
         farShooterTarget = 620; //540;
         gateAdjustment = 0.0;
@@ -295,12 +290,12 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
-                    new InstantCommand(() -> {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
-                        new SelectCommand(this::getIntakeCommand).schedule();
-                    }),
-                    new InstantCommand(() -> spindexerAutomoveCount = 0)
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
+                        new InstantCommand(() -> {
+                            intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
+                            new SelectCommand(this::getIntakeCommand).schedule();
+                        }),
+                        new InstantCommand(() -> spindexerAutomoveCount = 0)
                 )
         );
         new Trigger( //Auto aim
@@ -385,7 +380,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         );
         driver2.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON)
                 .whenPressed(new InstantCommand(() -> {
-                    double targetZero = Math.toRadians(90);
+                    double targetZero = alliance == Alliance.RED ? Math.toRadians(90) : Math.toRadians(-90);
                     headingOffset = follower.getHeading() - targetZero;
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -441,7 +436,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
                     }
                 })
         );
-        driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
+        driver2.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
                 new InstantCommand(() -> {
                     Pose resetPose = alliance == Alliance.RED ?
                             new Pose(7, 7, Math.toRadians(0)) :
@@ -455,14 +450,16 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         new Trigger(
                 () ->
                         intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
-                        colorSensors.doesLastResultHaveBall() &&
-                        (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
-                        spindexerAutomoveCount < 2
+                                colorSensors.doesLastResultHaveBall() &&
+                                (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
+                                spindexerAutomoveCount < 2 &&
+                                spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
                                 .withTimeout(200),
                         new InstantCommand(() -> {
+                            spindexerAutomoveTimeSinceLastMove.reset();
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
@@ -501,18 +498,6 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
                 double targetSpeed = shooter.findSpeedFromDistance(distanceToGoal);
 
                 shooter.setTargetLinearSpeed(targetSpeed);
-
-                headingError = follower.getHeading() - targetHeading;
-                headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
-
-                //MANUAL FF- NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > Math.toRadians(0.8)) { //deadzone
-                    // Apply kF in the direction of the PID output (to help it push)
-                    double feedforward = Math.signum(headingError) * alignerHeadingkF;
-                    headingPIDOutput += feedforward;
-                }
-
-                rx += MathUtils.clamp(headingPIDOutput, -1, 1);
             }
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
             if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
@@ -571,7 +556,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
     }
     void handleVoltageCompensation() {
         //Voltage compensation code
-        if (lastVoltageCheck.milliseconds() > 500) { //check every 500ms
+        if (lastVoltageCheck.milliseconds() > 30) { //check every 30ms
             currentVoltage = voltageSensor.getVoltage();
             spindexer.updatePIDVoltage(currentVoltage);
             shooter.updatePIDVoltage(currentVoltage);
@@ -586,6 +571,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
     }
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+        telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
@@ -643,7 +629,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
-        
+
         telemetry.addData("Spindexer Current Amps: ", spindexer.getSpindexerCurrentAmps());
         telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
         telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
@@ -777,8 +763,7 @@ public class RedTeleOpNoSOTM extends CommandOpMode {
         // === THE FIX STARTS HERE ===
 
         // A. Get the Total Exit Speed required for this distance (from your lookup table/regression)
-        double clampedDist = clamp(dist, distMin+1, distMax-1);
-        double totalSpeedRequired = shooter.findSpeedFromDistance(clampedDist);
+        double totalSpeedRequired = shooter.findSpeedFromDistance(dist);
 
         // B. "Flatten" this speed to the 2D floor plane
         //    We only want the horizontal component for vector math
