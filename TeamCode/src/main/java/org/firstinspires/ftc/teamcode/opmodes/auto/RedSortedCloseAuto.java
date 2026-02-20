@@ -282,7 +282,6 @@ public class RedSortedCloseAuto extends CommandOpMode {
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //Second row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRowClose)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -290,13 +289,19 @@ public class RedSortedCloseAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
-                new FollowPathCommand(follower, paths.shootSecondRowClose, true),
+                new WaitCommand(1000),
+                new FollowPathCommand(follower, paths.shootSecondRowClose, true)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new LoadBallCommand(spindexer, motif[0]),
+                                new InstantCommand(gate::down)
+                        )),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeFirstRowClose).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -305,12 +310,17 @@ public class RedSortedCloseAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 //first row
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootFirstRowClose, true),
+                new FollowPathCommand(follower, paths.shootFirstRowClose, true)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new LoadBallCommand(spindexer, motif[0]),
+                                new InstantCommand(gate::down)
+                        )),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //intake third row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -321,8 +331,17 @@ public class RedSortedCloseAuto extends CommandOpMode {
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
 
                 //shoot third row
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootThirdRowClose, true),
+                new InstantCommand(() -> {
+                    shooter.setTargetTicks(1100);
+                }),
+                new FollowPathCommand(follower, paths.shootThirdRowClose, true)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new LoadBallCommand(spindexer, motif[0]),
+                                new InstantCommand(gate::down)
+                        )),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif))
         );
 
