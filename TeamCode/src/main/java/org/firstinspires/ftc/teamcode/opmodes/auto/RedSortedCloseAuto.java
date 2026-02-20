@@ -30,6 +30,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
+import org.firstinspires.ftc.teamcode.commands.LoadBallCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -64,7 +65,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585);
             public static final Pose START = new Pose(129,115,Math.toRadians(180));
             public static final Pose GATE = new Pose(132, 66);
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, 0.462404);
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20));
         }
 
         public Paths(Follower follower) {
@@ -73,7 +74,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Math.toRadians(43))//on purpose
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
@@ -81,7 +82,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(126.13, 55)
+                                    new Pose(126.13, 52)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -90,7 +91,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
             hitGateSecond = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126.13, 55), Poses.GATE)
+                            new BezierLine(new Pose(126.13, 52), Poses.GATE)
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
                     .build();
@@ -277,6 +278,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(new InstantCommand(this::scanMotif))
                 ),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
+                new WaitCommand(200),
                 new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
 
                 //Second row
