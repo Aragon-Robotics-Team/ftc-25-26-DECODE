@@ -58,10 +58,10 @@ public class ShooterSubsystem extends SubsystemBase {
         lut.add(125.0,572.0);
         lut.add(135.0,585.0);
         lut.add(142.0,593.0);
-        lut.add(145.0,602.0);
-        lut.add(150.0,615.0);
-        lut.add(160.0,645.0);
-        lut.add(165.0,667.0);
+        lut.add(145.0,615.0);
+        lut.add(150.0,645.0);
+        lut.add(160.0,667.0);
+        lut.add(165.0,690.0);
         lut.add(170.0,690.0);
         lut.createLUT();
     }
