@@ -93,7 +93,7 @@ public class BlueSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(new Pose(126.13, 52).mirror(), Poses.GATE)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180+90))
                     .build();
 
             shootSecondRowClose = follower
@@ -105,7 +105,7 @@ public class BlueSortedCloseAuto extends CommandOpMode {
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180-90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180+90), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeFirstRowClose = follower
