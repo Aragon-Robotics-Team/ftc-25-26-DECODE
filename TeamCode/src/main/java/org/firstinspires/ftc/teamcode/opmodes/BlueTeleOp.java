@@ -61,8 +61,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 @Config
-@TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
-public class RedTeleOp extends CommandOpMode {
+@TeleOp(name = "\uD83D\uDD35 Teleop Field Centric", group = "!")
+public class BlueTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
@@ -101,7 +101,7 @@ public class RedTeleOp extends CommandOpMode {
     int index = 0;
 
     //State variables
-    Alliance alliance = Alliance.RED;
+    Alliance alliance = Alliance.BLUE;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
     boolean manualControl = true;
@@ -298,12 +298,12 @@ public class RedTeleOp extends CommandOpMode {
         );
         driver1.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new ParallelCommandGroup(
-                    new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
-                    new InstantCommand(() -> {
-                        intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
-                        new SelectCommand(this::getIntakeCommand).schedule();
-                    }),
-                    new InstantCommand(() -> spindexerAutomoveCount = 0)
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, -1, true, false),
+                        new InstantCommand(() -> {
+                            intakeState = IntakeState.INTAKEOUT_ROLLERSOUT;
+                            new SelectCommand(this::getIntakeCommand).schedule();
+                        }),
+                        new InstantCommand(() -> spindexerAutomoveCount = 0)
                 )
         );
         new Trigger( //Auto aim
@@ -458,10 +458,10 @@ public class RedTeleOp extends CommandOpMode {
         new Trigger(
                 () ->
                         intakeState == IntakeState.INTAKEIN_ROLLERSIN &&
-                        colorSensors.doesLastResultHaveBall() &&
-                        (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
-                        spindexerAutomoveCount < 2 &&
-                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
+                                colorSensors.doesLastResultHaveBall() &&
+                                (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
+                                spindexerAutomoveCount < 2 &&
+                                spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
@@ -650,7 +650,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Slow mode", slowMode);
         telemetry.addData("Autoposesaver pose", AutoPoseSaver.lastPose);
         telemetry.addData("snapshots taken", snapshots);
-        
+
         telemetry.addData("Spindexer Current Amps: ", spindexer.getSpindexerCurrentAmps());
         telemetry.addData("Shooter 1 Current Amps: ", shooter.getShooter1CurrentAmps());
         telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
