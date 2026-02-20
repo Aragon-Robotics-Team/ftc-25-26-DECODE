@@ -463,7 +463,7 @@ public class RedTeleOp extends CommandOpMode {
                         spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
         ).whenActive(
                 new ParallelCommandGroup(
-                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, false, false)
+                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
                                 .withTimeout(200),
                         new InstantCommand(() -> {
                             spindexerAutomoveTimeSinceLastMove.reset();
