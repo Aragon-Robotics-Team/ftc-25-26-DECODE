@@ -46,7 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD35 Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD35 Blue Far Volume", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class BlueFarAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
