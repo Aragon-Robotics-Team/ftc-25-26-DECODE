@@ -57,7 +57,11 @@ public class ScanAndDriveToBallCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        follower.breakFollowing();
         return finished;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        follower.breakFollowing();
     }
 }
