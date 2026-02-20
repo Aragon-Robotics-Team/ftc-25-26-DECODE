@@ -70,7 +70,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732);
             public static final Pose START = new Pose(121.48,123.623,0.79785);
             public static final Pose GATE = new Pose(132, 68);
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, 0.497311);
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(24));
         }
 
         public Paths(Follower follower) {
@@ -119,7 +119,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(100,79.5),
-                                    new Pose(116, 84)
+                                    new Pose(122, 84)
                             )
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(0))
