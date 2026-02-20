@@ -794,9 +794,6 @@ public class RedTeleOp extends CommandOpMode {
         //    Total = Horizontal / cos(theta)
         double finalHorizontalSpeed = v_ball_horizontal.getMagnitude();
         double finalTotalSpeed = finalHorizontalSpeed / Math.cos(launchAngle);
-        if (dist > 110) {
-            finalTotalSpeed = 620;
-        }
 
         // Return a Vector with the NEW Total Speed and the CORRECTED heading
         return new Vector(finalTotalSpeed, v_ball_horizontal.getTheta());
