@@ -9,7 +9,6 @@ import java.util.List;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -137,24 +136,14 @@ public class LimelightSubsystem extends SubsystemBase {
         }
         return null;
     }
-    /**
-     * @param result ll result
-     * @return The angle that the closest (?) ball is from the camera, in degrees.
-     */
-    public Object findColorBlobHeading(LLResult result) {
-        if (result != null && result.isValid()) {
-            return result.getTx(); //Apparently, tx is in degrees already.
-        }
-        return null;
-    }
+    /*
+        Since camera is sideways, ty = -angle.
+        @return Double distance in inches
 
-    /**
-     * @param result ll result
-     * @return The distance that the closest (?) ball is from the camera, in inches.
      */
-    public Object findColorblobDistance(LLResult result) {
+    public Double findNearestBallDistance(LLResult result) {
         if (result != null && result.isValid()) {
-            double ty = result.getTy();
+            double ty = -result.getTy();
             double mountingHeight = 8.45; //The height of the camera lens from the floor (in)
             double mountingAngle = 0.0; //The mounting angle of the camera relative to the horizon (deg).
             double ballHeight = 5.0 / 2.0; //The height of the center of the ball (in)
