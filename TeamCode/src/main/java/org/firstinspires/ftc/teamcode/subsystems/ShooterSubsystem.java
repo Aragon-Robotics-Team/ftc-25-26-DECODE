@@ -45,7 +45,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
-        lut.add(60.0,474.0);
+        lut.add(60.0,436.0);
         lut.add(65.0,474.0);
         lut.add(70.0,474.0);
         lut.add(75.0,483.0);
@@ -53,10 +53,16 @@ public class ShooterSubsystem extends SubsystemBase {
         lut.add(85.0,517.0);
         lut.add(90.0,517.0);
         lut.add(100.0,525.0);
-        lut.add(135.0,576.0);
+        lut.add(105.0,548.0);
+        lut.add(115.0,555.0);
+        lut.add(125.0,572.0);
+        lut.add(135.0,585.0);
         lut.add(142.0,593.0);
-        lut.add(150.0,602.0);
-        lut.add(157.0,670.0);
+        lut.add(145.0,602.0);
+        lut.add(150.0,615.0);
+        lut.add(160.0,645.0);
+        lut.add(165.0,667.0);
+        lut.add(170.0,690.0);
         lut.createLUT();
     }
     public void setPIDF(double p, double i, double d, double f) {
