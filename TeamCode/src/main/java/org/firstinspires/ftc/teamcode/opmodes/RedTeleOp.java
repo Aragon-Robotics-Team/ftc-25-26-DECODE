@@ -653,6 +653,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
 
         telemetry.addData("megaTagPose: ", limelight.getMegaTagPose(limelight.getResult()));
+        telemetry.addData("ftc standard pose: ", limelight.getFTCSTANDARD(limelight.getResult()));
 
     }
     void handlePanelsDrawing() {

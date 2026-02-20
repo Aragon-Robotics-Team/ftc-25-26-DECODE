@@ -77,7 +77,7 @@ public class LimelightSubsystem extends SubsystemBase {
             if (botpose_mt2 != null) {
                 //converting to 2D
                 //im 98 percent sure getYaw returns degrees by default so you have to specify
-                Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.RADIANS, botpose_mt2.getOrientation().getYaw(AngleUnit.RADIANS));
+                Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES));
 
                 //discord method
                 Pose ftcStandard = PoseConverter.pose2DToPose(mt1Conversion2D, InvertedFTCCoordinates.INSTANCE);
@@ -87,6 +87,27 @@ public class LimelightSubsystem extends SubsystemBase {
             }
         }
         return null; //might want to replcae with robots last known pose as a failsafe
+    }
+
+    public Pose getFTCSTANDARD(LLResult result) {
+        if (result != null && result.isValid()) {
+            // MegaTag2 is robust because it uses our IMU heading
+            Pose3D botpose_mt2 = result.getBotpose_MT2();
+
+            if (botpose_mt2 != null) {
+                //converting to 2D
+                //im 98 percent sure getYaw returns degrees by default so you have to specify
+                Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.RADIANS, botpose_mt2.getOrientation().getYaw(AngleUnit.RADIANS));
+
+                //discord method
+                Pose ftcStandard = PoseConverter.pose2DToPose(mt1Conversion2D, InvertedFTCCoordinates.INSTANCE);
+                Pose pedroPose = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+
+                return ftcStandard;
+            }
+        }
+        return null; //might want to replcae with robots last known pose as a failsafe
+
     }
 
     public Integer detectMotif(LLResult result) {
