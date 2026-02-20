@@ -505,7 +505,7 @@ public class RedTeleOp extends CommandOpMode {
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
                 //MANUAL FF- NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > Math.toRadians(0.8)) { //deadzone
+                if (Math.abs(headingError) > 0.01) { //deadzone
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
