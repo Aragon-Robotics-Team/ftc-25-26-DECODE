@@ -46,8 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Close 15 (Third Spike)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedVolumeCloseAuto extends CommandOpMode {
+@Autonomous(name = "🔵 Blue Close 15 no 3rd spike (terrabats scrim)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class BlueVolumeCloseNo3Auto extends CommandOpMode {
     //Rememeber, when changing to blue:
     //Reverse poses + headings
     //Pay attention to teleop saved pos offset at the bottom
@@ -67,10 +67,10 @@ public class RedVolumeCloseAuto extends CommandOpMode {
         public PathChain shootRamp;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732);
-            public static final Pose START = new Pose(121.48,123.623,0.79785);
-            public static final Pose GATE = new Pose(132, 68);
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(24));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732).mirror();
+            public static final Pose START = new Pose(121.48,123.623,0.79785).mirror();
+            public static final Pose GATE = new Pose(132, 68).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(24)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -86,19 +86,19 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(87.6, 43),
-                                    new Pose(126.13, 55)
+                                    new Pose(87.6, 43).mirror(),
+                                    new Pose(126.13, 55).mirror()
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             hitGateSecond = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126.13, 55), Poses.GATE)
+                            new BezierLine(new Pose(126.13, 55).mirror(), Poses.GATE)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180+90))
                     .build();
 
             shootSecondRowClose = follower
@@ -106,11 +106,11 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.GATE,
-                                    new Pose(91.5, 56),
+                                    new Pose(91.5, 56).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(-90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180+90), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeFirstRowClose = follower
@@ -118,27 +118,27 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(100,79.5),
-                                    new Pose(122, 84)
+                                    new Pose(100,79.5).mirror(),
+                                    new Pose(122, 84).mirror()
                             )
                     )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
+                    .setConstantHeadingInterpolation(Math.toRadians(180-0))
                     .build();
 
             hitGateFirst = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(116, 84), Poses.GATE)
+                            new BezierLine(new Pose(116, 84).mirror(), Poses.GATE)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Math.toRadians(180-90))
                     .build();
 
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126, 84), Poses.LAUNCH)
+                            new BezierLine(new Pose(126, 84).mirror(), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeThirdRowClose = follower
@@ -146,19 +146,19 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(83, 11),
-                                    new Pose(126, 36)
+                                    new Pose(83, 11).mirror(),
+                                    new Pose(126, 36).mirror()
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             shootThirdRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(120, 36), Poses.PARK_LAUNCH)
+                            new BezierLine(new Pose(120, 36).mirror(), Poses.PARK_LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.PARK_LAUNCH.getHeading())
                     .build();
 
             intakeRamp = follower
@@ -166,23 +166,23 @@ public class RedVolumeCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(108, 62),
-                                    new Pose(133.7, 60.7)
+                                    new Pose(108, 62).mirror(),
+                                    new Pose(133.7, 60.7).mirror()
                             )
                     )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(35))
+                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(180-35))
                     .build();
 
             shootRamp = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(133, 60),
-                                    new Pose(108, 62),
+                                    new Pose(133, 60).mirror(),
+                                    new Pose(108, 62).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(45), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-45), Poses.LAUNCH.getHeading())
                     .build();
         }
     }
@@ -206,7 +206,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     private enum AUTOS {
         GATE_INTAKE1_WITH_THIRD_SPIKE, GATE_INTAKE2_NO_THIRD_SPIKE
     }
-    final AUTOS CURRENTAUTO = AUTOS.GATE_INTAKE1_WITH_THIRD_SPIKE;
+    final AUTOS CURRENTAUTO = AUTOS.GATE_INTAKE2_NO_THIRD_SPIKE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -400,7 +400,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     @Override
     public void run() {
         if (sotm) {
-            shooter.setTargetLinearSpeed(calculateTargetVector2(follower, follower.getPose(), new Pose(144, 144), shooter).getMagnitude());
+            shooter.setTargetLinearSpeed(calculateTargetVector2(follower, follower.getPose(), new Pose(0, 144), shooter).getMagnitude());
         }
 
         if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {

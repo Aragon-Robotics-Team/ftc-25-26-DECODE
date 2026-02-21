@@ -46,8 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Close 15 (Third Spike)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedVolumeCloseAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 Red Close 15 no 3rd spike (terrabats scrim)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class RedVolumeCloseNo3Auto extends CommandOpMode {
     //Rememeber, when changing to blue:
     //Reverse poses + headings
     //Pay attention to teleop saved pos offset at the bottom
@@ -206,7 +206,7 @@ public class RedVolumeCloseAuto extends CommandOpMode {
     private enum AUTOS {
         GATE_INTAKE1_WITH_THIRD_SPIKE, GATE_INTAKE2_NO_THIRD_SPIKE
     }
-    final AUTOS CURRENTAUTO = AUTOS.GATE_INTAKE1_WITH_THIRD_SPIKE;
+    final AUTOS CURRENTAUTO = AUTOS.GATE_INTAKE2_NO_THIRD_SPIKE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
