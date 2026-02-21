@@ -21,7 +21,7 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     public final static float[] intakeGreenLowerHSV  = {133f, 0.45f, 0.0f};
 
     public final static float[] intakePurpleHigherHSV = {240f, 0.4f, 0.242f};
-    public final static float[] intakePurpleLowerHSV  = {200f, 0.15f, 0.0f};
+    public final static float[] intakePurpleLowerHSV  = {150f, 0.15f, 0.0f};
 
     public final static float[] backGreenHigherHSV = {178f, 0.80f, 0.83f};
     public final static float[] backGreenLowerHSV  = {138f, 0.35f, 0.3f};
