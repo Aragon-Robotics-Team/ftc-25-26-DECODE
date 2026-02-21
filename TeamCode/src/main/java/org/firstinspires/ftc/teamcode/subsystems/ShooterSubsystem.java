@@ -23,7 +23,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public boolean isAtTargetVelocity() {
         return Math.abs(flywheelController.getSetPoint() - shooter1.getCorrectedVelocity()) < 50;
     }
-    double kPOriginal = -0.0140; //although the coefficients are negative it is fine because it works;
+    double kPOriginal = -0.0070; //although the coefficients are negative it is fine because it works;
     double kFOriginal = -0.00052;
     double kP = kPOriginal;
     double kF = kFOriginal;
@@ -46,13 +46,13 @@ public class ShooterSubsystem extends SubsystemBase {
         //Note: The distance measured is from the robot center to the spot where the ball lands in the corner, NOT the apriltag.
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
         lut.add(60.0,436.0);
-        lut.add(65.0,474.0);
+//        lut.add(65.0,474.0);
         lut.add(70.0,474.0);
-        lut.add(75.0,483.0);
+//        lut.add(75.0,483.0);
         lut.add(80.0,483.0);
-        lut.add(85.0,525.0);
+//        lut.add(85.0,525.0);
         lut.add(90.0,525.0);
-        lut.add(100.0,525.0);
+//        lut.add(100.0,525.0);
         lut.add(105.0,548.0);
         lut.add(115.0,555.0);
         lut.add(125.0,572.0);
