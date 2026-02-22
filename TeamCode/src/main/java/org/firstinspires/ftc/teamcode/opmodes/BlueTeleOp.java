@@ -193,7 +193,7 @@ public class BlueTeleOp extends CommandOpMode {
         telemetry.update();
         alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
 
-        if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == IntakeState.INTAKEOUT_ROLLERSIN) {
+        if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKESTILL_ROLLERSIN) {
             gamepad1.rumbleBlips(1);
         }
 
@@ -423,26 +423,10 @@ public class BlueTeleOp extends CommandOpMode {
                         })
                 );
         driver2.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new InstantCommand(() -> {
-                    if (isAdjustingFar) {
-                        farShooterTarget += 10;
-                        gamepad2.rumbleBlips(1);
-                    } else{
-                        closeShooterTarget += 10;
-                        gamepad2.rumbleBlips(1);
-                    }
-                })
+                new InstantCommand(shooter::increaseSpeedOffset)
         );
         driver2.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
-                new InstantCommand(() -> {
-                    if (isAdjustingFar) {
-                        farShooterTarget -= 10;
-                        gamepad2.rumbleBlips(1);
-                    } else{
-                        closeShooterTarget -= 10;
-                        gamepad2.rumbleBlips(1);
-                    }
-                })
+                new InstantCommand(shooter::decreaseSpeedOffset)
         );
         driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {

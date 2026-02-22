@@ -25,6 +25,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     double kPOriginal = -0.0070; //although the coefficients are negative it is fine because it works;
     double kFOriginal = -0.00052;
+    double speedOffset = 0.0;
     double kP = kPOriginal;
     double kF = kFOriginal;
     InterpLUT lut;
@@ -47,11 +48,11 @@ public class ShooterSubsystem extends SubsystemBase {
         lut = new InterpLUT(); //distance (in), linear speed (in/s);
         lut.add(60.0,436.0);
 //        lut.add(65.0,474.0);
-        lut.add(70.0,474.0);
+        lut.add(70.0,483.0);
 //        lut.add(75.0,483.0);
         lut.add(80.0,483.0);
-//        lut.add(85.0,525.0);
-        lut.add(90.0,525.0);
+        lut.add(85.0,525.0);
+        lut.add(90.0,535.0);
 //        lut.add(100.0,525.0);
         lut.add(105.0,548.0);
         lut.add(115.0,555.0);
@@ -110,7 +111,13 @@ public class ShooterSubsystem extends SubsystemBase {
         return shooter2.getCorrectedVelocity() / ticksPerRev * gearRatio * Math.PI * flywheelDiameter;
     }
     public double findSpeedFromDistance(double distance) {
-        return lut.get(distance);
+        return lut.get(distance + speedOffset);
+    }
+    public void increaseSpeedOffset() {
+        speedOffset += 5;
+    }
+    public void decreaseSpeedOffset() {
+        speedOffset += 5;
     }
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
@@ -131,7 +138,19 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
         flywheelController.setF(kF);
         flywheelController.setP(kP);
-        shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? -shooter2.getCorrectedVelocity() : 0));
+        //Bang bang
+        if (Math.abs(flywheelController.getSetPoint()-shooter2.getCorrectedVelocity()) < 50) {
+            if (-shooter2.getCorrectedVelocity() < flywheelController.getSetPoint()) { //under target
+                shooter.set(1.0);
+            }
+            else {
+                shooter.set(0.0);
+            }
+        }
+        //PID
+        else {
+            shooter.set(flywheelController.calculate(flywheelController.getSetPoint() != 0 ? -shooter2.getCorrectedVelocity() : 0));
+        }
     }
 
 }

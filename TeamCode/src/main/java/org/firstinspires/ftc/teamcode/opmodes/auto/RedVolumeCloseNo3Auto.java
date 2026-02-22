@@ -46,7 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Close 15 no 3rd spike (terrabats scrim)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Red Close 15 no 3rd spike (astro scrim alliance 4)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedVolumeCloseNo3Auto extends CommandOpMode {
     //Rememeber, when changing to blue:
     //Reverse poses + headings
@@ -65,6 +65,7 @@ public class RedVolumeCloseNo3Auto extends CommandOpMode {
         public PathChain shootThirdRowClose;
         public PathChain intakeRamp;
         public PathChain shootRamp;
+        public PathChain shootRampPark;
 
         public static class Poses {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732);
@@ -183,6 +184,17 @@ public class RedVolumeCloseNo3Auto extends CommandOpMode {
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(45), Poses.LAUNCH.getHeading())
+                    .build();
+            shootRampPark = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(133, 60),
+                                    new Pose(108, 62),
+                                    Poses.PARK_LAUNCH
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(45), Poses.PARK_LAUNCH.getHeading())
                     .build();
         }
     }
@@ -382,7 +394,7 @@ public class RedVolumeCloseNo3Auto extends CommandOpMode {
                         new WaitCommand(3000)
                                 .andThen(intakeArtifacts()).withTimeout(5000)
                 ),
-                new FollowPathCommand(follower, paths.shootRamp, true),
+                new FollowPathCommand(follower, paths.shootRampPark, true),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
         );
 
