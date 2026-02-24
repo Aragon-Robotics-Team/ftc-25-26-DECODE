@@ -24,11 +24,12 @@ public class ScanAndDriveToBallCommand extends CommandBase {
     }
     public BiFunction<Double, Double, Pose> ballPoseSupplier = (distance, angle) -> {
         Pose currentPose = follower.getPose();
+        double safeDistance = Math.min(distance, 62);
 
         double absoluteAngleRad = currentPose.getHeading() + Math.toRadians(angle);
 
-        double targetX = currentPose.getX() + (Math.cos(absoluteAngleRad) * distance);
-        double targetY = currentPose.getY() + (Math.sin(absoluteAngleRad) * distance);
+        double targetX = currentPose.getX() + (Math.cos(absoluteAngleRad) * safeDistance);
+        double targetY = currentPose.getY() + (Math.sin(absoluteAngleRad) * safeDistance);
 
         return new Pose(targetX, targetY);
     };
