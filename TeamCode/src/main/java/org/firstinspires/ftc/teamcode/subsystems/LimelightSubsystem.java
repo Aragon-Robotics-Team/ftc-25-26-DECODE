@@ -93,6 +93,31 @@ public class LimelightSubsystem extends SubsystemBase {
         return null; //might want to replcae with robots last known pose as a failsafe
     }
 
+    public Pose getMooseMethod(LLResult result) {
+        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
+        if (result != null && result.isValid()) {
+            /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
+                return null;
+            }*/
+            // MegaTag2 is robust because it uses our IMU heading
+            Pose3D botpose_mt2 = result.getBotpose_MT2();
+
+            if (botpose_mt2 != null) {
+                //converting to 2D
+                Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES));
+
+                /*return Pose(
+                        botpose.position.y * 39.37 + 72,
+                        -(botpose.position.x * 39.37) + 72,
+                        )*/
+
+                //moose method
+            }
+        }
+        return null; //might want to replcae with robots last known pose as a failsafe
+
+    }
+
     public Pose getFTCSTANDARD(LLResult result) {
         //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
 
