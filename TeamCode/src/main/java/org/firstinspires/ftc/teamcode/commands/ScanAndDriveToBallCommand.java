@@ -41,7 +41,7 @@ public class ScanAndDriveToBallCommand extends CommandBase {
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_ONLY);
         LLResult result = limelight.getResult();
         if (result.isValid()) {
-            Pose ballPose = ballPoseSupplier.apply(limelight.findNearestBallDistance(result), -result.getTy());
+            Pose ballPose = ballPoseSupplier.apply(limelight.findNearestBallDistance(result), result.getTy());
             follower.followPath(ballPathSupplier.apply(ballPose));
         } else {
             finished = true;
