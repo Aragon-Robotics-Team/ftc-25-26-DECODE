@@ -61,7 +61,8 @@ public class LimelightSubsystem extends SubsystemBase {
      */
     public void updateRobotOrientation(double headingRadians) {
         // Limelight expects degrees
-        limelight.updateRobotOrientation(Math.toDegrees(headingRadians));
+        //ftc standard needs to be rotated -90 to match pedro heading(?)
+        limelight.updateRobotOrientation(Math.toDegrees(headingRadians - Math.toRadians(90)));
     }
 
     /**
@@ -70,13 +71,16 @@ public class LimelightSubsystem extends SubsystemBase {
      * @return A PedroPathing Pose in INCHES, or null if invalid.
      */
     public Pose getMegaTagPose(LLResult result) {
+        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
         if (result != null && result.isValid()) {
+            /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
+                return null;
+            }*/
             // MegaTag2 is robust because it uses our IMU heading
             Pose3D botpose_mt2 = result.getBotpose_MT2();
 
             if (botpose_mt2 != null) {
                 //converting to 2D
-                //im 98 percent sure getYaw returns degrees by default so you have to specify
                 Pose2D mt1Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES));
 
                 //discord method
@@ -90,6 +94,8 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public Pose getFTCSTANDARD(LLResult result) {
+        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
+
         if (result != null && result.isValid()) {
             // MegaTag2 is robust because it uses our IMU heading
             Pose3D botpose_mt2 = result.getBotpose_MT2();
