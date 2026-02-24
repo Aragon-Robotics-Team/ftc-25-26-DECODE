@@ -81,4 +81,14 @@ public class NeuralAutoTest extends CommandOpMode {
 
 
     }
+
+    @Override
+    public void run() {
+        super.run();
+        telemetry.addData("Ball ty", limelight.getResult().getTy());
+        telemetry.addData("Ball ta", limelight.getResult().getTa());
+        telemetry.addData("Ball tyNC", limelight.getResult().getTyNC());
+
+        telemetry.update();
+    }
 }

@@ -7,6 +7,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.seattlesolvers.solverslib.command.CommandBase;
+import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 
@@ -41,7 +42,7 @@ public class ScanAndDriveToBallCommand extends CommandBase {
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_ONLY);
         LLResult result = limelight.getResult();
         if (result.isValid()) {
-            Pose ballPose = ballPoseSupplier.apply(limelight.findNearestBallDistance(result), result.getTy());
+            Pose ballPose = ballPoseSupplier.apply(limelight.findNearestBallDistance(result) + 6, result.getTy());
             follower.followPath(ballPathSupplier.apply(ballPose));
         } else {
             finished = true;

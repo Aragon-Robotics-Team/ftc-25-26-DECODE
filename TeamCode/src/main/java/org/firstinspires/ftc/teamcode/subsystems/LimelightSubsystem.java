@@ -137,17 +137,17 @@ public class LimelightSubsystem extends SubsystemBase {
         return null;
     }
     /*
-        Since camera is sideways, ty = -angle.
+        Since camera is sideways, tx = angle down.
         @return Double distance in inches
 
      */
     public Double findNearestBallDistance(LLResult result) {
         if (result != null && result.isValid()) {
-            double ty = -result.getTy();
+            double tx = result.getTxNC();
             double mountingHeight = 8.45; //The height of the camera lens from the floor (in)
             double mountingAngle = 0.0; //The mounting angle of the camera relative to the horizon (deg).
             double ballHeight = 5.0 / 2.0; //The height of the center of the ball (in)
-            double distance = (ballHeight - mountingHeight) / Math.tan(Math.toRadians(ty + mountingAngle));
+            double distance = (ballHeight - mountingHeight) / Math.tan(Math.toRadians(tx + mountingAngle));
             return distance;
         }
         return null;
