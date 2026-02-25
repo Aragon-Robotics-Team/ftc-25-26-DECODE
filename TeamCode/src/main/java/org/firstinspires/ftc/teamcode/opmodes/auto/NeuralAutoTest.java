@@ -76,7 +76,7 @@ public class NeuralAutoTest extends CommandOpMode {
         );
         schedule(new SequentialCommandGroup(
                 new WaitCommand(2000),
-                new ScanAndDriveToBallCommand(follower, limelight)
+                new ScanAndDriveToBallCommand(follower, limelight, false)
         ));
 
 

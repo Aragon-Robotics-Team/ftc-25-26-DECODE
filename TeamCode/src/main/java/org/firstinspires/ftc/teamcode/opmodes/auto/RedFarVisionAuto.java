@@ -28,7 +28,9 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
@@ -70,9 +72,9 @@ public class RedFarVisionAuto extends CommandOpMode {
         public static class Poses {
             public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63));
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
-            public static final Pose SCAN_LOW = new Pose(91, 18.5, Math.toRadians(20));
-            public static final Pose SCAN_MED = new Pose(91, 18.5, Math.toRadians(30));
-            public static final Pose SCAN_HIGH = new Pose(91, 18.5, Math.toRadians(50));
+            public static final Pose SCAN_LOW = new Pose(91, 18.5, Math.toRadians(0));
+            public static final Pose SCAN_MED = new Pose(91, 18.5, Math.toRadians(15));
+            public static final Pose SCAN_HIGH = new Pose(91, 18.5, Math.toRadians(30));
         }
 
         public Paths(Follower follower) {
@@ -107,7 +109,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             intakeHp1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(136, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(132, 8))
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -115,7 +117,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             intakeHpBack = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136, 8), new Pose(121,8))
+                            new BezierLine(new Pose(132, 8), new Pose(121,8))
                     )
                     .setTangentHeadingInterpolation()
                     .setReversed()
@@ -124,7 +126,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             intakeHp2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(121,8), new Pose(136, 8))
+                            new BezierLine(new Pose(121,8), new Pose(132, 8))
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -133,7 +135,7 @@ public class RedFarVisionAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(136, 8),
+                                    new Pose(132, 8),
                                     new Pose(118.5,30),
                                     Poses.LAUNCH
                             )
@@ -282,22 +284,22 @@ public class RedFarVisionAuto extends CommandOpMode {
                     new RepeatCommand(
                             new SequentialCommandGroup(
                                     //Scan at low pos
-                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight, true))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to low pos
                                     new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_LOW))),
                                     //Scan at low pos
-                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight, true))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to med pos
                                     new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_MED))),
                                     //Scan at med pos
-                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight, true))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to high pos
                                     new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_HIGH))),
                                     //Scan at high pos
-                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight, true))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                             )
                     ),
@@ -351,7 +353,7 @@ public class RedFarVisionAuto extends CommandOpMode {
 
         pathFactory = pose -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, pose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, pose.getHeading(), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, pose.getHeading(), 0.4))
                 .build();
 
         // DO NOT REMOVE! Resetting FTCLib Command Scheduler
@@ -421,9 +423,17 @@ public class RedFarVisionAuto extends CommandOpMode {
                         )
                 ),
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new WaitCommand(200),
                 new FollowPathCommand(follower, paths.shootHpFar, true)
                         .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
                 new WaitCommand(500), //to prevent moving while shooting
+                new InstantCommand(gate::up),
+                new WaitCommand(200),
+                //Sort
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, true),
+                new WaitCommand(400),
+                new InstantCommand(gate::down),
+                new WaitCommand(200),
                 shootFourTimesWithDelay(),
 
                 //VISION CYCLE 1
@@ -433,13 +443,13 @@ public class RedFarVisionAuto extends CommandOpMode {
                 shootFourTimesWithDelay(),
 
                 //VISION CYCLE 2
-                new FollowPathCommand(follower, paths.toScanLow),
+                new TurnToCommand(follower, Paths.Poses.SCAN_LOW.getHeading(), AngleUnit.RADIANS),
                 visionIntake().withTimeout(7000),
                 new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))),
                 shootFourTimesWithDelay(),
 
                 //VISION CYCLE 3
-                new FollowPathCommand(follower, paths.toScanLow),
+                new TurnToCommand(follower, Paths.Poses.SCAN_LOW.getHeading(), AngleUnit.RADIANS),
                 visionIntake().withTimeout(10000),
                 new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))),
                 shootFourTimesWithDelay(),

@@ -7,7 +7,6 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.seattlesolvers.solverslib.command.CommandBase;
-import com.seattlesolvers.solverslib.util.InterpLUT;
 
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 
@@ -18,10 +17,16 @@ public class ScanAndDriveToBallCommand extends CommandBase {
     Follower follower;
     LimelightSubsystem limelight;
     boolean finished = false;
-    public ScanAndDriveToBallCommand(Follower follower, LimelightSubsystem limelight) {
+    boolean avoidFar;
+    boolean isFollowingPath = false;
+    long startTime;
+
+    public ScanAndDriveToBallCommand(Follower follower, LimelightSubsystem limelight, boolean avoidFar) {
         this.follower = follower;
         this.limelight = limelight;
+        this.avoidFar = avoidFar;
     }
+
     public BiFunction<Double, Double, Pose> ballPoseSupplier = (distance, angle) -> {
         Pose currentPose = follower.getPose();
         double safeDistance = Math.min(distance, 62);
@@ -33,6 +38,7 @@ public class ScanAndDriveToBallCommand extends CommandBase {
 
         return new Pose(targetX, targetY);
     };
+
     public Function<Pose, PathChain> ballPathSupplier = pose -> follower.pathBuilder()
             .addPath(new Path(new BezierLine(follower::getPose, pose)))
             .setTangentHeadingInterpolation()
@@ -41,19 +47,40 @@ public class ScanAndDriveToBallCommand extends CommandBase {
     @Override
     public void initialize() {
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_ONLY);
-        LLResult result = limelight.getResult();
-        if (result.isValid()) {
-            Pose ballPose = ballPoseSupplier.apply(limelight.findNearestBallDistance(result) + 12, result.getTy());
-            follower.followPath(ballPathSupplier.apply(ballPose));
-        } else {
-            finished = true;
-        }
+        startTime = System.currentTimeMillis();
+        isFollowingPath = false;
+        finished = false;
+        follower.setMaxPower(0.8);
     }
 
     @Override
     public void execute() {
-        if (!follower.isBusy() || follower.isRobotStuck()) {
-            finished = true;
+        if (!isFollowingPath) {
+            LLResult result = limelight.getResult();
+
+            if (result != null && result.isValid() && result.getTa() > 0.5) {
+                Double rawDistance = limelight.findNearestBallDistance(result);
+
+                if (rawDistance != null && rawDistance > 0) {
+                    Pose ballPose = ballPoseSupplier.apply(rawDistance + 17, result.getTy());
+                    boolean crossesCenterLine = (follower.getPose().getX() - 72) * (ballPose.getX() - 72) < 0;
+
+                    if (avoidFar && ballPose.getY() > 60 && !crossesCenterLine) {
+                        finished = true;
+                    } else {
+                        follower.followPath(ballPathSupplier.apply(ballPose));
+                        isFollowingPath = true;
+                    }
+                }
+            }
+            else if (System.currentTimeMillis() - startTime > 500) {
+                finished = true;
+            }
+        }
+        else {
+            if (!follower.isBusy() || follower.isRobotStuck()) {
+                finished = true;
+            }
         }
     }
 
@@ -65,5 +92,6 @@ public class ScanAndDriveToBallCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         follower.breakFollowing();
+        follower.setMaxPower(1);
     }
 }
