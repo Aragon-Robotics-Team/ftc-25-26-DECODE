@@ -58,6 +58,9 @@ public class IntakeColorSensorTuningOp extends OpMode {
         }
 
         //LED display
+        if (ColorSensorsSubsystem.isClose1(colorSubsystem.getIntakeSensor1()) || ColorSensorsSubsystem.isClose2(colorSubsystem.getIntakeSensor2())) {
+            ledSubsystem.setColor(LEDSubsystem.LEDState.BLUE);
+        }
         if (ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor2Result()) == true || ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor1Result()) == true) {
             ledSubsystem.setColor(LEDSubsystem.LEDState.VIOLET);
         }
@@ -76,6 +79,10 @@ public class IntakeColorSensorTuningOp extends OpMode {
         telemetry.addData("HSV", formatHSV(hsv1));
         telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor1Result()));
         telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor1Result()));
+        telemetry.addData("Alpha (clear) value: ", ColorSensorsSubsystem.getAlphaValue(colorSubsystem.getIntakeSensor1Result()));
+        telemetry.addData("Is not clear? ", ColorSensorsSubsystem.alphaIsNotClear1(colorSubsystem.getIntakeSensor1Result()));
+        telemetry.addData("Proximity value: ", ColorSensorsSubsystem.getProximity(colorSubsystem.getIntakeSensor1()));
+        telemetry.addData("Is Close? ", ColorSensorsSubsystem.isClose1(colorSubsystem.getIntakeSensor1()));
         telemetry.addLine();
 
         // --- INTAKE SENSOR 2 ---
@@ -83,6 +90,10 @@ public class IntakeColorSensorTuningOp extends OpMode {
         telemetry.addData("HSV", formatHSV(hsv2));
         telemetry.addData("Is Green?", ColorSensorsSubsystem.colorIsGreenIntake(colorSubsystem.getIntakeSensor2Result()));
         telemetry.addData("Is Purple?", ColorSensorsSubsystem.colorIsPurpleIntake(colorSubsystem.getIntakeSensor2Result()));
+        telemetry.addData("Alpha (clear) value: ", ColorSensorsSubsystem.getAlphaValue(colorSubsystem.getIntakeSensor2Result()));
+        telemetry.addData("Is not clear? ", ColorSensorsSubsystem.alphaIsNotClear2(colorSubsystem.getIntakeSensor2Result()));
+        telemetry.addData("Proximity value: ", ColorSensorsSubsystem.getProximity(colorSubsystem.getIntakeSensor2()));
+        telemetry.addData("Is Close? ", ColorSensorsSubsystem.isClose2(colorSubsystem.getIntakeSensor2()));
         telemetry.addLine();
 
         // --- BACK SENSOR ---
