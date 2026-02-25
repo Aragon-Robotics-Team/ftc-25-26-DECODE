@@ -31,6 +31,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
+import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.ScanAndDriveToBallCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -281,22 +282,23 @@ public class RedFarVisionAuto extends CommandOpMode {
                     new RepeatCommand(
                             new SequentialCommandGroup(
                                     //Scan at low pos
-                                    new ScanAndDriveToBallCommand(follower, limelight)
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to low pos
-                                    new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_LOW)),
+                                    new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_LOW))),
                                     //Scan at low pos
-                                    new ScanAndDriveToBallCommand(follower, limelight)
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to med pos
-                                    new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_MED)),
+                                    new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_MED))),
                                     //Scan at med pos
-                                    new ScanAndDriveToBallCommand(follower, limelight)
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
                                             .raceWith(new WaitUntilCommand(follower::isRobotStuck)),
                                     //Drive back to high pos
-                                    new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_HIGH)),
+                                    new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.SCAN_HIGH))),
                                     //Scan at high pos
-                                    new ScanAndDriveToBallCommand(follower, limelight)
+                                    new DeferredCommand(() -> new ScanAndDriveToBallCommand(follower, limelight))
+                                            .raceWith(new WaitUntilCommand(follower::isRobotStuck))
                             )
                     ),
                     //2. Intaken 3
@@ -313,8 +315,7 @@ public class RedFarVisionAuto extends CommandOpMode {
                             new WaitForColorCommand(colorsensor),
                             new WaitCommand(100)
                     )
-                ),
-                new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))
+                )
         );
     }
     @Override
@@ -336,7 +337,7 @@ public class RedFarVisionAuto extends CommandOpMode {
         led = new LEDSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         limelight = new LimelightSubsystem(hardwareMap);
-        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
+        limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.ARTIFACT_ONLY);
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
         colorsensor.updateBack();
@@ -427,12 +428,20 @@ public class RedFarVisionAuto extends CommandOpMode {
 
                 //VISION CYCLE 1
                 new FollowPathCommand(follower, paths.toScanLow),
-                visionIntake(),
+                visionIntake().withTimeout(7000),
+                new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))),
                 shootFourTimesWithDelay(),
 
                 //VISION CYCLE 2
                 new FollowPathCommand(follower, paths.toScanLow),
-                visionIntake(),
+                visionIntake().withTimeout(7000),
+                new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))),
+                shootFourTimesWithDelay(),
+
+                //VISION CYCLE 3
+                new FollowPathCommand(follower, paths.toScanLow),
+                visionIntake().withTimeout(10000),
+                new DeferredCommand(() -> new FollowPathCommand(follower, pathFactory.apply(Paths.Poses.LAUNCH))),
                 shootFourTimesWithDelay(),
 
                 //move to end pos
@@ -454,10 +463,7 @@ public class RedFarVisionAuto extends CommandOpMode {
     public void run() {
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
-        colorsensor.updateBack();
-        if ((Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60)) {
-            spindexer.handleUpdateArray(colorsensor.getIntakeSensor1Result(), colorsensor.getIntakeSensor2Result(), colorsensor.getBackResult());
-        }
+//        colorsensor.updateBack();
         if (shooter.getVelocityTicks() - shooter.getTargetTicks() < -30) {
             led.setColor(LEDSubsystem.LEDState.RED);
         }
@@ -477,6 +483,10 @@ public class RedFarVisionAuto extends CommandOpMode {
 
 
         telemetry.addData("Loop Time", timer.milliseconds());
+
+        telemetry.addData("Ball ty", limelight.getResult().getTy());
+        telemetry.addData("Ball ta", limelight.getResult().getTa());
+        telemetry.addData("Ball tyNC", limelight.getResult().getTyNC());
 
         telemetry.addData("Debug Counter", debug);
         telemetry.addData("Detected Motif", Arrays.toString(motif));
