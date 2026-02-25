@@ -71,6 +71,6 @@ public class MoveSpindexerAndUpdateArrayCommand extends CommandBase {
 
         boolean timedOut = safetyTimer.seconds() > TIMEOUT_SEC;
 
-        return atTarget || timedOut;
+        return atTarget;
     }
 }

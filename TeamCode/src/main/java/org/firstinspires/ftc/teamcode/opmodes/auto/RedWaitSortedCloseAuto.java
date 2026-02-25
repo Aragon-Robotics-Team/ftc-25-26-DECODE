@@ -13,6 +13,7 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -29,6 +30,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
+import org.firstinspires.ftc.teamcode.commands.LoadMotifCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
@@ -41,42 +43,67 @@ import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.Arrays;
+import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow (LM4)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class Red12OverflowSortedAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD34 Red Wait Close 12 Sort", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class RedWaitSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
         public PathChain intakeSecondRowClose;
         public PathChain shootSecondRowClose;
-        public PathChain hitGateSecond;
         public PathChain intakeFirstRowClose;
         public PathChain shootFirstRowClose;
-        public PathChain hitGateFirst;
-        public PathChain intakeThirdRowClose;
-        public PathChain shootThirdRowClose;
-        public PathChain intakeRamp;
-        public PathChain shootRamp;
-        public PathChain parkAfter12Overflow;
-        public PathChain parkAfter12Hold;
-        public PathChain parkAfterShoot;
+        public PathChain scanMotif;
+        public PathChain prepareHitGate;
+        public PathChain hitGate;
+        public PathChain leaveGate;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(93.3, 89.8, Math.toRadians(45));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585);
             public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose GATE = new Pose(121, 67, Math.toRadians(90));
-            public static final Pose PARK_CLOSE = new Pose(106,75.3, Math.toRadians(45));
+            public static final Pose GATE = new Pose(131, 72,Math.toRadians(180));
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20));
         }
 
         public Paths(Follower follower) {
-            shootClosePreload = follower
+            scanMotif = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(),Math.toRadians(90))
+                    .build();
+            prepareHitGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(100,72))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90),Poses.GATE.getHeading())
+                    .build();
+            hitGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(100,72), Poses.GATE)
+                    )
+                    .setConstantHeadingInterpolation(Poses.GATE.getHeading())
+                    .build();
+            leaveGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.GATE, new Pose(100,72))
+                    )
+                    .setConstantHeadingInterpolation(Poses.GATE.getHeading())
+                    .build();
+            shootClosePreload = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(100,72), Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Poses.GATE.getHeading(), Math.toRadians(43))//on purpose
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
@@ -84,26 +111,18 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(126.13, 54)
+                                    new Pose(126.13, 52)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .build();
-
-            hitGateSecond = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(126.13, 54), Poses.GATE)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.GATE.getHeading())
                     .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(126.13, 54),
-                                    new Pose(87.6, 43),
+                                    new Pose(126.13, 52),
+                                    new Pose(91.5, 56),
                                     Poses.LAUNCH
                             )
                     )
@@ -113,98 +132,21 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
             intakeFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(120.63, 85.6))
+                            new BezierCurve(
+                                    Poses.LAUNCH,
+                                    new Pose(100, 79.5),
+                                    new Pose(122, 84)
+                            )
                     )
-//                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .setTangentHeadingInterpolation()
-                    .build();
-
-            hitGateFirst = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(120.63, 8.6), Poses.GATE)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.GATE.getHeading())
+                    .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(120.63, 85.6), Poses.LAUNCH)
+                            new BezierLine(new Pose(126, 84), Poses.PARK_LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
-                    .build();
-
-            intakeThirdRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    Poses.LAUNCH,
-                                    new Pose(99, 12.75),
-                                    new Pose(132.13, 31.6)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .build();
-
-            shootThirdRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(132.13, 31.6), Poses.LAUNCH)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
-                    .build();
-
-            intakeRamp = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    Poses.LAUNCH,
-                                    new Pose(86.4, 45.6),
-                                    new Pose(139, 51.7)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Math.toRadians(75))
-                    .build();
-
-            shootRamp = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(139, 51.7),
-                                    new Pose(86.4, 45.6),
-                                    Poses.LAUNCH
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(75), Poses.LAUNCH.getHeading())
-                    .build();
-
-            parkAfter12Overflow = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(Poses.LAUNCH, Poses.PARK_CLOSE)
-                    )
-                    .setConstantHeadingInterpolation(Poses.LAUNCH.getHeading())
-                    .build();
-            parkAfter12Hold = follower
-                    .pathBuilder()
-                    .addPath(
-//                            new BezierLine(new Pose(131.700, 21.6), new Pose(105, 83))
-                            new BezierCurve(
-                                    new Pose(135.3, 36.6),
-                                    new Pose(95, 35),
-                                    Poses.PARK_CLOSE
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_CLOSE.getHeading())
-                    .build();
-
-            parkAfterShoot = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(Poses.LAUNCH, Poses.PARK_CLOSE)
-                    )
-                    .setLinearHeadingInterpolation(Poses.LAUNCH.getHeading(), Poses.PARK_CLOSE.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_LAUNCH.getHeading())
                     .build();
         }
     }
@@ -224,11 +166,12 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         );
     }
 
+    List<LynxModule> allHubs;
     //Selectiopn
     private enum AUTOS {
-        TWELVE_HOLD, TWELVE_OVERFLOW, NINE_INTAKEGATE_HOLD//, FAR
+        GATE_ONCE, INTAKE_GATE
     }
-    final AUTOS CURRENTAUTO = AUTOS.TWELVE_OVERFLOW;
+    final AUTOS CURRENTAUTO = AUTOS.GATE_ONCE;
 
     public Pose currentPose;
     public RobotConstants.BallColors[] motif = new RobotConstants.BallColors[]{PURPLE, PURPLE,PURPLE};
@@ -239,6 +182,7 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
     private boolean slowMode = false;
     public ElapsedTime lastVoltageCheck = new ElapsedTime();
     private ElapsedTime timer;
+    private ElapsedTime delayTimer;
     private Follower follower;
 
     //update starting pose
@@ -276,6 +220,7 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
     @Override
     public void initialize() {
         timer = new ElapsedTime();
+        delayTimer = new ElapsedTime();
         timer.reset();
 
         //systems and pedro
@@ -294,12 +239,17 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         limelight = new LimelightSubsystem(hardwareMap);
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
+        spindexer.setPIDCoefficients(0.0155, 0, 0.00055, 0);
         colorsensor.updateSensor1();
         colorsensor.updateSensor2();
         colorsensor.updateBack();
         lastVoltageCheck.reset();
         Paths paths = new Paths(follower);
-
+        //Bulk reading
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
 
         // DO NOT REMOVE! Resetting FTCLib Command Scheduler
@@ -311,25 +261,41 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1140);
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
+                    delayTimer.reset();
                 }),
-                //Preload
+                //motif
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootClosePreload, true)
-                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
+                        new FollowPathCommand(follower, paths.scanMotif, true)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1)),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif)),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(new InstantCommand(this::scanMotif))
                 ),
-                setCount(1),
+                //Gate hold
+                new WaitCommand(100),
+                new FollowPathCommand(follower, paths.prepareHitGate,0.5),
+                new FollowPathCommand(follower, paths.hitGate, 0.5).withTimeout(3000),
+                new WaitUntilCommand(() -> delayTimer.seconds() > 15)
+                        .alongWith(new SequentialCommandGroup(
+                            new WaitCommand(500),
+                            new InstantCommand(gate::up),
+                            new WaitCommand(200),
+                            new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
+                            new InstantCommand(gate::down)
+                        ))
+                        .andThen(new InstantCommand(() -> {
+                            shooter.setTargetTicks(1140);
+                            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                        }))
+                        .andThen(new FollowPathCommand(follower, paths.leaveGate,0.5)),
+
+                //preload
+                new FollowPathCommand(follower, paths.shootClosePreload),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
-                setCount(2),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
-                setCount(3),
 
                 //Second row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeSecondRowClose)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -337,13 +303,17 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-//                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
-                new FollowPathCommand(follower, paths.shootSecondRowClose, true),
+                new FollowPathCommand(follower, paths.shootSecondRowClose, true)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
+                                new InstantCommand(gate::down)
+                        )),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //First row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
                 new ParallelCommandGroup(
                         new FollowPathCommand(follower, paths.intakeFirstRowClose).withTimeout(3000)
                                 .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
@@ -351,92 +321,21 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootFirstRowClose, true),
+                //first row
+                new InstantCommand(() -> shooter.setTargetTicks(1100)),
+                new FollowPathCommand(follower, paths.shootFirstRowClose, true)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
+                                new InstantCommand(gate::down)
+                        )),
                 new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif))
-//                //Ramp cycle
-//                new FollowPathCommand(follower, paths.intakeRamp, false),
-//                intakeArtifacts().withTimeout(3000),
-//                new FollowPathCommand(follower, paths.shootRamp, true),
-//                new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif),
-        );
-        SequentialCommandGroup intake_gate_shoot_and_park = new SequentialCommandGroup(
-                //move to end pos
-                new ParallelCommandGroup(
-                        new InstantCommand(() -> {
-                            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
-                            shooter.setTargetTicks(600);
-                        }),
-                        new FollowPathCommand(follower, paths.intakeRamp, 1.0).withTimeout(3000).withTimeout(3000),
-                        new WaitCommand(3000).andThen(
-                                new SequentialCommandGroup(
-                                        new WaitForColorCommand(colorsensor),
-                                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                                        new WaitCommand(500),
-                                        new WaitForColorCommand(colorsensor),
-                                        new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
-                                )
-                        )
-                )
-        );
-        SequentialCommandGroup park_overflow = new SequentialCommandGroup(
-                //intake third row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
-                new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        new WaitCommand(2000)
-                                .andThen(intakeArtifacts())
-                ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
-
-                //shoot third row
-                new InstantCommand(() -> follower.setMaxPower(1.0)),
-                new FollowPathCommand(follower, paths.shootThirdRowClose, true),
-//                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
-                //move to end pos
-                new FollowPathCommand(follower, paths.parkAfter12Overflow)
-        );
-        SequentialCommandGroup park_twelve = new SequentialCommandGroup(
-                //intake third row
-                new InstantCommand(() -> follower.setMaxPower(0.8)),
-                new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        new WaitCommand(2000)
-                                .andThen(intakeArtifacts())
-                ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
-
-                //move to end pos
-                new FollowPathCommand(follower, paths.parkAfter12Hold,true, 1.0).alongWith(new InstantCommand(() -> {gate.up();}))
         );
 
-        schedule(
-                new RunCommand(() -> follower.update())
-        );
-
-        if (CURRENTAUTO == AUTOS.TWELVE_OVERFLOW) {
-            schedule(new SequentialCommandGroup(
-                    nine_sorted,
-                    park_overflow
-            ));
-        }
-        else if (CURRENTAUTO == AUTOS.TWELVE_HOLD) {
-            schedule(new SequentialCommandGroup(
-                    nine_sorted,
-                    park_twelve
-            ));
-        }
-        else if (CURRENTAUTO == AUTOS.NINE_INTAKEGATE_HOLD) {
-            schedule(new SequentialCommandGroup(
-                    nine_sorted,
-                    intake_gate_shoot_and_park
-            ));
-        }
+        schedule(new RunCommand(() -> follower.update()));
+        schedule(new SequentialCommandGroup(nine_sorted));
 
     }
     @SuppressLint("DefaultLocale")
@@ -493,6 +392,9 @@ public class Red12OverflowSortedAuto extends CommandOpMode {
         timer.reset();
         telemetry.update();
         super.run();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
     }
 

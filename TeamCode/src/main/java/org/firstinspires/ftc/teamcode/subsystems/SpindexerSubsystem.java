@@ -28,7 +28,7 @@ public class SpindexerSubsystem extends SubsystemBase {
         double compensation = 1;
         kP = compensation * kPOriginal;
     }
-    private double kI = 0;
+    private double kI = 0.00000;
     private double kD = 0.000054;
 
     private final PIDController pid;
@@ -58,6 +58,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     /** Set absolute target (but still unbounded) */
     public void set(double degrees) {
         pid.setSetPoint(degrees);
+        pid.clearTotalError();
     }
 
     private double lastAbs = Double.NaN;
@@ -140,7 +141,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      */
     public boolean isNearTargetPosition() { //within 5 deg
         double error = Math.abs(getCurrentPosition() - getPIDSetpoint());
-        return error < 11;
+        return error < 15;
     }
 
     /**
