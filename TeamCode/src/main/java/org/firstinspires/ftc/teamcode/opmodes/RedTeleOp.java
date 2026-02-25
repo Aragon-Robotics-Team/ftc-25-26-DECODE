@@ -183,7 +183,7 @@ public class RedTeleOp extends CommandOpMode {
         handlePanelsDrawing();
 
         //update ll orientation
-        limelight.updateRobotOrientation(follower.getHeading());
+        //limelight.updateRobotOrientation(follower.getHeading()); //runs in method
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -582,6 +582,15 @@ public class RedTeleOp extends CommandOpMode {
     }
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+
+        telemetry.addData("megaTagPose: ", limelight.getMegaTagPose(limelight.getResult()));
+        telemetry.addLine();
+        telemetry.addData("megatag1 with moose conversion: ", limelight.getMooseMethod(limelight.getResult(), follower.getHeading()));
+        telemetry.addLine();
+        telemetry.addData("megatag2 pose with new conversion: ", limelight.getNewMethod2(limelight.getResult()));
+
+
+
         telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
         telemetry.addData("headingError", headingError);
@@ -646,8 +655,6 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
         telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
 
-        telemetry.addData("megaTagPose: ", limelight.getMegaTagPose(limelight.getResult()));
-        telemetry.addData("ftc standard pose: ", limelight.getFTCSTANDARD(limelight.getResult()));
 
     }
     void handlePanelsDrawing() {
