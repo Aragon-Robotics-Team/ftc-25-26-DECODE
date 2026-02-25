@@ -83,6 +83,9 @@ public class RedTeleOp extends CommandOpMode {
     int spindexerAutomoveCount = 0;
     ElapsedTime spindexerAutomoveTimeSinceLastMove = new ElapsedTime();
     boolean firstLoop = true;
+    boolean d2RightStickLeftProcessed = false;
+    boolean d2RightStickRightProcessed = false;
+    double manualAimOffset = 0;
 
     //Bulk read
     List<LynxModule> allHubs;
@@ -186,12 +189,16 @@ public class RedTeleOp extends CommandOpMode {
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
 
+        if (lastVoltageCheck.milliseconds() < 500) {
+            alignerHeadingPID.setPIDF(alignerHeadingkP * (13.5 / currentVoltage), 0, alignerHeadingkD, alignerHeadingkF);
+            lastVoltageCheck.reset();
+        }
+
         handleTelemetry();
 
         follower.update();
         loopTimer.reset();
         telemetry.update();
-        alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
 
         if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKESTILL_ROLLERSIN) {
             gamepad1.rumbleBlips(1);
@@ -474,6 +481,30 @@ public class RedTeleOp extends CommandOpMode {
         double x_rotated = x * cos - y * sin;
         double y_rotated = x * sin + y * cos;
 
+        double d2Rx = driver2.getRightX();
+
+        // Autoaim adjustment
+        if (d2Rx < -0.8) {
+            if (!d2RightStickLeftProcessed) {
+                manualAimOffset += Math.toRadians(1); // Adjust offset by +0.5 degrees
+                d2RightStickLeftProcessed = true; // Mark as processed until stick returns to center
+                gamepad2.rumbleBlips((int) Math.abs(Math.toDegrees(manualAimOffset)));
+            }
+        } else {
+            d2RightStickLeftProcessed = false; // Reset when stick is released
+        }
+
+        // Autoaim adjustment
+        if (d2Rx > 0.8) {
+            if (!d2RightStickRightProcessed) {
+                manualAimOffset -= Math.toRadians(1); // Adjust offset by -0.5 degrees
+                d2RightStickRightProcessed = true; // Mark as processed
+                gamepad2.rumbleBlips((int) Math.abs(Math.toDegrees(manualAimOffset)));
+            }
+        } else {
+            d2RightStickRightProcessed = false; // Reset when stick is released
+        }
+
         if (manualControl) {
             //MANUAL
             double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
@@ -486,7 +517,7 @@ public class RedTeleOp extends CommandOpMode {
                 gamepad2.rumbleBlips(2);
             } else {
                 Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
-                double targetHeading = targetVector.getTheta();
+                double targetHeading = targetVector.getTheta() + manualAimOffset;
                 shooter.setTargetLinearSpeed(targetVector.getMagnitude());
 
                 headingError = follower.getHeading() - targetHeading;
@@ -503,6 +534,10 @@ public class RedTeleOp extends CommandOpMode {
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
+                }
+                //BANGBANG FF
+                if (Math.abs(headingError) > 1) {
+                    headingPIDOutput *= 5;
                 }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
