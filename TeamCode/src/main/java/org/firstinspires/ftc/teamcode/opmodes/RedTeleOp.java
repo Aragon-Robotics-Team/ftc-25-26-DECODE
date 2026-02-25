@@ -460,7 +460,7 @@ public class RedTeleOp extends CommandOpMode {
         );
         new Trigger(
                 () ->
-                        gamepad2.touchpad_finger_2 && gamepad2.touchpad_finger_2_x < 0
+                        gamepad2.touchpad && gamepad2.touchpad_finger_1 && gamepad2.touchpad_finger_1_x < 0
         ).whenActive(
                 new InstantCommand(() -> {
                         driveMode = DriveMode.ZERO_DEGREES;
@@ -532,6 +532,11 @@ public class RedTeleOp extends CommandOpMode {
             }
             case ZERO_DEGREES: {
                 headingError = follower.getHeading() - Math.toRadians(0);
+                if (headingError > Math.PI) {
+                    headingError -= (2 * Math.PI);
+                } else if (headingError < -Math.PI) {
+                    headingError += (2 * Math.PI);
+                }
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
                 break;
