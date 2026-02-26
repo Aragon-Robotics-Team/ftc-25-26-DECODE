@@ -31,6 +31,7 @@ import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SelectCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -67,11 +68,13 @@ public class RedTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
     public enum Alliance {
-        RED,
-        BLUE
+        RED, BLUE
     }
     public enum IntakeState {
         INTAKESTILL_ROLLERSIN, INTAKEOUT_ROLLERSOUT, INTAKEIN_ROLLERSIN, INTAKEOUT_ROLLERSIN, INTAKESTILL_ROLLERSSTILL
+    }
+    public enum DriveMode{
+        MANUAL_CONTROL, ZERO_DEGREES, AUTO_AIM
     }
 
     int closeShooterTarget;
@@ -84,6 +87,9 @@ public class RedTeleOp extends CommandOpMode {
     int spindexerAutomoveCount = 0;
     ElapsedTime spindexerAutomoveTimeSinceLastMove = new ElapsedTime();
     boolean firstLoop = true;
+    boolean d2RightStickLeftProcessed = false;
+    boolean d2RightStickRightProcessed = false;
+    double manualAimOffset = 0;
 
     //Bulk read
     List<LynxModule> allHubs;
@@ -105,7 +111,7 @@ public class RedTeleOp extends CommandOpMode {
     Alliance alliance = Alliance.RED;
     RobotConstants.BallColors[] selectedMotif = new RobotConstants.BallColors[]{RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.PURPLE, RobotConstants.BallColors.GREEN};
     IntakeState intakeState = IntakeState.INTAKESTILL_ROLLERSIN;
-    boolean manualControl = true;
+    DriveMode driveMode = DriveMode.MANUAL_CONTROL;
     boolean slowMode = false;
     private double gateAdjustment;
     PanelsField panelsField = PanelsField.INSTANCE;
@@ -196,12 +202,19 @@ public class RedTeleOp extends CommandOpMode {
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
 
+        if (lastVoltageCheck.milliseconds() > 500) {
+            double compensation = (13.5 / currentVoltage);
+            double compensation_weight = 0.4;
+            compensation = 1.0 + ((compensation - 1.0) * compensation_weight);
+            alignerHeadingPID.setPIDF(alignerHeadingkP * compensation, 0, alignerHeadingkD, alignerHeadingkF);
+            lastVoltageCheck.reset();
+        }
+
         handleTelemetry();
 
         follower.update();
         loopTimer.reset();
         telemetry.update();
-        alignerHeadingPID.setPIDF(alignerHeadingkP, 0, alignerHeadingkD, alignerHeadingkF);
 
         if (intakeState == IntakeState.INTAKEOUT_ROLLERSOUT || intakeState == IntakeState.INTAKEOUT_ROLLERSIN || intakeState == IntakeState.INTAKESTILL_ROLLERSIN) {
             gamepad1.rumbleBlips(1);
@@ -324,7 +337,7 @@ public class RedTeleOp extends CommandOpMode {
         new Trigger( //Auto aim
                 () -> driver1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.5)
                 .whileActiveContinuous(new InstantCommand(() -> {
-                            manualControl = false;
+                            driveMode = DriveMode.AUTO_AIM;
                         })
                 );
         new Trigger(() -> driver1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.5) //slowmode
@@ -336,8 +349,6 @@ public class RedTeleOp extends CommandOpMode {
                         new InstantCommand(() -> isHoldingPoint = true),
                         new InstantCommand(() -> follower.holdPoint(follower.getPose()))
                 )
-
-
         );
         driver1.getGamepadButton(LEFT_BUMPER).whenReleased(
                 new ParallelCommandGroup(
@@ -345,6 +356,16 @@ public class RedTeleOp extends CommandOpMode {
                         new InstantCommand(() -> follower.startTeleOpDrive()),
                         new InstantCommand(() -> follower.breakFollowing())
                 )
+        );
+        new Trigger(
+                () ->
+                        gamepad1.touchpad_finger_1
+        ).whenActive(
+                new InstantCommand(() -> {
+                    driveMode = DriveMode.MANUAL_CONTROL;
+                    gamepad1.rumbleBlips(2);
+                    gamepad2.rumbleBlips(2);
+                })
         );
 
 
@@ -438,19 +459,35 @@ public class RedTeleOp extends CommandOpMode {
                         })
                 );
         driver2.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new InstantCommand(shooter::increaseSpeedOffset)
+                new InstantCommand(() -> {
+                    shooter.increaseSpeedOffset();
+                    gamepad2.rumbleBlips(1);
+                })
         );
         driver2.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
-                new InstantCommand(shooter::decreaseSpeedOffset)
+                new InstantCommand(() -> {
+                    shooter.decreaseSpeedOffset();
+                    gamepad2.rumbleBlips(1);
+                })
         );
         driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {
                     Pose resetPose = alliance == Alliance.RED ?
-                            new Pose(7, 7, Math.toRadians(0)) :
-                            new Pose(144-7, 7, Math.toRadians(180));
+                            new Pose(9, 8, Math.toRadians(0)) :
+                            new Pose(144-9, 8, Math.toRadians(180));
                     follower.setPose(resetPose);
                     kalmanPoseFuser.setPose(resetPose);
                     gamepad2.rumbleBlips(1);
+                })
+        );
+        new Trigger(
+                () ->
+                        gamepad2.touchpad
+        ).whenActive(
+                new InstantCommand(() -> {
+                        driveMode = DriveMode.ZERO_DEGREES;
+                        gamepad1.rumbleBlips(2);
+                        gamepad2.rumbleBlips(2);
                 })
         );
 
@@ -461,7 +498,7 @@ public class RedTeleOp extends CommandOpMode {
                         colorSensors.doesLastResultHaveBall() &&
                         (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
                         spindexerAutomoveCount < 2 &&
-                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
+                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.37
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
@@ -471,8 +508,9 @@ public class RedTeleOp extends CommandOpMode {
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
-                        )));
-
+                        )
+                )
+        );
     }
     void handleTeleopDrive() {
         double y = driver1.getLeftY();
@@ -487,19 +525,55 @@ public class RedTeleOp extends CommandOpMode {
         double x_rotated = x * cos - y * sin;
         double y_rotated = x * sin + y * cos;
 
-        if (manualControl) {
-            //MANUAL
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
+        double d2Rx = driver2.getRightX();
+
+        // Autoaim adjustment
+        if (d2Rx < -0.8) {
+            if (!d2RightStickLeftProcessed) {
+                manualAimOffset += Math.toRadians(1); // Adjust offset by +0.5 degrees
+                d2RightStickLeftProcessed = true; // Mark as processed until stick returns to center
+                gamepad2.rumbleBlips((int) Math.abs(Math.toDegrees(manualAimOffset)));
+            }
         } else {
-            //AUTO AIM MODE
-            if (gamepad1.touchpad_finger_1) {
-                manualControl = true;
-                gamepad1.rumbleBlips(2);
-                gamepad2.rumbleBlips(2);
-            } else {
+            d2RightStickLeftProcessed = false; // Reset when stick is released
+        }
+
+        // Autoaim adjustment
+        if (d2Rx > 0.8) {
+            if (!d2RightStickRightProcessed) {
+                manualAimOffset -= Math.toRadians(1); // Adjust offset by -0.5 degrees
+                d2RightStickRightProcessed = true; // Mark as processed
+                gamepad2.rumbleBlips((int) Math.abs(Math.toDegrees(manualAimOffset)));
+            }
+        } else {
+            d2RightStickRightProcessed = false; // Reset when stick is released
+        }
+
+        switch (driveMode) {
+            case MANUAL_CONTROL: {
+                break;
+            }
+            case ZERO_DEGREES: {
+                headingError = follower.getHeading() - Math.toRadians(0);
+                if (headingError > Math.PI) {
+                    headingError -= (2 * Math.PI);
+                } else if (headingError < -Math.PI) {
+                    headingError += (2 * Math.PI);
+                }
+                headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
+                rx += MathUtils.clamp(headingPIDOutput, -1, 1);
+                break;
+            }
+            case AUTO_AIM: {
+                if (gamepad1.touchpad_finger_1) {
+                    driveMode = DriveMode.MANUAL_CONTROL;
+                    gamepad1.rumbleBlips(2);
+                    gamepad2.rumbleBlips(2);
+                    break;
+                }
+
                 Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
-                double targetHeading = targetVector.getTheta();
+                double targetHeading = targetVector.getTheta() + manualAimOffset;
                 shooter.setTargetLinearSpeed(targetVector.getMagnitude());
 
                 headingError = follower.getHeading() - targetHeading;
@@ -511,18 +585,24 @@ public class RedTeleOp extends CommandOpMode {
                 }
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
-                //MANUAL FF- NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > 0.01) { //deadzone
+                // MANUAL FF - NORMAL DOES NOT WORK BC SP = 0
+                if (Math.abs(headingError) > 0.01) { // deadzone
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
                 }
+                // BANGBANG FF
+                if (Math.abs(headingError) > 1) {
+                    headingPIDOutput *= 5;
+                }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
+                break;
             }
-            double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
-            if (!isHoldingPoint) follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
         }
+        double denominator = Math.max(Math.abs(x) + Math.abs(y) + Math.abs(rx), 1.0);
+        if (!isHoldingPoint)
+            follower.setTeleOpDrive(x_rotated / denominator, y_rotated / denominator, rx / denominator, true);
     }
     void handleLED() {
         //LED Code
@@ -614,7 +694,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addData("headingError", headingError);
         telemetry.addData("heading pid output", headingPIDOutput);
         telemetry.addData(String.format("Distance to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - follower.getPose().getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - follower.getPose().getX()));
-        telemetry.addData("Mode", manualControl ? "Manual" : "Auto-Aim");
+        telemetry.addData("Mode: ", driveMode);
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
         telemetry.addData("spindexer automove count", spindexerAutomoveCount);
@@ -761,16 +841,12 @@ public class RedTeleOp extends CommandOpMode {
         // --- 1. GATHER CURRENT STATE ---
         Pose currentPose = robotPose;
         Vector v_robot = follower.getVelocity();
-        double angularVel = follower.getAngularVelocity();
+        double angularVel = 0; //remove angular vel compensation
         Vector a_robot = follower.getAcceleration();
 
         //Position deadzone
         if (v_robot.getMagnitude() < 2.0) { // If moving less than 2 in/s
             v_robot = new Vector(0,0);
-        }
-        //Angle deadzone
-        if (Math.abs(angularVel) < Math.toRadians(5)) { // If rotating less than 5 deg/s
-            angularVel = 0;
         }
 
         // Offsets (Distance in inches from center of robot to shooter)
