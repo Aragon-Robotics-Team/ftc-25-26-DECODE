@@ -47,6 +47,7 @@ import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.RobotConstants.*;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
+import org.firstinspires.ftc.teamcode.kalman.KalmanPoseFuser;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -128,6 +129,11 @@ public class RedTeleOp extends CommandOpMode {
     public static Pose startingPose;
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
+
+    private KalmanPoseFuser kalmanPoseFuser;
+    private Pose rawOdometryPose = new Pose(0, 0, 0);
+    private Pose rawVisionPose = null;
+
     //Auto aligner
     public static double alignerHeadingkP = 0.5;
     public static double alignerHeadingkD = 0.06;
@@ -181,6 +187,7 @@ public class RedTeleOp extends CommandOpMode {
         handleVoltageCompensation();
         handleBallsArrayUpdate();
         handlePanelsDrawing();
+        handleKalman();
 
         //update ll orientation
         //limelight.updateRobotOrientation(follower.getHeading()); //runs in method
@@ -242,6 +249,8 @@ public class RedTeleOp extends CommandOpMode {
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+
+        kalmanPoseFuser = new KalmanPoseFuser(startingPose, 0.005, 1.5);
 
         if (Math.abs(spindexer.getWrappedPosition() - 115) < 60) {
             spindexer.set(115);
@@ -440,6 +449,7 @@ public class RedTeleOp extends CommandOpMode {
                             new Pose(7, 7, Math.toRadians(0)) :
                             new Pose(144-7, 7, Math.toRadians(180));
                     follower.setPose(resetPose);
+                    kalmanPoseFuser.setPose(resetPose);
                     gamepad2.rumbleBlips(1);
                 })
         );
@@ -580,10 +590,21 @@ public class RedTeleOp extends CommandOpMode {
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
         }
     }
+    @SuppressLint("DefaultLocale")
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
 
-        telemetry.addData("megatag2Pose with moose conversion: ", limelight.getMegaTag2Pose(limelight.getResult(), follower.getHeading()));
+        telemetry.addLine("-- Sensor Fusion --");
+        telemetry.addData("1. Raw Odometry", String.format("X: %8.2f, Y: %8.2f", rawOdometryPose.getX(), rawOdometryPose.getY()));
+
+        if (rawVisionPose != null) {
+            telemetry.addData("2. Raw Vision  ", String.format("X: %8.2f, Y: %8.2f", rawVisionPose.getX(), rawVisionPose.getY()));
+        } else {
+            telemetry.addData("2. Raw Vision  ", "No Tags Visible");
+        }
+
+        // follower.getPose() is now the fused pose because handleKalman() overwrote it!
+        telemetry.addData("3. Fused Pose  ", String.format("X: %8.2f, Y: %8.2f", follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addLine();
 
 
@@ -682,6 +703,24 @@ public class RedTeleOp extends CommandOpMode {
 
         // 4. Send the update
         panels.update();
+    }
+    void handleKalman() {
+        // 1. Save the raw odometry prediction to our class variable
+        rawOdometryPose = follower.getPose();
+
+        // 2. Try to get a valid MegaTag2 pose
+        LLResult llResult = limelight.getResult();
+        if (llResult != null && llResult.isValid()) {
+            rawVisionPose = limelight.getMegaTag2Pose(llResult, rawOdometryPose.getHeading());
+        } else {
+            rawVisionPose = null; // Clear it if we lose sight of tags
+        }
+
+        // 3. Fuse the two poses together
+        Pose fusedPose = kalmanPoseFuser.update(rawOdometryPose, rawVisionPose);
+
+        // 4. Force PedroPathing to use the new, smoothed coordinate
+        follower.setPose(new Pose(fusedPose.getX(), fusedPose.getY(), rawOdometryPose.getHeading()));
     }
     /**
      * Calculate the target vector for the shooter with velocity compensation.
