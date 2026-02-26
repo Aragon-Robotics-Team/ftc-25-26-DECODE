@@ -319,7 +319,7 @@ public class RedFarAuto extends CommandOpMode {
                                 new FollowPathCommand(follower, paths.intakeHp1)
                                         .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
                                         .withTimeout(3000),
-
+                                new WaitCommand(500),
                                 new FollowPathCommand(follower, paths.intakeHpBack),
                                 new FollowPathCommand(follower, paths.intakeHp2)
                                         .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
