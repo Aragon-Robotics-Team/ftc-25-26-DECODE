@@ -192,8 +192,11 @@ public class RedTeleOp extends CommandOpMode {
         colorSensors.updateSensor1();
         colorSensors.updateSensor2();
 
-        if (lastVoltageCheck.milliseconds() < 500) {
-            alignerHeadingPID.setPIDF(alignerHeadingkP * (13.5 / currentVoltage), 0, alignerHeadingkD, alignerHeadingkF);
+        if (lastVoltageCheck.milliseconds() > 500) {
+            double compensation = (13.5 / currentVoltage);
+            double compensation_weight = 0.4;
+            compensation = 1.0 + ((compensation - 1.0) * compensation_weight);
+            alignerHeadingPID.setPIDF(alignerHeadingkP * compensation, 0, alignerHeadingkD, alignerHeadingkF);
             lastVoltageCheck.reset();
         }
 
@@ -211,7 +214,7 @@ public class RedTeleOp extends CommandOpMode {
 
         if (snapshotTimer.seconds() > 5) {
             snapshots++;
-            limelight.takeSnapshot();
+//            limelight.takeSnapshot();
             snapshotTimer.reset();
         }
 
@@ -482,7 +485,7 @@ public class RedTeleOp extends CommandOpMode {
                         colorSensors.doesLastResultHaveBall() &&
                         (Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60) &&
                         spindexerAutomoveCount < 2 &&
-                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.5
+                        spindexerAutomoveTimeSinceLastMove.seconds() > 0.37
         ).whenActive(
                 new ParallelCommandGroup(
                         new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false)
@@ -492,8 +495,9 @@ public class RedTeleOp extends CommandOpMode {
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
-                        )));
-
+                        )
+                )
+        );
     }
     void handleTeleopDrive() {
         double y = driver1.getLeftY();
