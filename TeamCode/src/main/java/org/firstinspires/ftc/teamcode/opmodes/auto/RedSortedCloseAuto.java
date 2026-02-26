@@ -267,7 +267,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1140);
+                    shooter.setTargetTicks(1120);
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
                 }),
