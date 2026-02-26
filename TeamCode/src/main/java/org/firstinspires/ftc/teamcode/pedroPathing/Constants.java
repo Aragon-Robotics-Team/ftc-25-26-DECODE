@@ -63,7 +63,7 @@ public class Constants {
     50,
     3,
     10,
-    1.5
+    2
     );
 
 
