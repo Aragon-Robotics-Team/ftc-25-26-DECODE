@@ -214,7 +214,7 @@ public class RedTeleOp extends CommandOpMode {
 
         if (snapshotTimer.seconds() > 5) {
             snapshots++;
-            limelight.takeSnapshot();
+//            limelight.takeSnapshot();
             snapshotTimer.reset();
         }
 
