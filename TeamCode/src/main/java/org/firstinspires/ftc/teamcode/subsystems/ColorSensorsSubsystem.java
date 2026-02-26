@@ -2,18 +2,22 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 //import com.qualcomm.robotcore.hardware.ColorSensor;
 
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.hardware.SensorRevColorV3;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class ColorSensorsSubsystem extends SubsystemBase {
-    private NormalizedColorSensor intakeSensor1;
+    private RevColorSensorV3 intakeSensor1;
     private NormalizedRGBA intakeSensor1Result = null;
-    private NormalizedColorSensor intakeSensor2;
+    private RevColorSensorV3 intakeSensor2;
     private NormalizedRGBA intakeSensor2Result = null;
 
-    private NormalizedColorSensor backSensor;
+    private RevColorSensorV3 backSensor;
     private NormalizedRGBA backResult = null;
 
 
@@ -32,23 +36,32 @@ public class ColorSensorsSubsystem extends SubsystemBase {
     public final static float[] whiteLowerHSV = {0f, 0.99f, 0.99f};
     public final static float[] whiteHigherHSV = {360f, 1f, 1f};
 
+    public final static double alphaHigher1 = 0.50;
+    public final static double alphaLower1 = 0.25;
+    public final static double alphaHigher2 = 0.25;
+    public final static double alphaLower2 = 0.0;
+
+    public final static double proximityHigher1 = 1.4;
+    public final static double proximityLower1 = 1.0;
+    public final static double proximityHigher2 = 3.0;
+    public final static double proximityLower2 = 2.3;
 
     public ColorSensorsSubsystem(final HardwareMap hMap) {
-        intakeSensor1 = hMap.get(NormalizedColorSensor.class, "colori1");
+        intakeSensor1 = hMap.get(RevColorSensorV3.class, "colori1");
         intakeSensor1.setGain(17.0f);
 
-        intakeSensor2 = hMap.get(NormalizedColorSensor.class, "colori2");
+        intakeSensor2 = hMap.get(RevColorSensorV3.class, "colori2");
         intakeSensor2.setGain(17.0f);
 
-        backSensor = hMap.get(NormalizedColorSensor.class, "colorb");
+        backSensor = hMap.get(RevColorSensorV3.class, "colorb");
         backSensor.setGain(17.0f);
     }
-    public void setGain(NormalizedColorSensor sensor, float gain) {
+    public void setGain(RevColorSensorV3 sensor, float gain) {
         sensor.setGain(gain);
     }
-    public NormalizedColorSensor getIntakeSensor1() {return intakeSensor1;}
-    public NormalizedColorSensor getIntakeSensor2() {return intakeSensor2;}
-    public NormalizedColorSensor getBackSensor() {return backSensor;}
+    public RevColorSensorV3 getIntakeSensor1() {return intakeSensor1;}
+    public RevColorSensorV3 getIntakeSensor2() {return intakeSensor2;}
+    public RevColorSensorV3 getBackSensor() {return backSensor;}
     public NormalizedRGBA getIntakeSensor1Result() {
         return intakeSensor1Result;
     }
@@ -86,7 +99,25 @@ public class ColorSensorsSubsystem extends SubsystemBase {
         return colorIsGreenIntake(color) || colorIsPurpleIntake(color) || colorIsGreenBack(color) || colorIsPurpleBack(color) || colorIsWhite(color);
     }
     public boolean doesLastResultHaveBall() {
-        return colorIsBall(intakeSensor1Result)||colorIsBall(intakeSensor2Result);
+        return colorIsBall(intakeSensor1Result)||colorIsBall(intakeSensor2Result)||isClose1(intakeSensor1)||isClose2(intakeSensor2);
+    }
+    public static float getAlphaValue(NormalizedRGBA normalizedRGBA) {
+        return normalizedRGBA.alpha;
+    }
+    public static boolean alphaIsNotClear1(NormalizedRGBA normalizedRGBA) {
+        return (alphaLower1 < normalizedRGBA.alpha && normalizedRGBA.alpha < alphaHigher1);
+    }
+    public static boolean alphaIsNotClear2(NormalizedRGBA normalizedRGBA) {
+        return (alphaLower2 < normalizedRGBA.alpha && normalizedRGBA.alpha < alphaHigher2);
+    }
+    public static double getProximity(RevColorSensorV3 colorSensor) {
+        return (colorSensor.getDistance(DistanceUnit.INCH));
+    }
+    public static boolean isClose1(RevColorSensorV3 colorSensor) {
+        return (proximityLower1 < colorSensor.getDistance(DistanceUnit.INCH) && colorSensor.getDistance(DistanceUnit.INCH) < proximityHigher1);
+    }
+    public static boolean isClose2(RevColorSensorV3 colorSensor) {
+        return (proximityLower2 < colorSensor.getDistance(DistanceUnit.INCH) && colorSensor.getDistance(DistanceUnit.INCH) < proximityHigher2);
     }
 
     private static boolean colorInRange(float[] colorHSV, float[] min, float[] max) {
