@@ -70,6 +70,8 @@ public class LimelightSubsystem extends SubsystemBase {
      * @param result The latest LLResult
      * @return A PedroPathing Pose in INCHES, or null if invalid.
      */
+
+    //does not work
     public Pose getMegaTagPose(LLResult result) {
         //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
         if (result != null && result.isValid()) {
@@ -113,34 +115,6 @@ public class LimelightSubsystem extends SubsystemBase {
         }
         return null; //might want to replcae with robots last known pose as a failsafe
 
-    }
-
-
-    public Pose getNewMethod2(LLResult result) {
-        if (result != null && result.isValid()) {
-            Pose3D botpose_mt2 = result.getBotpose();
-
-            if (botpose_mt2 != null) {
-                // Work directly with raw MT2 values — no FTC inversion
-                double x = botpose_mt2.getPosition().x;
-                double y = botpose_mt2.getPosition().y;
-                double heading = botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES);
-
-                Pose rawPose = new Pose(x, y, Math.toRadians(heading));
-                return convertToPedro2(rawPose);
-            }
-        }
-        return null;
-    }
-
-    public Pose convertToPedro2(Pose pose) {
-        // FTC: X=right, Y=forward, origin=center
-        // Pedro: X=forward, Y=left, origin=bottom-left corner
-        double pedroX = pose.getY() + 72;   // FTC Y → Pedro X
-        double pedroY = -pose.getX() + 72;  // FTC X → Pedro Y (inverted)
-        double pedroHeading = pose.getHeading() + Math.PI / 2;
-
-        return new Pose(pedroX, pedroY, pedroHeading);
     }
 
 

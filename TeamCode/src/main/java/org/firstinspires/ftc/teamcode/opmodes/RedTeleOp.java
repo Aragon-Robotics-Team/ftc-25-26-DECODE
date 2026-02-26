@@ -587,7 +587,6 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addLine();
         telemetry.addData("megatag1 with moose conversion: ", limelight.getMooseMethod(limelight.getResult(), follower.getHeading()));
         telemetry.addLine();
-        telemetry.addData("megatag2 pose with new conversion: ", limelight.getNewMethod2(limelight.getResult()));
 
 
 
