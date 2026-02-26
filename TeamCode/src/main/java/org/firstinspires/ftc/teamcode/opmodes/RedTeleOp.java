@@ -495,8 +495,9 @@ public class RedTeleOp extends CommandOpMode {
                             spindexerAutomoveCount++;
                             if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
-                        )));
-
+                        )
+                )
+        );
     }
     void handleTeleopDrive() {
         double y = driver1.getLeftY();
