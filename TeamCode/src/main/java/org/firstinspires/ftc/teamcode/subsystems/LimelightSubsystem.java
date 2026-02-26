@@ -86,7 +86,8 @@ public class LimelightSubsystem extends SubsystemBase {
                 //converting straight from 3D
                 Pose mt2ConversionFrom3D = new Pose(
                         (botpose_mt2.getPosition().y * 39.37) + 72,
-                        -(botpose_mt2.getPosition().x * 39.37) + 72);
+                        -(botpose_mt2.getPosition().x * 39.37) + 72,
+                        botpose_mt2.getOrientation().getYaw()); // heading (?)
 
                 return mt2ConversionFrom3D;
             }
@@ -94,8 +95,6 @@ public class LimelightSubsystem extends SubsystemBase {
         return null; //might want to replcae with robots last known pose as a failsafe
 
     }
-
-
 
     public Integer detectMotif(LLResult result) {
         if (result != null && result.isValid()) {
