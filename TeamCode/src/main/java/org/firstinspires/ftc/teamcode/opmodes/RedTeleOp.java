@@ -583,9 +583,7 @@ public class RedTeleOp extends CommandOpMode {
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
 
-        telemetry.addData("megaTagPose: ", limelight.getMegaTagPose(limelight.getResult()));
-        telemetry.addLine();
-        telemetry.addData("megatag1 with moose conversion: ", limelight.getMooseMethod(limelight.getResult(), follower.getHeading()));
+        telemetry.addData("megatag2Pose with moose conversion: ", limelight.getMegaTag2Pose(limelight.getResult(), follower.getHeading()));
         telemetry.addLine();
 
 

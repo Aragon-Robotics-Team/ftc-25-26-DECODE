@@ -62,7 +62,7 @@ public class LimelightSubsystem extends SubsystemBase {
     private void updateRobotOrientation(double headingRadians) {
         // Limelight expects degrees
         //ftc standard needs to be rotated -90 to match pedro heading(?)
-        limelight.updateRobotOrientation(Math.toDegrees(headingRadians - Math.toRadians(90)));
+        limelight.updateRobotOrientation(Math.toDegrees(headingRadians + Math.toRadians(90)));
     }
 
     /**
@@ -71,8 +71,7 @@ public class LimelightSubsystem extends SubsystemBase {
      * @return A PedroPathing Pose in INCHES, or null if invalid.
      */
 
-    //does not work
-    public Pose getMegaTagPose(LLResult result) {
+    public Pose getMegaTag2Pose(LLResult result, double pedroHeading) {
         //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
         if (result != null && result.isValid()) {
             /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
@@ -81,34 +80,13 @@ public class LimelightSubsystem extends SubsystemBase {
             // MegaTag2 is robust because it uses our IMU heading
             Pose3D botpose_mt2 = result.getBotpose_MT2();
 
-            if (botpose_mt2 != null) {
-                //converting to 2D
-                Pose2D mt2Conversion2D = new Pose2D(DistanceUnit.METER,botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES));
-
-                //discord method
-                Pose ftcStandard = PoseConverter.pose2DToPose(mt2Conversion2D, InvertedFTCCoordinates.INSTANCE);
-                Pose pedroPose = ftcStandard.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-
-                return pedroPose;
-            }
-        }
-        return null; //might want to replcae with robots last known pose as a failsafe
-    }
-
-    public Pose getMooseMethod(LLResult result, double pedroHeading) {
-        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
-        if (result != null && result.isValid()) {
-            /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
-                return null;
-            }*/
-            // MegaTag2 is robust because it uses our IMU heading
-            Pose3D botpose_mt2 = result.getBotpose();
-
             updateRobotOrientation(pedroHeading);
 
             if (botpose_mt2 != null) {
                 //converting straight from 3D
-                Pose mt2ConversionFrom3D = new Pose(-(botpose_mt2.getPosition().x * 39.37) + 72, botpose_mt2.getPosition().y * 39.37 + 72);
+                Pose mt2ConversionFrom3D = new Pose(
+                        (botpose_mt2.getPosition().y * 39.37) + 72,
+                        -(botpose_mt2.getPosition().x * 39.37) + 72);
 
                 return mt2ConversionFrom3D;
             }
