@@ -444,16 +444,22 @@ public class RedTeleOp extends CommandOpMode {
                         })
                 );
         driver2.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new InstantCommand(shooter::increaseSpeedOffset)
+                new InstantCommand(() -> {
+                    shooter.increaseSpeedOffset();
+                    gamepad2.rumbleBlips(1);
+                })
         );
         driver2.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
-                new InstantCommand(shooter::decreaseSpeedOffset)
+                new InstantCommand(() -> {
+                    shooter.decreaseSpeedOffset();
+                    gamepad2.rumbleBlips(1);
+                })
         );
         driver2.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new InstantCommand(() -> {
                     Pose resetPose = alliance == Alliance.RED ?
-                            new Pose(7, 7, Math.toRadians(0)) :
-                            new Pose(144-7, 7, Math.toRadians(180));
+                            new Pose(9, 8, Math.toRadians(0)) :
+                            new Pose(144-9, 8, Math.toRadians(180));
                     follower.setPose(resetPose);
                     gamepad2.rumbleBlips(1);
                 })
@@ -647,6 +653,7 @@ public class RedTeleOp extends CommandOpMode {
             spindexer.handleUpdateArray(colorSensors.getIntakeSensor1Result(), colorSensors.getIntakeSensor2Result(), colorSensors.getBackResult());
         }
     }
+    @SuppressLint("DefaultLocale")
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
