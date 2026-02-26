@@ -8,7 +8,9 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import java.util.List;
-@TeleOp(name = "Limelight Functions Test")
+import java.util.Objects;
+
+@TeleOp(name = "Ramp Artifact Detection Test")
 public class RampBallTest extends CommandOpMode {
     private ElapsedTime timer;
     private LimelightSubsystem limelight;
@@ -31,35 +33,51 @@ public class RampBallTest extends CommandOpMode {
 
         List<LLResultTypes.DetectorResult> detections = result.getDetectorResults();
 
-        List<List<Double>> rampCorners = null;
-        for (LLResultTypes.DetectorResult detection : detections) {
-            if (detection.getClassName().equals("ramp")) {
-                rampCorners = detection.getTargetCorners();
-                break;
-            }
-        }
+//        List<List<Double>> rampCorners = null;
+//        for (LLResultTypes.DetectorResult detection : detections) {
+//            if (detection.getClassName().equals("ramp")) {
+//                rampCorners = detection.getTargetCorners();
+//                break;
+//            }
+//        }
 
-        int artifactInRampCount = 0;
+//        int artifactInRampCount = 0;
+        int totalArtifactCount = 0;
+//        int purpleRampCount = 0;
+//        int greenRampCount = 0;
 
-        for (LLResultTypes.DetectorResult detection : detections) {
-            String objectName = detection.getClassName();
-            double confidence = detection.getConfidence();
-            List<List<Double>> artifactCorners = detection.getTargetCorners();
-            if (artifactCorners != null && !artifactCorners.isEmpty()) {
-                double[] center = calculateCenter(artifactCorners);
+        for (LLResultTypes.DetectorResult detection: detections) {
+            if (!detection.getClassName().equals("ramp")) {
+                totalArtifactCount++;
 
-                // If we found a ramp, check if this center is inside it
-                if (rampCorners != null) {
-                    if (isPointInsideBox(center, rampCorners)) {
-                        artifactInRampCount++;
-                    }
+                List<List<Double>> artifactCorners = detection.getTargetCorners();
+                if (artifactCorners != null && !artifactCorners.isEmpty()) {
+                    double[] center = calculateCenter(artifactCorners);
+
+                    //if ramp is found, check if this center is inside it
+//                    if (rampCorners != null) {
+//                        if (isPointInsideBox(center, rampCorners)) {
+//                            artifactInRampCount++;
+//                            if (detection.getClassName().equals("p")) {
+//                                purpleRampCount++;
+//                            }
+//                            else if (detection.getClassName().equals("g")) {
+//                                greenRampCount++;
+//                            }
+//                        }
+//                    }
                 }
             }
         }
 
         telemetry.addData("Loop Time", timer.milliseconds());
-        telemetry.addData("Debug: LLResult object", result);
-        telemetry.addData("Num Balls in Ramp: ", artifactInRampCount);
+//        telemetry.addData("Ramp Detected? ", rampCorners != null ? "Yes" : "No");
+        telemetry.addData("Total Artifacts Detected: ", totalArtifactCount);
+//        telemetry.addData("Num Balls in Ramp: ", artifactInRampCount);
+//        telemetry.addData("Num Purple Ramp Balls: ", purpleRampCount);
+//        telemetry.addData("Num Green Ramp Balls: ", greenRampCount);
+        timer.reset();
+        telemetry.update();
     }
 
     /**
@@ -82,7 +100,7 @@ public class RampBallTest extends CommandOpMode {
     }
     
     /**
-     * Checks if a point is inside a bounding box
+     * Checks if a point is inside a bounding box (ramp)
      */
     private boolean isPointInsideBox(double[] point, List<List<Double>> boxCorners) {
         // Ensure we have exactly 4 corners for this vector math to work
