@@ -47,15 +47,15 @@ import java.util.List;
 
 @Configurable
 @Disabled
-@Autonomous(name = "\uD83D\uDD34 Red Far Park", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedFarParkAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 Blue Far Park", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+public class BlueFarParkAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
         public PathChain shootFarPreload;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63));
-            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63)).mirror();
+            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -70,7 +70,7 @@ public class RedFarParkAuto extends CommandOpMode {
             parkFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(110, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(110, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -276,7 +276,7 @@ public class RedFarParkAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",null);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();

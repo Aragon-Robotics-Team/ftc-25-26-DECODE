@@ -48,8 +48,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Parallel Park 9 Sort", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedWaitSortedCloseAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 Blue Parallel Park 9 Sort", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+public class BlueWaitSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
@@ -63,10 +63,10 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
         public PathChain leaveGate;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585);
-            public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose GATE = new Pose(131, 72,Math.toRadians(180));
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585).mirror();
+            public static final Pose START = new Pose(129,115,Math.toRadians(180)).mirror();
+            public static final Pose GATE = new Pose(131, 72,Math.toRadians(180)).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -75,58 +75,58 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.START.getHeading(),Math.toRadians(90))
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(),Math.toRadians(180-90))
                     .build();
             prepareHitGate = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(100,72))
+                            new BezierLine(Poses.LAUNCH, new Pose(100,72).mirror())
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90),Poses.GATE.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-90),Poses.GATE.getHeading())
                     .build();
             hitGate = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(100,72), Poses.GATE)
+                            new BezierLine(new Pose(100,72).mirror(), Poses.GATE)
                     )
                     .setConstantHeadingInterpolation(Poses.GATE.getHeading())
                     .build();
             leaveGate = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.GATE, new Pose(100,72))
+                            new BezierLine(Poses.GATE, new Pose(100,72).mirror())
                     )
                     .setConstantHeadingInterpolation(Poses.GATE.getHeading())
                     .build();
             shootClosePreload = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(100,72), Poses.LAUNCH)
+                            new BezierLine(new Pose(100,72).mirror(), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.GATE.getHeading(), Math.toRadians(43))//on purpose
+                    .setLinearHeadingInterpolation(Poses.GATE.getHeading(), Math.toRadians(180-43))//on purpose
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(87.6, 43),
-                                    new Pose(126.13, 52)
+                                    new Pose(87.6, 43).mirror(),
+                                    new Pose(126.13, 52).mirror()
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(126.13, 52),
-                                    new Pose(91.5, 56),
+                                    new Pose(126.13, 52).mirror(),
+                                    new Pose(91.5, 56).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeFirstRowClose = follower
@@ -134,19 +134,19 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(100, 79.5),
-                                    new Pose(122, 84)
+                                    new Pose(100, 79.5).mirror(),
+                                    new Pose(122, 84).mirror()
                             )
                     )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
+                    .setConstantHeadingInterpolation(Math.toRadians(180-0))
                     .build();
 
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126, 84), Poses.PARK_LAUNCH)
+                            new BezierLine(new Pose(126, 84).mirror(), Poses.PARK_LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.PARK_LAUNCH.getHeading())
                     .build();
         }
     }
@@ -278,11 +278,11 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
                 new FollowPathCommand(follower, paths.hitGate, 0.5).withTimeout(3000),
                 new WaitUntilCommand(() -> delayTimer.seconds() > 15)
                         .alongWith(new SequentialCommandGroup(
-                            new WaitCommand(500),
-                            new InstantCommand(gate::up),
-                            new WaitCommand(200),
-                            new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
-                            new InstantCommand(gate::down)
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
+                                new InstantCommand(gate::down)
                         ))
                         .andThen(new InstantCommand(() -> {
                             shooter.setTargetTicks(1140);
@@ -386,7 +386,7 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();

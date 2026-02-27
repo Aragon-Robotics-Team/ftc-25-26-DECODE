@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.auto;
+package org.firstinspires.ftc.teamcode.opmodes.auto.lm4archive;
 
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.GREEN;
 import static org.firstinspires.ftc.teamcode.RobotConstants.BallColors.PURPLE;
@@ -14,6 +14,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -43,6 +44,7 @@ import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
 import java.util.Arrays;
 
+@Disabled
 @Configurable
 @Autonomous(name = "\uD83D\uDD34 12 Sorted Overflow (LM4)", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class Red12OverflowSortedAuto extends CommandOpMode {

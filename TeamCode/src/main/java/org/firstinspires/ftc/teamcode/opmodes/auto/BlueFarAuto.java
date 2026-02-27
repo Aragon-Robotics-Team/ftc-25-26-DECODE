@@ -46,16 +46,23 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Disabled
-@Autonomous(name = "\uD83D\uDD34 Red Far Park", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedFarParkAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 Blue Far 15", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+public class BlueFarAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
         public PathChain shootFarPreload;
+        public PathChain intakeThirdRowFar;
+        public PathChain shootThirdRowFar;
+        public PathChain intakeHp1;
+        public PathChain intakeHpBack;
+        public PathChain intakeHp2;
+        public PathChain shootHpFar;
+        public PathChain intakeOverflow;
+        public PathChain shootOverflow;
         public PathChain parkFar;
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63));
-            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63)).mirror();
+            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -67,10 +74,89 @@ public class RedFarParkAuto extends CommandOpMode {
                     .setLinearHeadingInterpolation(Poses.START.getHeading(), Poses.LAUNCH.getHeading())
                     .build();
 
+            intakeThirdRowFar = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    Poses.LAUNCH,
+                                    new Pose(85, 32.6).mirror(),
+                                    new Pose(126.13, 33.82).mirror()
+                            )
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            shootThirdRowFar = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(126.13, 33.82).mirror(), Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
+                    .build();
+
+            intakeHp1 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(136, 8).mirror())
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            intakeHpBack = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(136, 8).mirror(), new Pose(121,8).mirror())
+                    )
+                    .setTangentHeadingInterpolation()
+                    .setReversed()
+                    .build();
+
+            intakeHp2 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(121,8).mirror(), new Pose(136, 8).mirror())
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            shootHpFar = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(136, 8).mirror(),
+                                    new Pose(118.5,30).mirror(),
+                                    Poses.LAUNCH
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0),Poses.LAUNCH.getHeading())
+                    .build();
+
+            intakeOverflow = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    Poses.LAUNCH,
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(130, 20).mirror(),
+                                    new Pose(136.3,33).mirror()
+                            )
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            shootOverflow = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(136.3,33).mirror(),Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180-90), Poses.LAUNCH.getHeading())
+                    .build();
+
             parkFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(110, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(110, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -94,11 +180,11 @@ public class RedFarParkAuto extends CommandOpMode {
     private SequentialCommandGroup shootFourTimesWithDelay() {
         return new SequentialCommandGroup(
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                new WaitCommand(100),
+                new WaitCommand(300),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new WaitCommand(300),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
-                new WaitCommand(100),
+                new WaitCommand(300),
                 new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
                 new WaitCommand(100)
         );
@@ -213,6 +299,104 @@ public class RedFarParkAuto extends CommandOpMode {
                 shootFourTimesWithDelay(),
                 setCount(3),
 
+                //Third row
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelCommandGroup(
+                        new FollowPathCommand(follower, paths.intakeThirdRowFar)
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                .withTimeout(3000),
+                        intakeArtifacts()
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootThirdRowFar, true),
+                new WaitCommand(500), //to prevent moving while shooting
+                shootFourTimesWithDelay(),
+
+                //HP row
+                new InstantCommand(() -> follower.setMaxPower(0.8)),
+                new ParallelRaceGroup(
+                        new SequentialCommandGroup(
+                                new FollowPathCommand(follower, paths.intakeHp1)
+                                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                        .withTimeout(3000),
+                                new WaitCommand(500),
+                                new FollowPathCommand(follower, paths.intakeHpBack),
+                                new FollowPathCommand(follower, paths.intakeHp2)
+                                        .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
+                                        .withTimeout(3000)
+                        ),
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100)
+                        )
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootHpFar, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
+                new WaitCommand(500), //to prevent moving while shooting
+                shootFourTimesWithDelay(),
+
+                //Overflow
+                new InstantCommand(() -> follower.setMaxPower(1)),
+                new ParallelRaceGroup(
+                        new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100)
+                        )
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.2).andThen(pulseIntakeOut())),
+                new WaitCommand(500), //to prevent moving while shooting
+                shootFourTimesWithDelay(),
+
+                //Overflow x2
+                new InstantCommand(() -> follower.setMaxPower(1)),
+                new ParallelRaceGroup(
+                        new FollowPathCommand(follower, paths.intakeOverflow)
+                                .raceWith(new WaitUntilCommand(follower::isRobotStuck))
+                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN))),
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100),
+                                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 1, true, false),
+                                new WaitCommand(400),
+                                new WaitForColorCommand(colorsensor),
+                                new WaitCommand(100)
+                        )
+                ),
+                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowPathCommand(follower, paths.shootOverflow, true)
+                        .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(pulseIntakeOut())),
+                new WaitCommand(500), //to prevent moving while shooting
+                shootFourTimesWithDelay(),
+
                 //move to end pos
                 new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowPathCommand(follower, paths.parkFar)
@@ -276,12 +460,15 @@ public class RedFarParkAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",null);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
         telemetry.update();
         super.run();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
 
     }
 
