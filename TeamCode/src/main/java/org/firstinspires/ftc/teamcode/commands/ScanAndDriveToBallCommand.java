@@ -40,7 +40,7 @@ public class ScanAndDriveToBallCommand extends CommandBase {
     };
 
     public Function<Pose, PathChain> ballPathSupplier = pose -> follower.pathBuilder()
-            .addPath(new Path(new BezierLine(follower::getPose, pose)))
+            .addPath(new Path(new BezierLine(follower.getPose(), pose)))
             .setTangentHeadingInterpolation()
             .build();
 
@@ -50,7 +50,7 @@ public class ScanAndDriveToBallCommand extends CommandBase {
         startTime = System.currentTimeMillis();
         isFollowingPath = false;
         finished = false;
-        follower.setMaxPower(0.8);
+        follower.setMaxPower(0.6);
     }
 
     @Override
