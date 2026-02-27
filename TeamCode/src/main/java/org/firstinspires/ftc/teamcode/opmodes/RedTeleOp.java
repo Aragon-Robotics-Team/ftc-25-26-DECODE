@@ -194,7 +194,7 @@ public class RedTeleOp extends CommandOpMode {
 
         if (lastVoltageCheck.milliseconds() > 500) {
             double compensation = (13.5 / currentVoltage);
-            double compensation_weight = 0.1;
+            double compensation_weight = 0.05;
             compensation = 1.0 + ((compensation - 1.0) * compensation_weight);
             alignerHeadingPID.setPIDF(alignerHeadingkP * compensation, 0, alignerHeadingkD, alignerHeadingkF);
             lastVoltageCheck.reset();
