@@ -48,7 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Wait Close 12 Sort", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Parallel Park 9 Sort", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedWaitSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
