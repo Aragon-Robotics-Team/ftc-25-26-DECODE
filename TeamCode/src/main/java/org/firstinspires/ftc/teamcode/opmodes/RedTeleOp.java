@@ -194,7 +194,7 @@ public class RedTeleOp extends CommandOpMode {
 
         if (lastVoltageCheck.milliseconds() > 500) {
             double compensation = (13.5 / currentVoltage);
-            double compensation_weight = 0.4;
+            double compensation_weight = 0.05;
             compensation = 1.0 + ((compensation - 1.0) * compensation_weight);
             alignerHeadingPID.setPIDF(alignerHeadingkP * compensation, 0, alignerHeadingkD, alignerHeadingkF);
             lastVoltageCheck.reset();
@@ -573,13 +573,13 @@ public class RedTeleOp extends CommandOpMode {
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
                 // MANUAL FF - NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > 0.01) { // deadzone
+                if (Math.abs(headingError) > 0.005) { // deadzone
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
                 }
                 // BANGBANG FF
-                if (Math.abs(headingError) > 1) {
+                if (Math.abs(headingError) > 0.1) {
                     headingPIDOutput *= 5;
                 }
 
