@@ -30,7 +30,6 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.AutoPoseSaver;
 import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.commands.DeferredCommand;
-import org.firstinspires.ftc.teamcode.commands.LoadBallCommand;
 import org.firstinspires.ftc.teamcode.commands.LoadMotifCommand;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.ShootSortedBallsCommandSequence;
@@ -44,69 +43,90 @@ import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SpindexerSubsystem;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Close 12 Sort", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedSortedCloseAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 Parallel Park 9 Sort", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+public class BlueWaitSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
         public PathChain shootClosePreload;
         public PathChain intakeSecondRowClose;
         public PathChain shootSecondRowClose;
-        public PathChain hitGateSecond;
         public PathChain intakeFirstRowClose;
         public PathChain shootFirstRowClose;
-        public PathChain hitGateFirst;
-        public PathChain intakeThirdRowClose;
-        public PathChain shootThirdRowClose;
+        public PathChain scanMotif;
+        public PathChain prepareHitGate;
+        public PathChain hitGate;
+        public PathChain leaveGate;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585);
-            public static final Pose START = new Pose(129,115,Math.toRadians(180));
-            public static final Pose GATE = new Pose(132, 66);
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20));
+            public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585).mirror();
+            public static final Pose START = new Pose(129,115,Math.toRadians(180)).mirror();
+            public static final Pose GATE = new Pose(131, 72,Math.toRadians(180)).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20)).mirror();
         }
 
         public Paths(Follower follower) {
-            shootClosePreload = follower
+            scanMotif = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(Poses.START, Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Poses.START.getHeading(), Math.toRadians(43))//on purpose
+                    .setLinearHeadingInterpolation(Poses.START.getHeading(),Math.toRadians(180-90))
+                    .build();
+            prepareHitGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.LAUNCH, new Pose(100,72).mirror())
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(180-90),Poses.GATE.getHeading())
+                    .build();
+            hitGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(100,72).mirror(), Poses.GATE)
+                    )
+                    .setConstantHeadingInterpolation(Poses.GATE.getHeading())
+                    .build();
+            leaveGate = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(Poses.GATE, new Pose(100,72).mirror())
+                    )
+                    .setConstantHeadingInterpolation(Poses.GATE.getHeading())
+                    .build();
+            shootClosePreload = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(100,72).mirror(), Poses.LAUNCH)
+                    )
+                    .setLinearHeadingInterpolation(Poses.GATE.getHeading(), Math.toRadians(180-43))//on purpose
                     .build();
             intakeSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(87.6, 43),
-                                    new Pose(126.13, 52)
+                                    new Pose(87.6, 43).mirror(),
+                                    new Pose(126.13, 52).mirror()
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .build();
-
-            hitGateSecond = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(126.13, 52), Poses.GATE)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(-90))
+                    .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
                     .build();
 
             shootSecondRowClose = follower
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    Poses.GATE,
-                                    new Pose(91.5, 56),
+                                    new Pose(126.13, 52).mirror(),
+                                    new Pose(91.5, 56).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(-90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeFirstRowClose = follower
@@ -114,47 +134,19 @@ public class RedSortedCloseAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(100, 79.5),
-                                    new Pose(122, 84)
+                                    new Pose(100, 79.5).mirror(),
+                                    new Pose(122, 84).mirror()
                             )
                     )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
-
-            hitGateFirst = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(116, 84), Poses.GATE)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
+                    .setConstantHeadingInterpolation(Math.toRadians(180-0))
                     .build();
 
             shootFirstRowClose = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126, 84), Poses.LAUNCH)
+                            new BezierLine(new Pose(126, 84).mirror(), Poses.PARK_LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
-                    .build();
-
-            intakeThirdRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    Poses.LAUNCH,
-                                    new Pose(83, 11),
-                                    new Pose(128, 36)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
-                    .build();
-
-            shootThirdRowClose = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(120, 36), Poses.PARK_LAUNCH)
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.PARK_LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.PARK_LAUNCH.getHeading())
                     .build();
         }
     }
@@ -190,6 +182,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
     private boolean slowMode = false;
     public ElapsedTime lastVoltageCheck = new ElapsedTime();
     private ElapsedTime timer;
+    private ElapsedTime delayTimer;
     private Follower follower;
 
     //update starting pose
@@ -227,6 +220,7 @@ public class RedSortedCloseAuto extends CommandOpMode {
     @Override
     public void initialize() {
         timer = new ElapsedTime();
+        delayTimer = new ElapsedTime();
         timer.reset();
 
         //systems and pedro
@@ -267,20 +261,39 @@ public class RedSortedCloseAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup nine_sorted = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1120);
                     gate.down();
                     spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});
+                    delayTimer.reset();
                 }),
-                //Preload
+                //motif
                 new ParallelDeadlineGroup(
-                        new FollowPathCommand(follower, paths.shootClosePreload, true)
-                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1).andThen(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))),
+                        new FollowPathCommand(follower, paths.scanMotif, true)
+                                .alongWith(new WaitUntilCommand(() -> follower.getPathCompletion() > 0.1)),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.6).andThen(new InstantCommand(this::scanMotif)),
                         new WaitUntilCommand(() -> follower.getPathCompletion() > 0.8).andThen(new InstantCommand(this::scanMotif))
                 ),
+                //Gate hold
+                new WaitCommand(100),
+                new FollowPathCommand(follower, paths.prepareHitGate,0.5),
+                new FollowPathCommand(follower, paths.hitGate, 0.5).withTimeout(3000),
+                new WaitUntilCommand(() -> delayTimer.seconds() > 15)
+                        .alongWith(new SequentialCommandGroup(
+                                new WaitCommand(500),
+                                new InstantCommand(gate::up),
+                                new WaitCommand(200),
+                                new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
+                                new InstantCommand(gate::down)
+                        ))
+                        .andThen(new InstantCommand(() -> {
+                            shooter.setTargetTicks(1140);
+                            intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN);
+                        }))
+                        .andThen(new FollowPathCommand(follower, paths.leaveGate,0.5)),
+
+                //preload
+                new FollowPathCommand(follower, paths.shootClosePreload),
                 new WaitUntilCommand(() -> shooter.isAtTargetVelocity()),
-                new WaitCommand(200),
-                new DeferredCommand(() -> new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)),
+                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
 
                 //Second row
                 new ParallelCommandGroup(
@@ -290,8 +303,6 @@ public class RedSortedCloseAuto extends CommandOpMode {
                         intakeArtifacts()
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, GREEN, PURPLE});}),
-                new FollowPathCommand(follower, paths.hitGateSecond).withTimeout(1500),
-                new WaitCommand(1000),
                 new FollowPathCommand(follower, paths.shootSecondRowClose, true)
                         .alongWith(new SequentialCommandGroup(
                                 new WaitCommand(500),
@@ -311,31 +322,8 @@ public class RedSortedCloseAuto extends CommandOpMode {
                 ),
                 new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {GREEN, PURPLE, PURPLE});}),
                 //first row
+                new InstantCommand(() -> shooter.setTargetTicks(1100)),
                 new FollowPathCommand(follower, paths.shootFirstRowClose, true)
-                        .alongWith(new SequentialCommandGroup(
-                                new WaitCommand(500),
-                                new InstantCommand(gate::up),
-                                new WaitCommand(200),
-                                new DeferredCommand(() -> new LoadMotifCommand(spindexer, motif)),
-                                new InstantCommand(gate::down)
-                        )),
-                new DeferredCommand(() -> new ShootSortedBallsCommandSequence(shooter, spindexer, gate, intake, motif)),
-
-                //intake third row
-                new ParallelCommandGroup(
-                        new FollowPathCommand(follower, paths.intakeThirdRowClose).withTimeout(3000)
-                                .alongWith(new InstantCommand(() -> intake.set(IntakeSubsystem.IntakeState.INTAKEIN_ROLLERSIN)))
-                                .withTimeout(3000),
-                        new WaitCommand(2000)
-                                .andThen(intakeArtifacts())
-                ),
-                new InstantCommand(() -> {spindexer.setBalls(new RobotConstants.BallColors[] {PURPLE, PURPLE, GREEN});}),
-
-                //shoot third row
-                new InstantCommand(() -> {
-                    shooter.setTargetTicks(1100);
-                }),
-                new FollowPathCommand(follower, paths.shootThirdRowClose, true)
                         .alongWith(new SequentialCommandGroup(
                                 new WaitCommand(500),
                                 new InstantCommand(gate::up),
