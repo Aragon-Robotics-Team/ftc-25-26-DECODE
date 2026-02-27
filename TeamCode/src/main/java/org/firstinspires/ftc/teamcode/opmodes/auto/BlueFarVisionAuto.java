@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.function.Function;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD34 Red Far Vision 15", group = "angryBirds", preselectTeleOp = "RedTeleOp")
-public class RedFarVisionAuto extends CommandOpMode {
+@Autonomous(name = "\uD83D\uDD35 Blue Far Vision 15", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+public class BlueFarVisionAuto extends CommandOpMode {
     public static class Paths {
         public PathChain shootFarPreload;
         public PathChain intakeThirdRowFar;
@@ -68,13 +68,13 @@ public class RedFarVisionAuto extends CommandOpMode {
         public PathChain toScanHigh;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63));
-            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90));
-            public static final Pose SCAN_LOW = new Pose(91, 18.5, Math.toRadians(1));
-            public static final Pose SCAN_MED = new Pose(91, 18.5, Math.toRadians(5));
-            public static final Pose SCAN_HIGH = new Pose(91, 18.5, Math.toRadians(10));
-            public static final Pose INTAKE_HP = new Pose(128, 10, Math.toRadians(0));
-            public static final Pose INTAKE_HP2 = new Pose(128, 10, Math.toRadians(90));
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63)).mirror();
+            public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
+            public static final Pose SCAN_LOW = new Pose(91, 18.5, Math.toRadians(1)).mirror();
+            public static final Pose SCAN_MED = new Pose(91, 18.5, Math.toRadians(5)).mirror();
+            public static final Pose SCAN_HIGH = new Pose(91, 18.5, Math.toRadians(10)).mirror();
+            public static final Pose INTAKE_HP = new Pose(128, 10, Math.toRadians(0)).mirror();
+            public static final Pose INTAKE_HP2 = new Pose(128, 10, Math.toRadians(90)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -91,8 +91,8 @@ public class RedFarVisionAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(85, 32.6),
-                                    new Pose(126.13, 35.82)
+                                    new Pose(85, 32.6).mirror(),
+                                    new Pose(126.13, 35.82).mirror()
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -101,15 +101,15 @@ public class RedFarVisionAuto extends CommandOpMode {
             shootThirdRowFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(126.13, 33.82), Poses.LAUNCH)
+                            new BezierLine(new Pose(126.13, 33.82).mirror(), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeHp1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(132, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(132, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -117,7 +117,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             intakeHpBack = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(132, 8), new Pose(121,8))
+                            new BezierLine(new Pose(132, 8).mirror(), new Pose(121,8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .setReversed()
@@ -126,7 +126,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             intakeHp2 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(121,8), new Pose(132, 8))
+                            new BezierLine(new Pose(121,8).mirror(), new Pose(132, 8).mirror())
                     )
                     .setTangentHeadingInterpolation()
                     .build();
@@ -135,12 +135,12 @@ public class RedFarVisionAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(132, 8),
-                                    new Pose(118.5,30),
+                                    new Pose(132, 8).mirror(),
+                                    new Pose(118.5,30).mirror(),
                                     Poses.LAUNCH
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-0), Poses.LAUNCH.getHeading())
                     .build();
 
             intakeOverflow = follower
@@ -148,10 +148,10 @@ public class RedFarVisionAuto extends CommandOpMode {
                     .addPath(
                             new BezierCurve(
                                     Poses.LAUNCH,
-                                    new Pose(144, 0),
-                                    new Pose(144, 0),
-                                    new Pose(130, 20),
-                                    new Pose(136.3,33)
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(144, 0).mirror(),
+                                    new Pose(130, 20).mirror(),
+                                    new Pose(136.3,33).mirror()
                             )
                     )
                     .setTangentHeadingInterpolation()
@@ -160,9 +160,9 @@ public class RedFarVisionAuto extends CommandOpMode {
             shootOverflow = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(136.3,33), Poses.LAUNCH)
+                            new BezierLine(new Pose(136.3,33).mirror(), Poses.LAUNCH)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Poses.LAUNCH.getHeading())
+                    .setLinearHeadingInterpolation(Math.toRadians(180-90), Poses.LAUNCH.getHeading())
                     .build();
 
             toScanLow = follower
@@ -190,7 +190,7 @@ public class RedFarVisionAuto extends CommandOpMode {
             parkFar = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(Poses.LAUNCH, new Pose(110, 8))
+                            new BezierLine(Poses.LAUNCH, new Pose(110, 8).mirror())
                     )
                     .setConstantHeadingInterpolation(Poses.LAUNCH.getHeading())
                     .build();
@@ -540,7 +540,7 @@ public class RedFarVisionAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",null);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
