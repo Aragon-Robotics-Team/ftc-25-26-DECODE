@@ -46,7 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD35 Close 15 (Third Spike)", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+@Autonomous(name = "\uD83D\uDD35 Blue Close 15 (Third Spike)", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
 public class BlueVolumeCloseAuto extends CommandOpMode {
     //Rememeber, when changing to blue:
     //Reverse poses + headings

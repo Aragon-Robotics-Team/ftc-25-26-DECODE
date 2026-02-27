@@ -47,7 +47,7 @@ import java.util.List;
 
 @Configurable
 @Disabled
-@Autonomous(name = "\uD83D\uDD34 Far Park", group = "angryBirds", preselectTeleOp = "RedTeleOp")
+@Autonomous(name = "\uD83D\uDD34 Red Far Park", group = "angryBirds", preselectTeleOp = "RedTeleOp")
 public class RedFarParkAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {

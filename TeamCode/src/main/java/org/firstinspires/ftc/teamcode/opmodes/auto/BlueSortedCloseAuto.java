@@ -48,7 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configurable
-@Autonomous(name = "\uD83D\uDD35 Close 12 Sort", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+@Autonomous(name = "\uD83D\uDD35 Blue Close 12 Sort", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
 public class BlueSortedCloseAuto extends CommandOpMode {
     public static class Paths {
         //close autos
@@ -398,7 +398,7 @@ public class BlueSortedCloseAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",0);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();

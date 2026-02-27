@@ -47,7 +47,7 @@ import java.util.List;
 
 @Configurable
 @Disabled
-@Autonomous(name = "\uD83D\uDD35 Far Park", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
+@Autonomous(name = "\uD83D\uDD35 Blue Far Park", group = "angryBirds", preselectTeleOp = "BlueTeleOp")
 public class BlueFarParkAuto extends CommandOpMode {
     //3 sorted preload, 6 sorted spike mark, gate intake
     public static class Paths {
@@ -276,7 +276,7 @@ public class BlueFarParkAuto extends CommandOpMode {
         telemetry.addData("t value", follower.getCurrentTValue());
         telemetry.addData("------------------",null);
         currentPose = follower.getPose().plus(
-                new Pose(-2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
+                new Pose(2,0) //DO NOT MIRROR THIS! INVERT THE X AXIS *ONLY*
         ); //Auto->teleop offset
         AutoPoseSaver.lastPose = currentPose;
         timer.reset();
