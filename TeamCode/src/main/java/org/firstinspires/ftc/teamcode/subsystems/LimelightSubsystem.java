@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.pedropathing.geometry.Pose; // Import Pedro Pose
@@ -10,6 +13,9 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 public class LimelightSubsystem extends SubsystemBase {
@@ -52,33 +58,67 @@ public class LimelightSubsystem extends SubsystemBase {
      * REQUIRED for MegaTag2 to work.
      * @param headingRadians Robot heading in Radians (Pedro standard)
      */
-    public void updateRobotOrientation(double headingRadians) {
+    private void updateRobotOrientation(double headingRadians) {
         // Limelight expects degrees
-        limelight.updateRobotOrientation(Math.toDegrees(headingRadians));
+        //ftc standard needs to be rotated -90 to match pedro heading(?)
+        limelight.updateRobotOrientation(Math.toDegrees(headingRadians + Math.toRadians(90)));
     }
 
     /**
      * Gets the robot's field position using MegaTag2.
      * @param result The latest LLResult
+     * @param pedroHeading heading in pedro coords
      * @return A PedroPathing Pose in INCHES, or null if invalid.
      */
-    public Pose getMegaTagPose(LLResult result) {
+    public Pose getMegaTag2Pose(LLResult result, double pedroHeading) {
+        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
         if (result != null && result.isValid()) {
+            /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
+                return null;
+            }*/
+            // MegaTag2 is robust because it uses our IMU heading
+            updateRobotOrientation(pedroHeading);
+            Pose3D botpose_mt2 = result.getBotpose_MT2();
+
+            if (botpose_mt2 != null) {
+                //converting straight from 3D
+                Pose mt2ConversionFrom3D = new Pose(
+                        (botpose_mt2.getPosition().y * 39.37) + 72,
+                        -(botpose_mt2.getPosition().x * 39.37) + 72,
+                        botpose_mt2.getOrientation().getYaw()); // heading (?)
+
+                return mt2ConversionFrom3D;
+            }
+        }
+        return null; //might want to replcae with robots last known pose as a failsafe
+
+    }
+    /**
+     * Gets the robot's field position using MegaTag1.
+     * @param result The latest LLResult
+     * @return A PedroPathing Pose in INCHES, or null if invalid.
+     */
+    public Pose getMegaTag1Pose(LLResult result) {
+        //Integer motif = detectMotif(result); //is the result not an obelisk ID 21, 22, 23
+        if (result != null && result.isValid()) {
+            /*if (motif != null && !(motif.equals(21) || motif.equals(22) || motif.equals(23))) {
+                return null;
+            }*/
             // MegaTag2 is robust because it uses our IMU heading
             Pose3D botpose_mt1 = result.getBotpose();
 
             if (botpose_mt1 != null) {
-                // Convert Meters (Limelight) to Inches (Pedro)
-                double x = botpose_mt1.getPosition().x;
-                double y = botpose_mt1.getPosition().y;
+                //converting straight from 3D
+                Pose mt1ConversionFrom3D = new Pose(
+                        (botpose_mt1.getPosition().y * 39.37) + 72,
+                        -(botpose_mt1.getPosition().x * 39.37) + 72,
+                        botpose_mt1.getOrientation().getYaw()); // heading (?)
 
-                // MT2 returns heading in degrees, convert back to radians for Pedro
-                double heading_rad = Math.toRadians(botpose_mt1.getOrientation().getYaw());
-
-                return new Pose(x, y);
+                return mt1ConversionFrom3D;
             }
         }
-        return null;
+        return null; //might want to replcae with robots last known pose as a failsafe
+
     }
 
     public Integer detectMotif(LLResult result) {
