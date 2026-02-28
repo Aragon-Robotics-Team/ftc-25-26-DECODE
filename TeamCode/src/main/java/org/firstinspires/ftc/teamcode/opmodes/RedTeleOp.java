@@ -794,7 +794,7 @@ public class RedTeleOp extends CommandOpMode {
 
         LLResult llResult = limelight.getResult();
         if (llResult != null && llResult.isValid()) {
-            rawVisionPose = limelight.getMegaTag2Pose(llResult, rawOdometryPose.getHeading());
+            rawVisionPose = limelight.getMegaTag1Pose(llResult);
         } else {
             rawVisionPose = null;
         }
