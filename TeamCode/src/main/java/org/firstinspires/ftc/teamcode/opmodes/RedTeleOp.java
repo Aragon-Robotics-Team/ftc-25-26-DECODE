@@ -596,7 +596,7 @@ public class RedTeleOp extends CommandOpMode {
                     headingPIDOutput += feedforward;
                 }
                 // BANGBANG FF
-                if (Math.abs(headingError) > 0.1) {
+                if (Math.abs(headingError) > 0.5) {
                     headingPIDOutput *= 5;
                 }
 
