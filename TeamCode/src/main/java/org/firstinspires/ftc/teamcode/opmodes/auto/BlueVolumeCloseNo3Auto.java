@@ -65,12 +65,12 @@ public class BlueVolumeCloseNo3Auto extends CommandOpMode {
         public PathChain shootThirdRowClose;
         public PathChain intakeRamp;
         public PathChain shootRamp;
-
+        public PathChain shootRampPark;
         public static class Poses {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732).mirror();
             public static final Pose START = new Pose(121.48,123.623,0.79785).mirror();
             public static final Pose GATE = new Pose(132, 68).mirror();
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(24)).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(25)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -183,6 +183,17 @@ public class BlueVolumeCloseNo3Auto extends CommandOpMode {
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-45), Poses.LAUNCH.getHeading())
+                    .build();
+            shootRampPark = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(133, 60).mirror(),
+                                    new Pose(108, 62).mirror(),
+                                    Poses.PARK_LAUNCH
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(45), Poses.PARK_LAUNCH.getHeading())
                     .build();
         }
     }
@@ -383,7 +394,8 @@ public class BlueVolumeCloseNo3Auto extends CommandOpMode {
                                 .andThen(intakeArtifacts()).withTimeout(5000)
                 ),
                 new FollowPathCommand(follower, paths.shootRamp, true),
-                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false)
+                new MoveSpindexerAndUpdateArrayCommand(spindexer, gate, 4, false, false),
+                new FollowPathCommand(follower, paths.shootRampPark, true)
         );
 
         schedule(new RunCommand(() -> follower.update()));

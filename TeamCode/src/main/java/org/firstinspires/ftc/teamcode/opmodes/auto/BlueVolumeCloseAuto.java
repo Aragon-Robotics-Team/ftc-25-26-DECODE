@@ -70,7 +70,7 @@ public class BlueVolumeCloseAuto extends CommandOpMode {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.799732).mirror();
             public static final Pose START = new Pose(121.48,123.623,0.79785).mirror();
             public static final Pose GATE = new Pose(132, 68).mirror();
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(24)).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(25)).mirror();
         }
 
         public Paths(Follower follower) {
