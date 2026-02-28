@@ -573,15 +573,16 @@ public class RedTeleOp extends CommandOpMode {
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
                 // MANUAL FF - NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > 0.005) { // deadzone
+                if (Math.abs(headingError) > 0.01) { // deadzone
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
                 }
-                // BANGBANG FF
-                if (Math.abs(headingError) > 0.5) {
-                    headingPIDOutput *= 5;
-                }
+//                // BANGBANG FF
+//                if (Math.abs(headingError) > Math.toRadians(15)) {
+//                    headingPIDOutput *= 5;
+//                    headingPIDOutput += 0.2;
+//                }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
                 break;
@@ -662,7 +663,7 @@ public class RedTeleOp extends CommandOpMode {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
         telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
-        telemetry.addData("headingError", headingError);
+        telemetry.addData("headingError", Math.toDegrees(headingError));
         telemetry.addData("heading pid output", headingPIDOutput);
         telemetry.addData(String.format("Distance to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - follower.getPose().getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - follower.getPose().getX()));
         telemetry.addData("Mode: ", driveMode);
