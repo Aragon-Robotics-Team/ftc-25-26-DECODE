@@ -493,7 +493,7 @@ public class RedTeleOp extends CommandOpMode {
                         new InstantCommand(() -> {
                             spindexerAutomoveTimeSinceLastMove.reset();
                             spindexerAutomoveCount++;
-                            if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
+//                            if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
                         )
                 )
