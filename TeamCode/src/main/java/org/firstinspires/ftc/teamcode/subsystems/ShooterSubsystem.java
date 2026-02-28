@@ -117,7 +117,7 @@ public class ShooterSubsystem extends SubsystemBase {
         speedOffset += 5;
     }
     public void decreaseSpeedOffset() {
-        speedOffset += 5;
+        speedOffset -= 5;
     }
     public void updatePIDVoltage(double voltage) {
 //        double compensation = 13.5 / voltage; //if voltage < 13.5, compensation > 1
