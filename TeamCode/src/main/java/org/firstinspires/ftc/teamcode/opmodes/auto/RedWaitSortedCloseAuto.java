@@ -111,7 +111,7 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43),
-                                    new Pose(126.13, 52)
+                                    new Pose(126.13, 55)
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(0))
@@ -121,7 +121,7 @@ public class RedWaitSortedCloseAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(126.13, 52),
+                                    new Pose(126.13, 55),
                                     new Pose(91.5, 56),
                                     Poses.LAUNCH
                             )

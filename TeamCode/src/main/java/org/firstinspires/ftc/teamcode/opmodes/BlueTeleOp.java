@@ -48,6 +48,7 @@ import org.firstinspires.ftc.teamcode.RobotConstants;
 import org.firstinspires.ftc.teamcode.RobotConstants.*;
 import org.firstinspires.ftc.teamcode.commands.MoveSpindexerAndUpdateArrayCommand;
 import org.firstinspires.ftc.teamcode.commands.WaitForColorCommand;
+import org.firstinspires.ftc.teamcode.kalman.KalmanPoseFuser;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.ClimbSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ColorSensorsSubsystem;
@@ -62,7 +63,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 @Config
-@TeleOp(name = "\uD83D\uDD35 Teleop Field Centric", group = "!")
+@TeleOp(name = "\uD83D\uDD35 Blue Teleop Field Centric", group = "!")
 public class BlueTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;
@@ -134,6 +135,12 @@ public class BlueTeleOp extends CommandOpMode {
     public static Pose startingPose;
     public static Pose savedPose = new Pose(0,0,0);
     private Supplier<PathChain> pathChainSupplier;
+
+    private KalmanPoseFuser kalmanPoseFuser;
+    private Pose rawOdometryPose = new Pose(0, 0, 0);
+    private Pose rawVisionPose = null;
+    private Pose fusedPose = new Pose(0, 0, 0);
+
     //Auto aligner
     public static double alignerHeadingkP = 0.5;
     public static double alignerHeadingkD = 0.06;
@@ -182,11 +189,18 @@ public class BlueTeleOp extends CommandOpMode {
             onStart();
             firstLoop = false;
         }
+
+        handleKalman();
+
         handleTeleopDrive();
         handleLED();
         handleVoltageCompensation();
         handleBallsArrayUpdate();
         handlePanelsDrawing();
+
+
+        //update ll orientation
+        //limelight.updateRobotOrientation(follower.getHeading()); //runs in method
 
         //Update color sensors
         colorSensors.updateSensor1();
@@ -252,6 +266,8 @@ public class BlueTeleOp extends CommandOpMode {
         limelight.setPipeline(LimelightSubsystem.LIMELIGHT_PIPELINES.APRILTAG);
         climb = new ClimbSubsystem(hardwareMap);
         voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+
+        kalmanPoseFuser = new KalmanPoseFuser(startingPose, 0.005, 1.5);
 
         if (Math.abs(spindexer.getWrappedPosition() - 115) < 60) {
             spindexer.set(115);
@@ -464,6 +480,7 @@ public class BlueTeleOp extends CommandOpMode {
                             new Pose(9, 8, Math.toRadians(0)) :
                             new Pose(144-9, 8, Math.toRadians(180));
                     follower.setPose(resetPose);
+                    kalmanPoseFuser.setPose(resetPose);
                     gamepad2.rumbleBlips(1);
                 })
         );
@@ -493,7 +510,7 @@ public class BlueTeleOp extends CommandOpMode {
                         new InstantCommand(() -> {
                             spindexerAutomoveTimeSinceLastMove.reset();
                             spindexerAutomoveCount++;
-                            if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
+//                            if (spindexerAutomoveCount == 2) gamepad1.rumbleBlips(1);
                         }
                         )
                 )
@@ -559,7 +576,7 @@ public class BlueTeleOp extends CommandOpMode {
                     break;
                 }
 
-                Vector targetVector = calculateTargetVector2(follower, follower.getPose(), alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
+                Vector targetVector = calculateTargetVector2(follower, fusedPose, alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE, shooter);
                 double targetHeading = targetVector.getTheta() + manualAimOffset;
                 shooter.setTargetLinearSpeed(targetVector.getMagnitude());
 
@@ -573,15 +590,16 @@ public class BlueTeleOp extends CommandOpMode {
                 headingPIDOutput = alignerHeadingPID.calculate(headingError, 0);
 
                 // MANUAL FF - NORMAL DOES NOT WORK BC SP = 0
-                if (Math.abs(headingError) > 0.005) { // deadzone
+                if (Math.abs(headingError) > 0.01) { // deadzone
                     // Apply kF in the direction of the PID output (to help it push)
                     double feedforward = Math.signum(headingError) * alignerHeadingkF;
                     headingPIDOutput += feedforward;
                 }
-                // BANGBANG FF
-                if (Math.abs(headingError) > 0.1) {
-                    headingPIDOutput *= 5;
-                }
+//                // BANGBANG FF
+//                if (Math.abs(headingError) > Math.toRadians(15)) {
+//                    headingPIDOutput *= 5;
+//                    headingPIDOutput += 0.2;
+//                }
 
                 rx += MathUtils.clamp(headingPIDOutput, -1, 1);
                 break;
@@ -660,11 +678,28 @@ public class BlueTeleOp extends CommandOpMode {
     @SuppressLint("DefaultLocale")
     void handleTelemetry() {
         telemetry.addLine(alliance == Alliance.RED ? "\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34\uD83D\uDD34" : "\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35\uD83D\uDD35");
+
+        telemetry.addLine("-- Sensor Fusion --");
+        telemetry.addData("1. Raw Odometry", String.format("X: %8.2f, Y: %8.2f", rawOdometryPose.getX(), rawOdometryPose.getY()));
+
+        if (rawVisionPose != null) {
+            telemetry.addData("2. Raw Vision  ", String.format("X: %8.2f, Y: %8.2f", rawVisionPose.getX(), rawVisionPose.getY()));
+        } else {
+            telemetry.addData("2. Raw Vision  ", "No Tags Visible");
+        }
+
+        // Change follower.getPose() to fusedPose
+        telemetry.addData("3. Fused Pose  ", String.format("X: %8.2f, Y: %8.2f", fusedPose.getX(), fusedPose.getY()));
+        telemetry.addLine();
+
+
+
         telemetry.addData("autospindexer?", Math.abs(spindexer.getCurrentPosition() - spindexer.getPIDSetpoint()) < 60);
         telemetry.addData("Loop Time", loopTimer.milliseconds());
-        telemetry.addData("headingError", headingError);
+        telemetry.addData("headingError", Math.toDegrees(headingError));
         telemetry.addData("heading pid output", headingPIDOutput);
         telemetry.addData(String.format("Distance to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - follower.getPose().getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - follower.getPose().getX()));
+        telemetry.addData(String.format("Distance (kalman) to %s goal", alliance), Math.hypot((alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getY() - fusedPose.getY(), (alliance == Alliance.RED ? GOAL_RED : GOAL_BLUE).getX() - fusedPose.getX()));
         telemetry.addData("Mode: ", driveMode);
         telemetry.addData("Selected Motif", Arrays.toString(selectedMotif));
         telemetry.addData("Balls Array", Arrays.toString(spindexer.getBalls()));
@@ -724,6 +759,7 @@ public class BlueTeleOp extends CommandOpMode {
 //        telemetry.addData("Shooter 2 Current Amps: ", shooter.getShooter2CurrentAmps());
 //        telemetry.addData("Intake Current Amps: ", intake.getIntakeCurrentAmps());
 
+
     }
     void handlePanelsDrawing() {
         FieldManager panels = panelsField.getField();
@@ -753,6 +789,19 @@ public class BlueTeleOp extends CommandOpMode {
 
         // 4. Send the update
         panels.update();
+    }
+    void handleKalman() {
+        rawOdometryPose = follower.getPose();
+
+        LLResult llResult = limelight.getResult();
+        if (llResult != null && llResult.isValid()) {
+            rawVisionPose = limelight.getMegaTag1Pose(llResult);
+        } else {
+            rawVisionPose = null;
+        }
+
+        // THE FIX: Save to our variable, DO NOT overwrite PedroPathing!
+        fusedPose = kalmanPoseFuser.update(rawOdometryPose, rawVisionPose);
     }
     /**
      * Calculate the target vector for the shooter with velocity compensation.

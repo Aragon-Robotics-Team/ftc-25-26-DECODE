@@ -68,7 +68,7 @@ public class BlueFarVisionAuto extends CommandOpMode {
         public PathChain toScanHigh;
 
         public static class Poses {
-            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(63)).mirror();
+            public static final Pose LAUNCH = new Pose(89.4,18.5, Math.toRadians(64)).mirror();
             public static final Pose START = new Pose(102.5, 8, Math.toRadians(90)).mirror();
             public static final Pose SCAN_LOW = new Pose(91, 18.5, Math.toRadians(1)).mirror();
             public static final Pose SCAN_MED = new Pose(91, 18.5, Math.toRadians(5)).mirror();
@@ -384,7 +384,7 @@ public class BlueFarVisionAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1450);
+                    shooter.setTargetTicks(1440);
                     gate.down();
                 }),
                 new WaitCommand(1),

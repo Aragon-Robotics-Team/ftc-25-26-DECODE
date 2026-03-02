@@ -63,7 +63,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 @Config
-@TeleOp(name = "\uD83D\uDD34 Teleop Field Centric", group = "!")
+@TeleOp(name = "\uD83D\uDD34 Red Teleop Field Centric", group = "!")
 public class RedTeleOp extends CommandOpMode {
     //Constants
     private ElapsedTime snapshotTimer;

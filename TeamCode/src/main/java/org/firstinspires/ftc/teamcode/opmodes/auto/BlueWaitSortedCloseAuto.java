@@ -66,7 +66,7 @@ public class BlueWaitSortedCloseAuto extends CommandOpMode {
             public static final Pose LAUNCH = new Pose(86.8, 88.2, 0.715585).mirror();
             public static final Pose START = new Pose(129,115,Math.toRadians(180)).mirror();
             public static final Pose GATE = new Pose(131, 72,Math.toRadians(180)).mirror();
-            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(20)).mirror();
+            public static final Pose PARK_LAUNCH = new Pose(87.79745,110.10889, Math.toRadians(25)).mirror();
         }
 
         public Paths(Follower follower) {
@@ -111,7 +111,7 @@ public class BlueWaitSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(87.6, 43).mirror(),
-                                    new Pose(126.13, 52).mirror()
+                                    new Pose(129.13, 54).mirror()
                             )
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180-25), Math.toRadians(180-0))
@@ -121,7 +121,7 @@ public class BlueWaitSortedCloseAuto extends CommandOpMode {
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(126.13, 52).mirror(),
+                                    new Pose(129.13, 54).mirror(),
                                     new Pose(91.5, 56).mirror(),
                                     Poses.LAUNCH
                             )
@@ -135,7 +135,7 @@ public class BlueWaitSortedCloseAuto extends CommandOpMode {
                             new BezierCurve(
                                     Poses.LAUNCH,
                                     new Pose(100, 79.5).mirror(),
-                                    new Pose(122, 84).mirror()
+                                    new Pose(127, 84).mirror()
                             )
                     )
                     .setConstantHeadingInterpolation(Math.toRadians(180-0))

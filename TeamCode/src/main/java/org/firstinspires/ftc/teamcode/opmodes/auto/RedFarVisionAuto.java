@@ -384,7 +384,7 @@ public class RedFarVisionAuto extends CommandOpMode {
         spindexer.set(115);
         SequentialCommandGroup far_volume = new SequentialCommandGroup(
                 new InstantCommand(() -> { //setup
-                    shooter.setTargetTicks(1450);
+                    shooter.setTargetTicks(1440);
                     gate.down();
                 }),
                 new WaitCommand(1),
